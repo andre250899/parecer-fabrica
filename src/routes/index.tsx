@@ -99,8 +99,19 @@ function Index() {
     );
   };
 
+  const formatDate = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  };
+
   const upd = <K extends keyof ParecerData>(k: K, v: ParecerData[K]) =>
     setData((d) => ({ ...d, [k]: v }));
+
+  const updDate = (k: "dataEntrada" | "dataParecer", raw: string) =>
+    upd(k, formatDate(raw) as ParecerData[typeof k]);
+
 
   const updItem = (i: number, k: keyof OrcamentoItem, v: string) =>
     setData((d) => {
