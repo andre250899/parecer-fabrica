@@ -142,3 +142,27 @@
     color: var(--color-foreground);
   }
 }
+
+/* ============================================================
+   Parecer Técnico — Print & Theme utilities
+   ============================================================ */
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #parecer-print,
+  #parecer-print * {
+    visibility: visible;
+  }
+  #parecer-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}
