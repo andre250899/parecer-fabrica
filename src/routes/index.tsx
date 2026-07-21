@@ -99,8 +99,19 @@ function Index() {
     );
   };
 
+  const formatDate = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  };
+
   const upd = <K extends keyof ParecerData>(k: K, v: ParecerData[K]) =>
     setData((d) => ({ ...d, [k]: v }));
+
+  const updDate = (k: "dataEntrada" | "dataParecer", raw: string) =>
+    upd(k, formatDate(raw) as ParecerData[typeof k]);
+
 
   const updItem = (i: number, k: keyof OrcamentoItem, v: string) =>
     setData((d) => {
@@ -175,7 +186,8 @@ function Index() {
               </div>
               <div>
                 <label className={labelCls}>Data de Entrada</label>
-                <input className={inputCls} value={data.dataEntrada} onChange={(e) => upd("dataEntrada", e.target.value)} placeholder="DD/MM/AAAA" />
+                <input className={inputCls} value={data.dataEntrada} onChange={(e) => updDate("dataEntrada", e.target.value)} placeholder="DD/MM/AAAA" inputMode="numeric" />
+
               </div>
             </div>
           </section>
@@ -277,7 +289,8 @@ function Index() {
               </div>
               <div>
                 <label className={labelCls}>Data</label>
-                <input className={inputCls} value={data.dataParecer} onChange={(e) => upd("dataParecer", e.target.value)} placeholder="DD/MM/AAAA" />
+                <input className={inputCls} value={data.dataParecer} onChange={(e) => updDate("dataParecer", e.target.value)} placeholder="DD/MM/AAAA" inputMode="numeric" />
+
               </div>
             </div>
             <label className={labelCls + " mt-3"}>Garantia</label>
