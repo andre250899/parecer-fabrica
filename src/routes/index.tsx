@@ -14,8 +14,8 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Gerador de Parecer Técnico — Vox Grupo" },
       { name: "description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
-      { property: "og:title", content: "Gerador de Parecer Técnico" },
-      { property: "og:description", content: "Crie pareceres técnicos com múltiplos designs e imprima em PDF." },
+      { property: "og:title", content: "Gerador de Parecer Técnico — Vox Grupo" },
+      { property: "og:description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
     ],
   }),
   component: Index,
