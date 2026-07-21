@@ -331,52 +331,52 @@ export default function ParecerPreview({ data, theme }: Props) {
         </div>
       </div>
 
-      {/* Cliente */}
-      <section style={{ marginBottom: 18 }}>
-        <SectionHeader theme={theme} icon="👤" title="DADOS DO CLIENTE" />
-        <div style={{ background: theme.surface, padding: 12, borderRadius: theme.radius, border: `1px solid ${theme.border}` }}>
-          <Field theme={theme} label="Nome" value={data.clienteNome} icon="👤" />
-          <Field theme={theme} label="CPF" value={data.clienteCPF} icon="🪪" />
-          <Field theme={theme} label="Endereço" value={data.clienteEndereco} icon="📍" />
-          <Field theme={theme} label="Telefone" value={data.clienteTelefone} icon="📞" />
-        </div>
-      </section>
+      {/* Cliente + Equipamento em 2 colunas */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+        <section>
+          <SectionHeader theme={theme} icon="👤" title="DADOS DO CLIENTE" />
+          <div style={{ background: theme.surface, padding: 10, borderRadius: theme.radius, border: `1px solid ${theme.border}` }}>
+            <Field theme={theme} label="Nome" value={data.clienteNome} icon="👤" />
+            <Field theme={theme} label="CPF" value={data.clienteCPF} icon="🪪" />
+            <Field theme={theme} label="Endereço" value={data.clienteEndereco} icon="📍" />
+            <Field theme={theme} label="Telefone" value={data.clienteTelefone} icon="📞" />
+          </div>
+        </section>
+        <section>
+          <SectionHeader theme={theme} icon="🖥" title="DADOS DO EQUIPAMENTO" />
+          <div style={{ background: theme.surface, padding: 10, borderRadius: theme.radius, border: `1px solid ${theme.border}` }}>
+            <Field theme={theme} label="Produto" value={data.equipProduto} icon="📦" />
+            <Field theme={theme} label="Marca" value={data.equipMarca} icon="🖥" />
+            <Field theme={theme} label="Modelo" value={data.equipModelo} icon="🏷" />
+            <Field theme={theme} label="Nº de Série" value={data.equipSerie} icon="||||" />
+          </div>
+        </section>
+      </div>
 
-      {/* Equipamento */}
-      <section style={{ marginBottom: 18 }}>
-        <SectionHeader theme={theme} icon="🖥" title="DADOS DO EQUIPAMENTO" />
-        <div style={{ background: theme.surface, padding: 12, borderRadius: theme.radius, border: `1px solid ${theme.border}` }}>
-          <Field theme={theme} label="Produto" value={data.equipProduto} icon="📦" />
-          <Field theme={theme} label="Marca" value={data.equipMarca} icon="🖥" />
-          <Field theme={theme} label="Modelo" value={data.equipModelo} icon="🏷" />
-          <Field theme={theme} label="Nº de Série" value={data.equipSerie} icon="||||" />
-        </div>
-      </section>
-
-      {/* Defeito */}
-      <section style={{ marginBottom: 14 }}>
-        <SectionHeader theme={theme} icon="⚠" title="DEFEITO ALEGADO PELO CLIENTE" />
-        <div style={{ background: theme.surface, padding: 12, minHeight: 60, borderRadius: theme.radius, border: `1px solid ${theme.border}`, fontSize: 12, whiteSpace: "pre-wrap" }}>
-          {data.defeito || "—"}
-        </div>
-      </section>
-
-      {/* Parecer */}
-      <section style={{ marginBottom: 18 }}>
-        <SectionHeader theme={theme} icon="🔍" title="PARECER TÉCNICO" />
-        <div style={{ background: theme.surface, padding: 12, minHeight: 80, borderRadius: theme.radius, border: `1px solid ${theme.border}`, fontSize: 12, whiteSpace: "pre-wrap" }}>
-          {data.parecer || "—"}
-          {data.servico && (
-            <div style={{ marginTop: 8 }}>
-              <strong style={{ color: theme.primary }}>SERVIÇO: </strong>
-              {data.servico}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Defeito + Parecer em 2 colunas */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+        <section>
+          <SectionHeader theme={theme} icon="⚠" title="DEFEITO ALEGADO" />
+          <div style={{ background: theme.surface, padding: 10, minHeight: 60, borderRadius: theme.radius, border: `1px solid ${theme.border}`, fontSize: 11.5, whiteSpace: "pre-wrap" }}>
+            {data.defeito || "—"}
+          </div>
+        </section>
+        <section>
+          <SectionHeader theme={theme} icon="🔍" title="PARECER TÉCNICO" />
+          <div style={{ background: theme.surface, padding: 10, minHeight: 60, borderRadius: theme.radius, border: `1px solid ${theme.border}`, fontSize: 11.5, whiteSpace: "pre-wrap" }}>
+            {data.parecer || "—"}
+            {data.servico && (
+              <div style={{ marginTop: 6 }}>
+                <strong style={{ color: theme.primary }}>SERVIÇO: </strong>
+                {data.servico}
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
 
       {/* Orçamento */}
-      <section style={{ marginBottom: 18 }}>
+      <section style={{ marginBottom: 12 }}>
         <SectionHeader theme={theme} icon="$" title="ORÇAMENTO" />
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
           <thead>
@@ -416,9 +416,9 @@ export default function ParecerPreview({ data, theme }: Props) {
       </section>
 
       {/* Observações */}
-      <section style={{ marginBottom: 18 }}>
+      <section style={{ marginBottom: 10 }}>
         <SectionHeader theme={theme} icon="📝" title="OBSERVAÇÕES" />
-        <div style={{ padding: "8px 12px", fontSize: 11.5, whiteSpace: "pre-wrap", color: theme.muted }}>
+        <div style={{ padding: "6px 10px", fontSize: 10.5, whiteSpace: "pre-wrap", color: theme.muted, columnCount: 2, columnGap: 16 }}>
           {data.observacoes}
         </div>
       </section>
