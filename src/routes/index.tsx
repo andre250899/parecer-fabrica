@@ -186,7 +186,8 @@ function Index() {
               </div>
               <div>
                 <label className={labelCls}>Data de Entrada</label>
-                <input className={inputCls} value={data.dataEntrada} onChange={(e) => upd("dataEntrada", e.target.value)} placeholder="DD/MM/AAAA" />
+                <input className={inputCls} value={data.dataEntrada} onChange={(e) => updDate("dataEntrada", e.target.value)} placeholder="DD/MM/AAAA" inputMode="numeric" />
+
               </div>
             </div>
           </section>
@@ -288,7 +289,8 @@ function Index() {
               </div>
               <div>
                 <label className={labelCls}>Data</label>
-                <input className={inputCls} value={data.dataParecer} onChange={(e) => upd("dataParecer", e.target.value)} placeholder="DD/MM/AAAA" />
+                <input className={inputCls} value={data.dataParecer} onChange={(e) => updDate("dataParecer", e.target.value)} placeholder="DD/MM/AAAA" inputMode="numeric" />
+
               </div>
             </div>
             <label className={labelCls + " mt-3"}>Garantia</label>
