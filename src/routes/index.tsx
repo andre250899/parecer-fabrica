@@ -44,7 +44,8 @@ function Index() {
 
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      ("standalone" in window.navigator && window.navigator.standalone === true);
+      ("standalone" in window.navigator &&
+        (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
 
     if (standalone) {
       setIsInstalled(true);
@@ -141,7 +142,7 @@ function Index() {
               <button
                 onClick={handleInstall}
                 disabled={isInstalled}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Download className="h-4 w-4" aria-hidden="true" />
                 {isInstalled ? "Instalado" : "Instalar app"}
