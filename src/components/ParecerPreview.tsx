@@ -376,7 +376,7 @@ export default function ParecerPreview({ data, theme }: Props) {
       </div>
 
       {/* Orçamento */}
-      <section style={{ marginBottom: 18 }}>
+      <section style={{ marginBottom: 12 }}>
         <SectionHeader theme={theme} icon="$" title="ORÇAMENTO" />
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
           <thead>
@@ -416,9 +416,9 @@ export default function ParecerPreview({ data, theme }: Props) {
       </section>
 
       {/* Observações */}
-      <section style={{ marginBottom: 18 }}>
+      <section style={{ marginBottom: 10 }}>
         <SectionHeader theme={theme} icon="📝" title="OBSERVAÇÕES" />
-        <div style={{ padding: "8px 12px", fontSize: 11.5, whiteSpace: "pre-wrap", color: theme.muted }}>
+        <div style={{ padding: "6px 10px", fontSize: 10.5, whiteSpace: "pre-wrap", color: theme.muted, columnCount: 2, columnGap: 16 }}>
           {data.observacoes}
         </div>
       </section>
