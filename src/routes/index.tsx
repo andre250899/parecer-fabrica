@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { Download, Printer } from "lucide-react";
+import { useEffect, useState } from "react";
 import ParecerPreview from "@/components/ParecerPreview";
 import {
   THEMES,
@@ -9,6 +10,11 @@ import {
   type OrcamentoItem,
 } from "@/lib/parecer-types";
 
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -16,6 +22,10 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
       { property: "og:title", content: "Gerador de Parecer Técnico — Vox Grupo" },
       { property: "og:description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Gerador de Parecer Técnico — Vox Grupo" },
+      { name: "twitter:description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
     ],
   }),
   component: Index,
@@ -24,7 +34,70 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [data, setData] = useState<ParecerData>(defaultParecer);
   const [themeId, setThemeId] = useState(THEMES[0].id);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installMessage, setInstallMessage] = useState("");
+  const [isInstalled, setIsInstalled] = useState(false);
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      ("standalone" in window.navigator &&
+        (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+
+    if (standalone) {
+      setIsInstalled(true);
+      setInstallMessage("App já instalado neste dispositivo.");
+    }
+
+    const onBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+      setInstallMessage("Pronto para instalar neste navegador.");
+    };
+
+    const onInstalled = () => {
+      setInstallPrompt(null);
+      setIsInstalled(true);
+      setInstallMessage("App instalado com sucesso.");
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (isInstalled) {
+      setInstallMessage("App já instalado neste dispositivo.");
+      return;
+    }
+
+    if (installPrompt) {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        setInstallMessage("Instalação iniciada.");
+        setInstallPrompt(null);
+      } else {
+        setInstallMessage("Instalação cancelada. Você pode tentar novamente pelo botão.");
+      }
+      return;
+    }
+
+    const isAppleMobile = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+    setInstallMessage(
+      isAppleMobile
+        ? "No iPhone/iPad: toque em Compartilhar e depois em Adicionar à Tela de Início."
+        : "Se o aviso não abrir, publique/abra o link público e use o menu do navegador em Instalar app.",
+    );
+  };
 
   const upd = <K extends keyof ParecerData>(k: K, v: ParecerData[K]) =>
     setData((d) => ({ ...d, [k]: v }));
@@ -53,7 +126,7 @@ function Index() {
             <h1 className="text-lg font-bold text-slate-900">Gerador de Parecer Técnico</h1>
             <p className="text-xs text-slate-500">Vox Grupo · Assistência Técnica</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
             <select
               value={themeId}
               onChange={(e) => setThemeId(e.target.value)}
@@ -65,10 +138,22 @@ function Index() {
                 </option>
               ))}
             </select>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                onClick={handleInstall}
+                disabled={isInstalled}
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                {isInstalled ? "Instalado" : "Instalar app"}
+              </button>
+              {installMessage && <p className="max-w-72 text-right text-[11px] leading-snug text-slate-600">{installMessage}</p>}
+            </div>
             <button
               onClick={() => window.print()}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
             >
+              <Printer className="h-4 w-4" aria-hidden="true" />
               Imprimir / PDF
             </button>
           </div>
