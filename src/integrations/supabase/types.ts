@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pareceres: {
+        Row: {
+          cliente_nome: string | null
+          created_at: string
+          data: Json
+          id: string
+          numero_os: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cliente_nome?: string | null
+          created_at?: string
+          data: Json
+          id?: string
+          numero_os: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cliente_nome?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          numero_os?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
