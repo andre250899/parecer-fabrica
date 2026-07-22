@@ -87,7 +87,7 @@ function Index() {
         user_id: userData.user.id,
         numero_os: data.numeroOS.trim(),
         cliente_nome: data.clienteNome || null,
-        data: data as unknown as Record<string, unknown>,
+        data: data as unknown as never,
       },
       { onConflict: "user_id,numero_os" },
     );
