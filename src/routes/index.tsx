@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Download, Printer } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Download, Printer, Save, FolderOpen, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import ParecerPreview from "@/components/ParecerPreview";
+import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
   defaultParecer,
@@ -37,7 +38,81 @@ function Index() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installMessage, setInstallMessage] = useState("");
   const [isInstalled, setIsInstalled] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [savedList, setSavedList] = useState<Array<{ id: string; numero_os: string; cliente_nome: string | null; updated_at: string }>>([]);
+  const [showList, setShowList] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+  const navigate = useNavigate();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        navigate({ to: "/auth" });
+      } else {
+        setUserEmail(data.session.user.email ?? null);
+        setAuthChecked(true);
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+      if (!session) navigate({ to: "/auth" });
+      else setUserEmail(session.user.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate]);
+
+  const loadList = async () => {
+    const { data: rows, error } = await supabase
+      .from("pareceres")
+      .select("id, numero_os, cliente_nome, updated_at")
+      .order("updated_at", { ascending: false });
+    if (!error && rows) setSavedList(rows);
+  };
+
+  const openList = async () => {
+    await loadList();
+    setShowList(true);
+  };
+
+  const saveParecer = async () => {
+    if (!data.numeroOS.trim()) {
+      setSaveMsg("Informe o Nº OS antes de salvar.");
+      return;
+    }
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+    const { error } = await supabase.from("pareceres").upsert(
+      {
+        user_id: userData.user.id,
+        numero_os: data.numeroOS.trim(),
+        cliente_nome: data.clienteNome || null,
+        data: data as unknown as Record<string, unknown>,
+      },
+      { onConflict: "user_id,numero_os" },
+    );
+    setSaveMsg(error ? `Erro: ${error.message}` : `Parecer OS ${data.numeroOS} salvo com sucesso.`);
+    setTimeout(() => setSaveMsg(""), 4000);
+  };
+
+  const loadParecer = async (id: string) => {
+    const { data: row, error } = await supabase.from("pareceres").select("data").eq("id", id).maybeSingle();
+    if (!error && row) {
+      setData(row.data as unknown as ParecerData);
+      setShowList(false);
+    }
+  };
+
+  const deleteParecer = async (id: string) => {
+    if (!confirm("Excluir este parecer?")) return;
+    await supabase.from("pareceres").delete().eq("id", id);
+    await loadList();
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -128,6 +203,10 @@ function Index() {
     "w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
   const labelCls = "block text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide";
 
+  if (!authChecked) {
+    return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Carregando...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Top bar */}
@@ -135,7 +214,7 @@ function Index() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
           <div>
             <h1 className="text-lg font-bold text-slate-900">Gerador de Parecer Técnico</h1>
-            <p className="text-xs text-slate-500">Vox Grupo · Assistência Técnica</p>
+            <p className="text-xs text-slate-500">Vox Grupo · {userEmail}</p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
             <select
@@ -149,6 +228,20 @@ function Index() {
                 </option>
               ))}
             </select>
+            <button
+              onClick={saveParecer}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              <Save className="h-4 w-4" aria-hidden="true" />
+              Salvar
+            </button>
+            <button
+              onClick={openList}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
+            >
+              <FolderOpen className="h-4 w-4" aria-hidden="true" />
+              Meus pareceres
+            </button>
             <div className="flex flex-col items-end gap-1">
               <button
                 onClick={handleInstall}
@@ -167,12 +260,51 @@ function Index() {
               <Printer className="h-4 w-4" aria-hidden="true" />
               Imprimir / PDF
             </button>
+            <button
+              onClick={signOut}
+              title="Sair"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         </div>
         <div className="border-t border-slate-100 bg-slate-50 px-6 py-2 text-xs text-slate-600">
           <span className="font-semibold">Design ativo:</span> {theme.name} — {theme.description}
+          {saveMsg && <span className="ml-3 font-semibold text-emerald-700">{saveMsg}</span>}
         </div>
       </header>
+
+      {showList && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 print:hidden" onClick={() => setShowList(false)}>
+          <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Meus pareceres salvos</h2>
+              <button onClick={() => setShowList(false)} className="text-sm text-slate-500 hover:text-slate-900">Fechar</button>
+            </div>
+            {savedList.length === 0 ? (
+              <p className="text-sm text-slate-500">Nenhum parecer salvo ainda.</p>
+            ) : (
+              <ul className="divide-y divide-slate-200">
+                {savedList.map((row) => (
+                  <li key={row.id} className="flex items-center justify-between gap-3 py-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">OS {row.numero_os}</p>
+                      <p className="text-xs text-slate-500">
+                        {row.cliente_nome ?? "—"} · atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => loadParecer(row.id)} className="rounded-md bg-slate-900 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800">Abrir</button>
+                      <button onClick={() => deleteParecer(row.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50">Excluir</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 p-6 lg:grid-cols-[420px_1fr] print:block print:p-0">
         {/* FORM */}
