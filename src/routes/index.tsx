@@ -954,7 +954,13 @@ function Index() {
                 <WhirlpoolForm data={whirlpool} setData={setWhirlpool} inputCls={inputCls} labelCls={labelCls} formatDate={formatDate} />
                 <div className="flex gap-2">
                   <button
-                    onClick={saveWhirlpoolAtendimento}
+                    onClick={() => {
+                      if (!whirlpool.numeroOS.trim()) {
+                        toast.error("Informe o Nº OS antes de salvar.");
+                        return;
+                      }
+                      setSaveSituacaoOpen(true);
+                    }}
                     className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
                   >
                     <Save className="h-4 w-4" /> Salvar na agenda
