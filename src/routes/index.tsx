@@ -809,7 +809,7 @@ function Index() {
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-3">
-              <button onClick={() => { if (confirmLeaveIfDirty()) setModo("home"); }} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
+              <button onClick={() => requestLeave(() => setModo("home"), "Você tem alterações não salvas neste atendimento. Sair para o menu inicial?")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div>
@@ -859,12 +859,13 @@ function Index() {
               )}
               <button
                 onClick={() => {
-                  if (!confirmLeaveIfDirty()) return;
-                  setWhirlpool(defaultWhirlpool);
-                  setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
-                  setWhirlpoolAtendimentoId(null);
-                  setTipo("whirlpool");
-                  setModo("whirlpool");
+                  requestLeave(() => {
+                    setWhirlpool(defaultWhirlpool);
+                    setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
+                    setWhirlpoolAtendimentoId(null);
+                    setTipo("whirlpool");
+                    setModo("whirlpool");
+                  }, "Criar um novo atendimento vai descartar as alterações não salvas do atual. Continuar?");
                 }}
                 className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
               >
