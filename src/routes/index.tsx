@@ -740,6 +740,7 @@ function Index() {
                   toast.error("Informe o Nº OS antes de salvar.");
                   return;
                 }
+                setPostSaveAction(() => leaveGuard.action);
                 setLeaveGuard(null);
                 setSaveSituacaoOpen(true);
               }}
