@@ -21,6 +21,8 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  Loader2,
+  FileDown,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -121,6 +123,8 @@ function Index() {
   const [agendaSearch, setAgendaSearch] = useState("");
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
+  const [printing, setPrinting] = useState(false);
+  const [progressLabel, setProgressLabel] = useState<string>("");
   const [saveSituacaoOpen, setSaveSituacaoOpen] = useState(false);
   const [leaveGuard, setLeaveGuard] = useState<{ action: () => void; message: string } | null>(null);
   const [postSaveAction, setPostSaveAction] = useState<(() => void) | null>(null);
@@ -169,6 +173,27 @@ function Index() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [isWhirlpoolDirty]);
+
+  // Clear "printing" overlay after the print dialog closes.
+  useEffect(() => {
+    const done = () => setPrinting(false);
+    window.addEventListener("afterprint", done);
+    return () => window.removeEventListener("afterprint", done);
+  }, []);
+
+  const handlePrint = (label = "Preparando documento para impressão…") => {
+    setProgressLabel(label);
+    setPrinting(true);
+    // Give the overlay a frame to paint before the (blocking) print dialog opens.
+    setTimeout(() => {
+      try {
+        window.print();
+      } finally {
+        // Fallback in case `afterprint` doesn't fire (older browsers / dialog dismissed).
+        setTimeout(() => setPrinting(false), 800);
+      }
+    }, 120);
+  };
 
   const fetchAtendimentos = useServerFn(listarAtendimentos);
   const saveAtendimento = useServerFn(salvarAtendimento);
