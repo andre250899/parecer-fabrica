@@ -998,6 +998,12 @@ function Index() {
             <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr]">
               <aside className="space-y-6 rounded-lg border border-border bg-white p-5 shadow-sm print:hidden">
                 <WhirlpoolForm data={whirlpool} setData={setWhirlpool} inputCls={inputCls} labelCls={labelCls} formatDate={formatDate} />
+                {isWhirlpoolDirty && (
+                  <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+                    Alterações não salvas — clique em <span className="underline">Salvar na agenda</span> antes de sair.
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
