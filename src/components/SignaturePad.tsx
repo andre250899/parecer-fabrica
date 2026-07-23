@@ -27,7 +27,7 @@ export default function SignaturePad({
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#111";
+    ctx.strokeStyle = "#1d4ed8";
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, rect.width, rect.height);
     if (value) {
