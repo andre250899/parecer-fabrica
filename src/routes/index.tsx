@@ -1384,14 +1384,15 @@ function Index() {
                     return (
                       <button
                         key={s}
+                        type="button"
                         onClick={() => saveWhirlpoolAtendimento(s)}
-                        className={`flex items-center justify-between rounded-lg border-2 ${st.border} ${st.bg} px-4 py-3 text-left transition hover:brightness-95`}
+                        className={`flex min-h-14 w-full items-center justify-between rounded-lg border-2 ${st.border} ${st.bg} px-4 py-3 text-left transition hover:brightness-95 active:brightness-90`}
                       >
-                        <span className="flex items-center gap-3">
+                        <span className="pointer-events-none flex items-center gap-3">
                           <span className={`h-3 w-3 rounded-full ${st.dot}`} />
                           <span className="text-sm font-semibold text-slate-900">{st.label}</span>
                         </span>
-                        <Save className="h-4 w-4 text-slate-500" />
+                        <Save className="pointer-events-none h-4 w-4 text-slate-500" />
                       </button>
                     );
                   })}
