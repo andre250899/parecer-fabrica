@@ -81,10 +81,18 @@ function emptyWhirlpoolPeca() {
 }
 
 function mergeWithDefaults(parsed: z.infer<typeof WhirlpoolSchema>): WhirlpoolData {
+  const cleanPeca = (p: z.infer<typeof WhirlpoolSchema>["pecas"][number]) => ({
+    quantidade: p.quantidade ?? "",
+    codigo: p.codigo ?? "",
+    descricao: p.descricao ?? "",
+    fcta: p.fcta ?? "",
+    ocor: p.ocor ?? "",
+    valor: p.valor ?? "",
+  });
   return {
     ...defaultWhirlpool,
     ...parsed,
-    pecas: parsed.pecas?.length ? parsed.pecas : [emptyWhirlpoolPeca()],
+    pecas: parsed.pecas?.length ? parsed.pecas.map(cleanPeca) : [emptyWhirlpoolPeca()],
   };
 }
 
