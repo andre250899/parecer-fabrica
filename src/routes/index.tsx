@@ -231,6 +231,7 @@ function Index() {
       if (t === "whirlpool") {
         setWhirlpool(row.data as unknown as WhirlpoolData);
         setWhirlpoolAtendimentoId(id);
+        setWhirlpoolBaseline(JSON.stringify(row.data));
         setTipo("whirlpool");
         setModo("whirlpool");
       } else {
