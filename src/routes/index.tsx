@@ -736,7 +736,7 @@ function Index() {
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-3">
-              <button onClick={() => setModo("home")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
+              <button onClick={() => { if (confirmLeaveIfDirty()) setModo("home"); }} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div>
@@ -786,7 +786,9 @@ function Index() {
               )}
               <button
                 onClick={() => {
+                  if (!confirmLeaveIfDirty()) return;
                   setWhirlpool(defaultWhirlpool);
+                  setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
                   setWhirlpoolAtendimentoId(null);
                   setTipo("whirlpool");
                   setModo("whirlpool");
