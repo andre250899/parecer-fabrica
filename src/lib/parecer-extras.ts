@@ -67,8 +67,7 @@ export interface AssurantData {
   produtoModelo: string;
   parecerTecnico: string;
   pecaTrocar: string;
-  motivo1: string;
-  motivo2: string;
+  motivo: string;
   formaAtendimento: string;
   produtoColetado: string;
   responsavel: string;
@@ -88,8 +87,7 @@ export const defaultAssurant: AssurantData = {
   produtoModelo: "",
   parecerTecnico: "",
   pecaTrocar: "",
-  motivo1: "",
-  motivo2: "",
+  motivo: "",
   formaAtendimento: "",
   produtoColetado: "",
   responsavel: "",

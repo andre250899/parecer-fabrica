@@ -128,11 +128,7 @@ export default function AssurantPreview({ data }: { data: AssurantData }) {
         <tbody>
           <tr>
             <td style={{ ...labelStyle, width: "44%" }}>MOTIVO:</td>
-            <td style={cellStyle}>{data.motivo1 || "\u00A0"}</td>
-          </tr>
-          <tr>
-            <td style={{ ...labelStyle, width: "44%" }}>MOTIVO:</td>
-            <td style={cellStyle}>{data.motivo2 || "\u00A0"}</td>
+            <td style={cellStyle}>{data.motivo || "\u00A0"}</td>
           </tr>
           <tr>
             <td style={{ ...labelStyle, width: "44%" }}>QUAL FOI A FORMA DE ATENDIMENTO?</td>
