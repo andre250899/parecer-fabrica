@@ -388,6 +388,12 @@ function Index() {
   };
 
   const deleteParecer = async (id: string) => {
+    const cachedRow = savedList.find((row) => row.id === id);
+    if (cachedRow?.source === "atendimento") {
+      await deleteAtendimentoHandler(id);
+      await loadList();
+      return;
+    }
     if (!confirm("Excluir este parecer?")) return;
     await supabase.from("pareceres").delete().eq("id", id);
     await loadList();
