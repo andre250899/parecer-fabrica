@@ -304,7 +304,10 @@ function Index() {
   const removeWhirlpoolPeca = (i: number) =>
     setWhirlpool((d) => ({ ...d, pecas: d.pecas.filter((_, idx) => idx !== i) }));
 
-  const handlePdfUpload = async (file: File) => {
+  const handlePdfUpload = async (
+    file: File,
+    target?: { status: "nao_agendado" | "agendado"; periodo?: "manha" | "tarde" },
+  ) => {
     if (!file.type.includes("pdf") && !file.name.toLowerCase().endsWith(".pdf")) {
       toast.error("Envie um arquivo PDF.");
       return;
@@ -318,21 +321,31 @@ function Index() {
         r.readAsDataURL(file);
       });
       const extracted = await extractPdf({ data: { filename: file.name, mimeType: "application/pdf", base64 } });
+      const status = target?.status ?? "nao_agendado";
+      const periodo = target?.periodo ?? "";
+      const dadosFinal: WhirlpoolData = { ...extracted };
+      if (status === "agendado") {
+        const [y, m, d] = agendaDate.split("-");
+        dadosFinal.dataAgenda = y && m && d ? `${d}/${m}/${y}` : dadosFinal.dataAgenda;
+        dadosFinal.periodo = periodo === "manha" ? "MANHÃ" : periodo === "tarde" ? "TARDE" : dadosFinal.periodo;
+      }
       const novo = await saveAtendimento({
         data: {
           numero_os: extracted.numeroOS || "SEM-OS",
           tipo: "whirlpool",
           cliente_nome: extracted.consumidor || null,
-          dados: extracted as unknown as Record<string, unknown>,
-          status: "nao_agendado",
+          dados: dadosFinal as unknown as Record<string, unknown>,
+          status,
+          data_agenda: status === "agendado" ? agendaDate : "",
+          periodo: status === "agendado" ? (periodo as "manha" | "tarde") : "",
         },
       });
-      setWhirlpool(extracted);
-      setWhirlpoolAtendimentoId(novo.id);
-      setModo("whirlpool");
-      setTipo("whirlpool");
       queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
-      toast.success(`Atendimento ${extracted.numeroOS || novo.numero_os} criado pelo PDF. Arraste-o para a agenda ou edite os dados.`);
+      toast.success(
+        status === "agendado"
+          ? `OS ${extracted.numeroOS || novo.numero_os} agendada no período da ${periodo === "manha" ? "manhã" : "tarde"}.`
+          : `OS ${extracted.numeroOS || novo.numero_os} adicionada aos não agendados.`,
+      );
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Erro ao processar PDF.");
@@ -655,21 +668,11 @@ function Index() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                <Upload className="h-4 w-4" />
-                {pdfUploading ? "Lendo PDF..." : "Enviar PDF de OS"}
-                <input
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  className="hidden"
-                  disabled={pdfUploading}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    e.currentTarget.value = "";
-                    if (f) handlePdfUpload(f);
-                  }}
-                />
-              </label>
+              {pdfUploading && (
+                <span className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600">
+                  <Upload className="h-4 w-4 animate-pulse" /> Lendo PDF...
+                </span>
+              )}
               <button
                 onClick={() => {
                   setWhirlpool(defaultWhirlpool);
@@ -731,9 +734,10 @@ function Index() {
               icon={<Upload className="h-4 w-4 text-slate-500" />}
               count={naoAgendados.length}
               onDrop={(id) => unschedule(id)}
+              onPdfDrop={(file) => handlePdfUpload(file, { status: "nao_agendado" })}
             >
               {naoAgendados.length === 0 && (
-                <p className="text-sm text-slate-500">Nenhum atendimento não agendado. Arraste um card para cá ou envie um PDF de OS.</p>
+                <p className="text-sm text-slate-500">Arraste um PDF de OS para cá ou um card agendado para desagendar.</p>
               )}
               {naoAgendados.map((r) => (
                 <AgendaCard
@@ -752,9 +756,10 @@ function Index() {
               icon={<Sun className="h-4 w-4 text-amber-500" />}
               count={agendadosManha.length}
               onDrop={(id) => scheduleTo(id, "manha")}
+              onPdfDrop={(file) => handlePdfUpload(file, { status: "agendado", periodo: "manha" })}
             >
               {agendadosManha.length === 0 && (
-                <p className="text-sm text-slate-500">Arraste atendimentos ou clique em agendar para a manhã.</p>
+                <p className="text-sm text-slate-500">Arraste um card ou um PDF de OS para agendar na manhã.</p>
               )}
               {agendadosManha.map((r) => (
                 <AgendaCard
@@ -774,9 +779,10 @@ function Index() {
               icon={<Moon className="h-4 w-4 text-indigo-500" />}
               count={agendadosTarde.length}
               onDrop={(id) => scheduleTo(id, "tarde")}
+              onPdfDrop={(file) => handlePdfUpload(file, { status: "agendado", periodo: "tarde" })}
             >
               {agendadosTarde.length === 0 && (
-                <p className="text-sm text-slate-500">Arraste atendimentos ou clique em agendar para a tarde.</p>
+                <p className="text-sm text-slate-500">Arraste um card ou um PDF de OS para agendar na tarde.</p>
               )}
               {agendadosTarde.map((r) => (
                 <AgendaCard
@@ -1134,12 +1140,14 @@ function DropZone({
   count,
   children,
   onDrop,
+  onPdfDrop,
 }: {
   title: string;
   icon: React.ReactNode;
   count: number;
   children: React.ReactNode;
   onDrop: (id: string) => void;
+  onPdfDrop?: (file: File) => void;
 }) {
   const [dragOver, setDragOver] = useState(false);
   return (
@@ -1152,6 +1160,13 @@ function DropZone({
       onDrop={(e) => {
         e.preventDefault();
         setDragOver(false);
+        const file = Array.from(e.dataTransfer.files || []).find(
+          (f) => f.type.includes("pdf") || f.name.toLowerCase().endsWith(".pdf"),
+        );
+        if (file) {
+          onPdfDrop?.(file);
+          return;
+        }
         const id = e.dataTransfer.getData("atendimentoId");
         if (id) onDrop(id);
       }}
