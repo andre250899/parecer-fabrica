@@ -1152,7 +1152,7 @@ function Index() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
           <div>
             <div className="flex items-center gap-3">
-              <button onClick={() => { if (confirmLeaveIfDirty()) setModo("home"); }} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
+              <button onClick={() => requestLeave(() => setModo("home"), "Você tem alterações não salvas. Trocar de modelo mesmo assim?")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <h1 className="text-lg font-bold text-slate-900">
