@@ -12,6 +12,7 @@ export default function SignaturePad({
   const last = useRef<{ x: number; y: number } | null>(null);
   const [empty, setEmpty] = useState(!value);
   const [saved, setSaved] = useState(false);
+  const [locked, setLocked] = useState(!!value);
 
   // Initialize canvas resolution + load existing signature
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function SignaturePad({
   };
 
   const start = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (locked) return;
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
     drawing.current = true;
@@ -76,6 +78,7 @@ export default function SignaturePad({
   };
 
   const clear = () => {
+    if (locked) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -93,7 +96,13 @@ export default function SignaturePad({
     if (!canvas || empty) return;
     onChange(canvas.toDataURL("image/png"));
     setSaved(true);
+    setLocked(true);
     window.setTimeout(() => setSaved(false), 2000);
+  };
+
+  const edit = () => {
+    setLocked(false);
+    setSaved(false);
   };
 
   return (
@@ -106,9 +115,14 @@ export default function SignaturePad({
           onPointerUp={end}
           onPointerLeave={end}
           onPointerCancel={end}
-          className="block h-40 w-full touch-none rounded-md"
+          className={`block h-40 w-full touch-none rounded-md ${locked ? "cursor-not-allowed" : ""}`}
           style={{ touchAction: "none" }}
         />
+        {locked && (
+          <span className="pointer-events-none absolute right-2 top-2 rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+            Bloqueada
+          </span>
+        )}
         {empty && (
           <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-slate-400">
             Assine aqui usando o dedo ou o mouse
@@ -117,6 +131,16 @@ export default function SignaturePad({
       </div>
       <div className="mt-2 flex items-center justify-end gap-2">
         {saved && <span className="text-xs font-medium text-emerald-600">Assinatura salva</span>}
+        {locked ? (
+          <button
+            type="button"
+            onClick={edit}
+            className="rounded-md bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700"
+          >
+            Editar assinatura
+          </button>
+        ) : (
+          <>
         <button
           type="button"
           onClick={save}
@@ -132,6 +156,8 @@ export default function SignaturePad({
         >
           Limpar assinatura
         </button>
+          </>
+        )}
       </div>
     </div>
   );
