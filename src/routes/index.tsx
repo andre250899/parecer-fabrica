@@ -119,6 +119,12 @@ function Index() {
   });
 
   useEffect(() => {
+    if (modo === "whirlpool") {
+      setAgendaDate(new Date().toISOString().split("T")[0]);
+    }
+  }, [modo]);
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         navigate({ to: "/auth" });
