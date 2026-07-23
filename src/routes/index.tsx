@@ -734,9 +734,10 @@ function Index() {
               icon={<Upload className="h-4 w-4 text-slate-500" />}
               count={naoAgendados.length}
               onDrop={(id) => unschedule(id)}
+              onPdfDrop={(file) => handlePdfUpload(file, { status: "nao_agendado" })}
             >
               {naoAgendados.length === 0 && (
-                <p className="text-sm text-slate-500">Nenhum atendimento não agendado. Arraste um card para cá ou envie um PDF de OS.</p>
+                <p className="text-sm text-slate-500">Arraste um PDF de OS para cá ou um card agendado para desagendar.</p>
               )}
               {naoAgendados.map((r) => (
                 <AgendaCard
@@ -755,9 +756,10 @@ function Index() {
               icon={<Sun className="h-4 w-4 text-amber-500" />}
               count={agendadosManha.length}
               onDrop={(id) => scheduleTo(id, "manha")}
+              onPdfDrop={(file) => handlePdfUpload(file, { status: "agendado", periodo: "manha" })}
             >
               {agendadosManha.length === 0 && (
-                <p className="text-sm text-slate-500">Arraste atendimentos ou clique em agendar para a manhã.</p>
+                <p className="text-sm text-slate-500">Arraste um card ou um PDF de OS para agendar na manhã.</p>
               )}
               {agendadosManha.map((r) => (
                 <AgendaCard
@@ -777,9 +779,10 @@ function Index() {
               icon={<Moon className="h-4 w-4 text-indigo-500" />}
               count={agendadosTarde.length}
               onDrop={(id) => scheduleTo(id, "tarde")}
+              onPdfDrop={(file) => handlePdfUpload(file, { status: "agendado", periodo: "tarde" })}
             >
               {agendadosTarde.length === 0 && (
-                <p className="text-sm text-slate-500">Arraste atendimentos ou clique em agendar para a tarde.</p>
+                <p className="text-sm text-slate-500">Arraste um card ou um PDF de OS para agendar na tarde.</p>
               )}
               {agendadosTarde.map((r) => (
                 <AgendaCard
@@ -1137,12 +1140,14 @@ function DropZone({
   count,
   children,
   onDrop,
+  onPdfDrop,
 }: {
   title: string;
   icon: React.ReactNode;
   count: number;
   children: React.ReactNode;
   onDrop: (id: string) => void;
+  onPdfDrop?: (file: File) => void;
 }) {
   const [dragOver, setDragOver] = useState(false);
   return (
@@ -1155,6 +1160,13 @@ function DropZone({
       onDrop={(e) => {
         e.preventDefault();
         setDragOver(false);
+        const file = Array.from(e.dataTransfer.files || []).find(
+          (f) => f.type.includes("pdf") || f.name.toLowerCase().endsWith(".pdf"),
+        );
+        if (file) {
+          onPdfDrop?.(file);
+          return;
+        }
         const id = e.dataTransfer.getData("atendimentoId");
         if (id) onDrop(id);
       }}
