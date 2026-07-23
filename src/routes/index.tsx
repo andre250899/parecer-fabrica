@@ -1308,7 +1308,7 @@ function Index() {
                     <Save className="h-4 w-4" /> Salvar na agenda
                   </button>
                   <button
-                    onClick={() => window.print()}
+                    onClick={() => handlePrint()}
                     className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
                   >
                     <Printer className="h-4 w-4" /> Imprimir
@@ -1404,7 +1404,7 @@ function Index() {
               Meus pareceres
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={() => handlePrint()}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
             >
               <Printer className="h-4 w-4" aria-hidden="true" />
