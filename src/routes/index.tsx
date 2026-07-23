@@ -93,12 +93,12 @@ function Index() {
   const saveParecer = async () => {
     if (!tipo) return;
     const numeroOS =
-      tipo === "vox" ? data.numeroOS : tipo === "hisense" ? hisense.numeroOS : assurant.numeroOS;
+      tipo === "vox" ? data.numeroOS : tipo === "hisense" ? hisense.numeroOS : assurant.sinistro;
     const clienteNome =
-      tipo === "vox" ? data.clienteNome : tipo === "hisense" ? hisense.clienteNome : assurant.consumidorNome;
+      tipo === "vox" ? data.clienteNome : tipo === "hisense" ? hisense.clienteNome : `Sinistro ${assurant.sinistro}`;
     const payload = tipo === "vox" ? data : tipo === "hisense" ? hisense : assurant;
     if (!numeroOS.trim()) {
-      setSaveMsg("Informe o Nº OS antes de salvar.");
+      setSaveMsg(tipo === "assurant" ? "Informe o Nº do Sinistro antes de salvar." : "Informe o Nº OS antes de salvar.");
       return;
     }
     const { data: userData } = await supabase.auth.getUser();
