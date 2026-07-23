@@ -1,202 +1,255 @@
 import type { WhirlpoolData } from "@/lib/parecer-extras";
 
+function T({ children }: { children?: React.ReactNode }) {
+  return <>{children || "\u00A0"}</>;
+}
+
 export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
+  const telefones = [
+    data.foneResidencia && `FONE RESIDÊNCIA: ${data.foneResidencia}`,
+    data.foneComercial && `FONE COMERCIAL: ${data.foneComercial}`,
+    data.foneOutros && `FONE (OUTROS): ${data.foneOutros}`,
+  ]
+    .filter(Boolean)
+    .join("   ");
+
   return (
     <div className="whirlpool-preview print-only">
       <div className="whirlpool-a4">
-        {/* Header autorizada */}
-        <div className="whirlpool-header">
-          <div className="whirlpool-brand">VOX SERRA LTDA</div>
-          <div className="whirlpool-sub">Assistência Técnica Autorizada Whirlpool</div>
-        </div>
-
-        <div className="whirlpool-section">
-          <div className="whirlpool-title">LAUDO TÉCNICO / ORÇAMENTO</div>
-        </div>
-
-        {/* OS info */}
-        <table className="whirlpool-table">
+        {/* Cabeçalho autorizada + central */}
+        <table className="wp-t wp-header">
           <tbody>
             <tr>
-              <td style={{ width: "16%" }}>NÚMERO DA OS</td>
-              <td style={{ width: "34%" }}>{data.numeroOS}</td>
-              <td style={{ width: "16%" }}>TÉCNICO</td>
-              <td style={{ width: "34%" }}>{data.tecnico}</td>
+              <td className="wp-half">
+                <div>AUTORIZADA:</div>
+                <div>{data.autorizada}</div>
+                <div>
+                  {data.enderecoAutorizada}
+                  {data.cnpjAutorizada ? `  CNPJ: ${data.cnpjAutorizada}` : ""}
+                </div>
+                <div>
+                  FONE: {data.foneAutorizada}
+                  {data.inscEstadualAutorizada
+                    ? `      Insc.Estadual: ${data.inscEstadualAutorizada}`
+                    : ""}
+                </div>
+              </td>
+              <td className="wp-half">
+                <div>Central de Atendimento</div>
+                <div>{data.centralAtendimento}</div>
+                <div>FONE: {data.foneCentral1}</div>
+                <div>FONE: {data.foneCentral2}</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* OS / Técnico / Etiqueta / Datas */}
+        <table className="wp-t">
+          <tbody>
+            <tr>
+              <td className="wp-lbl" style={{ width: "14%" }}>NÚMERO DA OS</td>
+              <td className="wp-lbl" style={{ width: "12%" }}>TÉCNICO</td>
+              <td rowSpan={2} style={{ width: "44%", textAlign: "center", fontFamily: "'Courier New', monospace" }}>
+                COLE AQUI A ETIQUETA DO PRODUTO
+              </td>
+              <td colSpan={2} style={{ width: "30%" }}>
+                <div>DATA AGENDA: {data.dataAgenda}</div>
+                <div>DATA CHAMADO: {data.dataChamado}</div>
+                <div>PERÍODO: {data.periodo}</div>
+                <div>TIPO AGENDA: {data.tipoAgenda}</div>
+              </td>
             </tr>
             <tr>
-              <td>DATA AGENDA</td>
-              <td>{data.dataAgenda}</td>
-              <td>DATA CHAMADO</td>
-              <td>{data.dataChamado}</td>
-            </tr>
-            <tr>
-              <td>PERÍODO</td>
-              <td>{data.periodo}</td>
-              <td>TIPO AGENDA</td>
-              <td>{data.tipoAgenda}</td>
+              <td className="wp-strong"><T>{data.numeroOS}</T></td>
+              <td className="wp-strong"><T>{data.tecnico}</T></td>
             </tr>
           </tbody>
         </table>
 
         {/* Consumidor */}
-        <div className="whirlpool-section-title">DADOS DO CONSUMIDOR</div>
-        <table className="whirlpool-table">
+        <table className="wp-t">
           <tbody>
             <tr>
-              <td style={{ width: "16%" }}>CONSUMIDOR</td>
-              <td style={{ width: "84%" }} colSpan={3}>
-                {data.consumidor}
-              </td>
+              <td colSpan={2}>CONSUMIDOR: {data.consumidor}</td>
+              <td>CEP: {data.cep}</td>
+              <td>REGIÃO: {data.regiao}</td>
             </tr>
             <tr>
-              <td>CPF/CNPJ</td>
-              <td>{data.cnpjCpf}</td>
-              <td>CEP</td>
-              <td>{data.cep}</td>
+              <td colSpan={2}>ENDEREÇO: {data.endereco}</td>
+              <td colSpan={2}>BAIRRO: {data.bairro}</td>
             </tr>
             <tr>
-              <td>ENDEREÇO</td>
-              <td>{data.endereco}</td>
-              <td>COMPLEMENTO</td>
-              <td>{data.complemento}</td>
+              <td colSpan={2}>COMPLEMENTO: {data.complemento}</td>
+              <td>CIDADE: {data.cidade}</td>
+              <td>UF: {data.uf}</td>
             </tr>
             <tr>
-              <td>BAIRRO</td>
-              <td>{data.bairro}</td>
-              <td>CIDADE/UF</td>
-              <td>
-                {data.cidade} / {data.uf}
-              </td>
+              <td colSpan={2}>CNPJ/CPF: {data.cnpjCpf}</td>
+              <td colSpan={2}>ENDEREÇO ELETRÔNICO: {data.enderecoEletronico}</td>
             </tr>
             <tr>
-              <td>TELEFONES</td>
-              <td colSpan={3}>
-                {data.foneResidencia} {data.foneComercial} {data.foneOutros}
-              </td>
+              <td colSpan={4}>{telefones || "\u00A0"}</td>
+            </tr>
+            <tr>
+              <td colSpan={4}>LOCALIZAÇÃO: {data.localizacao}</td>
             </tr>
           </tbody>
         </table>
 
         {/* Produto */}
-        <div className="whirlpool-section-title">DADOS DO PRODUTO</div>
-        <table className="whirlpool-table">
+        <table className="wp-t">
           <tbody>
             <tr>
-              <td style={{ width: "16%" }}>PRODUTO</td>
-              <td style={{ width: "34%" }}>{data.produto}</td>
-              <td style={{ width: "16%" }}>MARCA</td>
-              <td style={{ width: "34%" }}>{data.marca}</td>
+              <td colSpan={2}>PRODUTO: {data.produto}</td>
+              <td colSpan={2}>MARCA: {data.marca}</td>
             </tr>
             <tr>
-              <td>LINHA</td>
-              <td>{data.linha}</td>
-              <td>SÉRIE</td>
-              <td>{data.serie}</td>
+              <td colSpan={2}>PRODUTO CONSUMIDOR: {data.produtoConsumidor}</td>
+              <td colSpan={2}>LINHA: {data.linha}</td>
             </tr>
             <tr>
-              <td>Nº NOTA FISCAL</td>
-              <td>{data.nrNotaFiscal}</td>
-              <td>DATA COMPRA</td>
-              <td>{data.dataCompra}</td>
+              <td>SÉRIE: {data.serie}</td>
+              <td>NOME COMERCIAL: {data.nomeComercial}</td>
+              <td colSpan={2}>TEMPO DE USO: {data.tempoUso}</td>
             </tr>
             <tr>
-              <td>COR</td>
-              <td>{data.cor}</td>
-              <td>VOLTAGEM</td>
-              <td>{data.voltagem}</td>
+              <td colSpan={4}>TIPO DE OS: {data.tipoOS}</td>
+            </tr>
+            <tr>
+              <td colSpan={4}>
+                NR NOTA FISCAL: {data.nrNotaFiscal}   DATA COMPRA: {data.dataCompra}   COR: {data.cor}   VOLTAGEM: {data.voltagem}   CAPACIDADE: {data.capacidade}
+              </td>
             </tr>
           </tbody>
         </table>
 
-        {/* Defeitos / laudo */}
-        <div className="whirlpool-section-title">DEFEITO E LAUDO</div>
-        <div className="whirlpool-box">
-          <strong>DEFEITO RECLAMADO:</strong>
-          <p>{data.defeitoReclamado}</p>
-        </div>
-        <div className="whirlpool-box">
-          <strong>DEFEITO CONSTATADO:</strong>
-          <p>{data.defeitoConstatado}</p>
-        </div>
-        <div className="whirlpool-box">
-          <strong>RECLAMAÇÃO ATENDIMENTO:</strong>
-          <p>{data.reclamacaoAtendimento}</p>
-        </div>
-        <div className="whirlpool-box">
-          <strong>LAUDO TÉCNICO:</strong>
-          <p>{data.laudoTecnico}</p>
-        </div>
+        {/* Defeitos */}
+        <table className="wp-t">
+          <tbody>
+            <tr>
+              <td className="wp-lbl" style={{ width: "14%" }}>DEFEITO<br />RECLAMADO</td>
+              <td style={{ width: "36%" }}><T>{data.defeitoReclamado}</T></td>
+              <td className="wp-lbl" style={{ width: "14%" }}>DEFEITO<br />CONSTATADO</td>
+              <td style={{ width: "36%" }}><T>{data.defeitoConstatado}</T></td>
+            </tr>
+            <tr>
+              <td className="wp-lbl">RECLAMAÇÃO<br />ATENDIMENTO</td>
+              <td colSpan={3} className="wp-multi"><T>{data.reclamacaoAtendimento}</T></td>
+            </tr>
+            <tr>
+              <td className="wp-lbl">LAUDO<br />TÉCNICO</td>
+              <td colSpan={3} className="wp-multi" style={{ minHeight: "40px" }}><T>{data.laudoTecnico}</T></td>
+            </tr>
+          </tbody>
+        </table>
 
         {/* Peças */}
-        <div className="whirlpool-section-title">PEÇAS / ORÇAMENTO</div>
-        <table className="whirlpool-table whirlpool-parts">
+        <table className="wp-t wp-parts">
           <thead>
             <tr>
-              <th>QTD</th>
+              <th>QUANTIDADE</th>
               <th>CÓDIGO</th>
-              <th>DESCRIÇÃO</th>
+              <th>DESCRIÇÃO DA PEÇA</th>
               <th>FCTA</th>
-              <th>OCOR</th>
-              <th>VALOR</th>
+              <th>OCOR.</th>
+              <th>VALOR EM R$</th>
             </tr>
           </thead>
           <tbody>
-            {data.pecas.map((p, i) => (
-              <tr key={i}>
-                <td>{p.quantidade}</td>
-                <td>{p.codigo}</td>
-                <td>{p.descricao}</td>
-                <td>{p.fcta}</td>
-                <td>{p.ocor}</td>
-                <td>{p.valor}</td>
-              </tr>
-            ))}
-            {data.pecas.length === 0 && (
-              <tr>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-              </tr>
-            )}
+            {Array.from({ length: Math.max(6, data.pecas.length) }).map((_, i) => {
+              const p = data.pecas[i];
+              return (
+                <tr key={i}>
+                  <td>{p?.quantidade || "\u00A0"}</td>
+                  <td>{p?.codigo || "\u00A0"}</td>
+                  <td>{p?.descricao || "\u00A0"}</td>
+                  <td>{p?.fcta || "\u00A0"}</td>
+                  <td>{p?.ocor || "\u00A0"}</td>
+                  <td>{p?.valor || "\u00A0"}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
-        <div className="whirlpool-totals">
-          <div>
-            <strong>TOTAL PEÇAS:</strong> {data.totalPecas}
-          </div>
-          <div>
-            <strong>MÃO DE OBRA:</strong> {data.maoDeObra}
-          </div>
-          <div>
-            <strong>TOTAL ORÇAMENTO:</strong> {data.totalOrcamento}
-          </div>
-        </div>
+        {/* Observação + Totais */}
+        <table className="wp-t">
+          <tbody>
+            <tr>
+              <td rowSpan={3} style={{ width: "65%" }}>
+                <div className="wp-lbl-inline">OBSERVAÇÃO</div>
+                <div className="wp-obs"><T>{data.observacao}</T></div>
+              </td>
+              <td style={{ width: "20%" }}>TOTAL DE PEÇAS</td>
+              <td style={{ width: "15%" }}>{data.totalPecas}</td>
+            </tr>
+            <tr>
+              <td>MÃO DE OBRA</td>
+              <td>{data.maoDeObra}</td>
+            </tr>
+            <tr>
+              <td>TOTAL DE ORÇAMENTO</td>
+              <td>{data.totalOrcamento}</td>
+            </tr>
+          </tbody>
+        </table>
 
-        <div className="whirlpool-obs">
-          <strong>OBSERVAÇÃO:</strong>
-          <p>{data.observacao}</p>
-        </div>
+        {/* Orçamento */}
+        <table className="wp-t">
+          <tbody>
+            <tr>
+              <td rowSpan={2} style={{ width: "40%", textAlign: "center" }}>
+                <div className="wp-title-inline">ORÇAMENTO</div>
+                <div style={{ fontSize: "8pt" }}>
+                  {data.validadeOrcamento}
+                </div>
+              </td>
+              <td style={{ width: "12%", textAlign: "center" }}>PARCELAS</td>
+              <td style={{ width: "14%", textAlign: "center" }}>VENCIMENTO</td>
+              <td style={{ width: "12%", textAlign: "center" }}>VALOR</td>
+              <td style={{ width: "22%", textAlign: "center" }}>CONDIÇÃO DE PAGAMENTO</td>
+            </tr>
+            <tr>
+              <td>{data.parcelas || "\u00A0"}</td>
+              <td>{data.vencimento || "\u00A0"}</td>
+              <td>{data.valorOrcamento || "\u00A0"}</td>
+              <td>{data.condicaoPagamento || "\u00A0"}</td>
+            </tr>
+          </tbody>
+        </table>
 
-        <div className="whirlpool-terms">
-          <p>{data.validadeOrcamento}</p>
-          <p>
-            Garantia do serviço: <strong>{data.garantiaServicoMeses}</strong> meses. Garantia das peças: <strong>{data.garantiaPecasMeses}</strong> meses.
+        {/* Autorização */}
+        <div className="wp-box">
+          <div className="wp-title-inline" style={{ textAlign: "center" }}>AUTORIZAÇÃO</div>
+          <p style={{ margin: "4px 0" }}>
+            EU ________________________________________________________________ AUTORIZO A REALIZAÇÃO DO SERVIÇO, BEM COMO A TROCA DE PEÇAS, CONFORME O PRESENTE DIAGNÓSTICO E/OU ORÇAMENTO TÉCNICO, TENDO RECEBIDO ORIENTAÇÕES NECESSÁRIAS.
           </p>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "18px" }}>
+            <div>
+              ____/____/__________<br />
+              <strong>DATA DA APROVAÇÃO</strong>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              _________________________________________<br />
+              <strong>ASSINATURA DO CONSUMIDOR</strong>
+            </div>
+          </div>
         </div>
 
-        <div className="whirlpool-footer">
-          <div className="whirlpool-signature">
-            <p>Assinatura do consumidor</p>
-          </div>
-          <div className="whirlpool-meta">
-            <p>Data conclusão: {data.dataConclusao}</p>
-            <p>Responsável: {data.responsavel}</p>
-            <p>Data parecer: {data.dataParecer}</p>
-          </div>
+        {/* Termo de garantia */}
+        <div className="wp-box">
+          <div className="wp-title-inline" style={{ textAlign: "center" }}>TERMO DE GARANTIA DO SERVIÇO AUTORIZADO</div>
+          <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
+            CONFORME DESCRITO NO ORÇAMENTO JÁ APROVADO, FIRMAMOS A GARANTIA DO SERVIÇO (MÃO DE OBRA) DE ASSISTÊNCIA TÉCNICA POR UM PERÍODO DE _______(___) MESES E DAS PEÇAS APLICADAS POR UM PERÍODO DE _______(___) MESES, A PARTIR DE ________________ (DATA DE CONCLUSÃO), QUANDO O SERVIÇO FOI DEVIDAMENTE EXECUTADO, ESTANDO EM PERFEITAS CONDIÇÕES DE UTILIZAÇÃO, TENDO RECEBIDO AS ORIENTAÇÕES NECESSÁRIAS PARA A CORRETA UTILIZAÇÃO DO PRODUTO.
+          </p>
+          <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
+            EXCLUEM-SE DA GARANTIA OS DEFEITOS CAUSADOS POR USO IMPRÓPRIO OU INADEQUADO DO PRODUTO E PROBLEMAS DECORRENTES DE ACIDENTES NATURAIS, COMO POR EXEMPLO: RAIO, INCÊNDIO, INUNDAÇÕES E ETC.
+          </p>
+          <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
+            DENTRO DO PRAZO DE GARANTIA DO SERVIÇO E DAS PEÇAS SUBSTITUÍDAS, A TROCA DESSAS PEÇAS E COMPONENTES EVENTUALMENTE DEFEITUOSAS SERÁ GRATUITA, ASSIM COMO A MÃO DE OBRA APLICADA.
+          </p>
+          <p style={{ margin: "4px 0", fontSize: "8.5pt" }}>DE ACORDO.</p>
         </div>
       </div>
     </div>
