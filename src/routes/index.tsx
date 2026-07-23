@@ -252,6 +252,7 @@ function Index() {
   };
 
   const signOut = async () => {
+    if (!confirmLeaveIfDirty("Você tem alterações não salvas. Sair da conta mesmo assim?")) return;
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
   };
