@@ -823,6 +823,18 @@ function Index() {
           </div>
 
           <div className="relative">
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm">
+              <span className="font-semibold text-slate-600">Situação:</span>
+              {(["concluido", "em_aberto", "realizar_pedido", "cancelado"] as const).map((s) => {
+                const st = SITUACAO_STYLE[s];
+                return (
+                  <span key={s} className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 ${st.badge}`}>
+                    <span className={`h-2 w-2 rounded-full ${st.dot}`} />
+                    {st.label}
+                  </span>
+                );
+              })}
+            </div>
             <button
               onClick={() => shiftAgendaDate(-1)}
               className="absolute -left-3 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition hover:scale-105 hover:bg-slate-50 md:inline-flex"
