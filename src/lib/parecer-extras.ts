@@ -156,6 +156,8 @@ export interface WhirlpoolData {
   capacidade: string;
   defeitoReclamado: string;
   defeitoConstatado: string;
+  defeitoReclamado2: string;
+  defeitoConstatado2: string;
   reclamacaoAtendimento: string;
   laudoTecnico: string;
   pecas: WhirlpoolPeca[];
@@ -229,6 +231,8 @@ export const defaultWhirlpool: WhirlpoolData = {
   capacidade: "",
   defeitoReclamado: "",
   defeitoConstatado: "",
+  defeitoReclamado2: "",
+  defeitoConstatado2: "",
   reclamacaoAtendimento: "",
   laudoTecnico: "",
   pecas: [emptyWhirlpoolPeca()],

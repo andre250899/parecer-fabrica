@@ -129,9 +129,15 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
           <tbody>
             <tr>
               <td className="wp-lbl" style={{ width: "14%" }}>DEFEITO<br />RECLAMADO</td>
-              <td style={{ width: "36%" }}><T>{data.defeitoReclamado}</T></td>
+              <td style={{ width: "36%" }}>
+                <div><T>{data.defeitoReclamado}</T></div>
+                {data.defeitoReclamado2 ? <div>{data.defeitoReclamado2}</div> : null}
+              </td>
               <td className="wp-lbl" style={{ width: "14%" }}>DEFEITO<br />CONSTATADO</td>
-              <td style={{ width: "36%" }}><T>{data.defeitoConstatado}</T></td>
+              <td style={{ width: "36%" }}>
+                <div><T>{data.defeitoConstatado}</T></div>
+                {data.defeitoConstatado2 ? <div>{data.defeitoConstatado2}</div> : null}
+              </td>
             </tr>
             <tr>
               <td className="wp-lbl">RECLAMAÇÃO<br />ATENDIMENTO</td>
