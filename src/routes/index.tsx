@@ -978,6 +978,41 @@ function Index() {
               </main>
             </div>
           )}
+
+          {saveSituacaoOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 print:hidden">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-slate-900">Salvar atendimento como…</h3>
+                  <p className="mt-1 text-xs text-slate-500">Escolha a situação do atendimento OS {whirlpool.numeroOS}.</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {(["concluido", "em_aberto", "realizar_pedido", "cancelado"] as const).map((s) => {
+                    const st = SITUACAO_STYLE[s];
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => saveWhirlpoolAtendimento(s)}
+                        className={`flex items-center justify-between rounded-lg border-2 ${st.border} ${st.bg} px-4 py-3 text-left transition hover:brightness-95`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className={`h-3 w-3 rounded-full ${st.dot}`} />
+                          <span className="text-sm font-semibold text-slate-900">{st.label}</span>
+                        </span>
+                        <Save className="h-4 w-4 text-slate-500" />
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setSaveSituacaoOpen(false)}
+                  className="mt-4 w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     );
