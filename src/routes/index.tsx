@@ -560,6 +560,47 @@ function Index() {
     }
   };
 
+  const novoAtendimentoAutoSave = async () => {
+    const os = window.prompt("Informe o Nº da OS para o novo atendimento:")?.trim();
+    if (!os) {
+      toast.error("Nº OS obrigatório para criar o atendimento.");
+      return;
+    }
+    const existente = atendimentosQuery.data?.find(
+      (a) => a.tipo === "whirlpool" && a.numero_os.trim() === os,
+    );
+    if (existente) {
+      toast.info(`Já existe um atendimento com a OS ${os}. Abrindo o existente.`);
+      openAtendimento(existente.id);
+      return;
+    }
+    const base: WhirlpoolData = { ...defaultWhirlpool, numeroOS: os };
+    try {
+      const result = await saveAtendimento({
+        data: {
+          numero_os: os,
+          tipo: "whirlpool",
+          cliente_nome: null,
+          dados: base as unknown as Record<string, unknown>,
+          status: "nao_agendado",
+          data_agenda: "",
+          periodo: "",
+          situacao: "em_aberto",
+        },
+      });
+      setWhirlpool(base);
+      setWhirlpoolBaseline(JSON.stringify(base));
+      setWhirlpoolAtendimentoId(result.id);
+      setTipo("whirlpool");
+      setModo("whirlpool");
+      queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+      toast.success(`Atendimento ${os} criado e disponível na pesquisa.`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Erro ao criar atendimento.");
+    }
+  };
+
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     const dadosAtuais = (row?.dados as Record<string, unknown> | undefined) ?? {};
