@@ -103,6 +103,9 @@ function Index() {
   const [assurant, setAssurant] = useState<AssurantData>(defaultAssurant);
   const [whirlpool, setWhirlpool] = useState<WhirlpoolData>(defaultWhirlpool);
   const [whirlpoolAtendimentoId, setWhirlpoolAtendimentoId] = useState<string | null>(null);
+  const [whirlpoolBaseline, setWhirlpoolBaseline] = useState<string>(() =>
+    JSON.stringify(defaultWhirlpool),
+  );
   const [themeId, setThemeId] = useState(THEMES[0].id);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installMessage, setInstallMessage] = useState("");
@@ -120,6 +123,29 @@ function Index() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
+
+  const isWhirlpoolDirty =
+    modo === "whirlpool" &&
+    tipo === "whirlpool" &&
+    JSON.stringify(whirlpool) !== whirlpoolBaseline;
+
+  const confirmLeaveIfDirty = (message?: string) => {
+    if (!isWhirlpoolDirty) return true;
+    return window.confirm(
+      message ??
+        "Você tem alterações não salvas neste atendimento. Deseja sair mesmo assim? As mudanças serão perdidas.",
+    );
+  };
+
+  useEffect(() => {
+    if (!isWhirlpoolDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isWhirlpoolDirty]);
 
   const fetchAtendimentos = useServerFn(listarAtendimentos);
   const saveAtendimento = useServerFn(salvarAtendimento);
