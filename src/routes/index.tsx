@@ -120,6 +120,7 @@ function Index() {
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
   const [saveSituacaoOpen, setSaveSituacaoOpen] = useState(false);
+  const [leaveGuard, setLeaveGuard] = useState<{ action: () => void; message: string } | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
@@ -130,11 +131,30 @@ function Index() {
     JSON.stringify(whirlpool) !== whirlpoolBaseline;
 
   const confirmLeaveIfDirty = (message?: string) => {
-    if (!isWhirlpoolDirty) return true;
-    return window.confirm(
-      message ??
-        "Você tem alterações não salvas neste atendimento. Deseja sair mesmo assim? As mudanças serão perdidas.",
-    );
+    // Legacy sync guard kept as no-op fallback — modal-based requestLeave handles UX.
+    return !isWhirlpoolDirty;
+  };
+
+  const requestLeave = (action: () => void, message?: string) => {
+    if (!isWhirlpoolDirty) {
+      action();
+      return;
+    }
+    setLeaveGuard({
+      action,
+      message:
+        message ??
+        "Você tem alterações não salvas neste atendimento. O que deseja fazer?",
+    });
+  };
+
+  const discardWhirlpoolChanges = () => {
+    try {
+      const base = JSON.parse(whirlpoolBaseline) as WhirlpoolData;
+      setWhirlpool(base);
+    } catch {
+      setWhirlpool(defaultWhirlpool);
+    }
   };
 
   useEffect(() => {
