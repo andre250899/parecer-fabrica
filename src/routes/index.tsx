@@ -372,7 +372,6 @@ function Index() {
   };
 
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
-  const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     const dadosAtuais = (row?.dados as Record<string, unknown> | undefined) ?? {};
     const [y, m, d] = agendaDate.split("-");
