@@ -50,7 +50,7 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
           <tr>
             <td style={labelStyle}>MODELO DO PROD.</td>
             <td style={cellStyle}>{data.modeloProduto}</td>
-            <td style={labelStyle}>Nº DE SÉRIE</td>
+            <td style={labelStyle}>Nº DE SERIE</td>
             <td style={cellStyle}>{data.numeroSerie}</td>
           </tr>
           <tr>
@@ -77,11 +77,11 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
             <td style={{ ...cellStyle, whiteSpace: "pre-wrap" }}>{data.diagnosticoTec}</td>
           </tr>
           <tr>
-            <td style={labelStyle}>INSTALAÇÃO CORRETA?<br /><span style={{ fontWeight: 400, fontSize: 9 }}>(Relatar as irregularidades)</span></td>
+            <td style={labelStyle}>INSTAÇÃO CORRETA?<br /><span style={{ fontWeight: 400, fontSize: 9 }}>(Relatar as Inregularidades Encontradas na Instalação)</span></td>
             <td style={{ ...cellStyle, whiteSpace: "pre-wrap" }}>{data.instalacaoCorreta}</td>
           </tr>
           <tr>
-            <td style={labelStyle}>PEÇAS NECESSÁRIAS<br /><span style={{ fontWeight: 400, fontSize: 9 }}>PARA REPARO *</span></td>
+            <td style={labelStyle}>PEÇAS NECESSARIAS<br /><span style={{ fontWeight: 400, fontSize: 9 }}>PARA REPARO *</span></td>
             <td style={{ ...cellStyle, whiteSpace: "pre-wrap" }}>{data.pecasNecessarias}</td>
           </tr>
         </tbody>

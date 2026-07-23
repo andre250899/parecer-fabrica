@@ -45,26 +45,22 @@ export const defaultHisense: HisenseData = {
   anotacoes: "",
   responsavel: "Jefferson Hoffmann",
   dataParecer: "",
-  cidade: "Vitória",
+  cidade: "Vitoria",
   fotos: [
-    { legenda: "FOTO 1 - Instalação do Produto", dataUrl: "" },
-    { legenda: "FOTO 2 - Instalação do Produto", dataUrl: "" },
-    { legenda: "FOTO 3 - Local onde o Produto está Instalado", dataUrl: "" },
-    { legenda: "FOTO 4 - Instalação Elétrica", dataUrl: "" },
-    { legenda: "FOTO 5 - Nº de Série", dataUrl: "" },
-    { legenda: "FOTO 6 - Peça Avariada", dataUrl: "" },
-    { legenda: "FOTO 7 - Defeito/Erro Encontrado", dataUrl: "" },
-    { legenda: "FOTO 8 - Defeito/Erro Encontrado", dataUrl: "" },
+    { legenda: "FOTO 1 – Instalação do Produto", dataUrl: "" },
+    { legenda: "FOTO 2 – Instalação do Produto", dataUrl: "" },
+    { legenda: "FOTO 3 – Local onde o Produto está Instalado.", dataUrl: "" },
+    { legenda: "FOTO 4 – Instalação Elétrica", dataUrl: "" },
+    { legenda: "FOTO 5 – Nº de Serie", dataUrl: "" },
+    { legenda: "FOTO 6 – Peça Avariada", dataUrl: "" },
+    { legenda: "FOTO 7 – Defeito/Erro Encontrado", dataUrl: "" },
+    { legenda: "FOTO 8 – Defeito/Erro Encontrado", dataUrl: "" },
   ],
 };
 
 export interface AssurantData {
-  numeroOS: string;
   assistencia: string;
   cnpj: string;
-  consumidorNome: string;
-  consumidorEndereco: string;
-  consumidorTelefone: string;
   serial: string;
   sinistro: string;
   produtoMarca: string;
@@ -75,22 +71,17 @@ export interface AssurantData {
   motivo2: string;
   formaAtendimento: string;
   produtoColetado: string;
-  cotacaoOrcamento: string;
   responsavel: string;
   cidade: string;
   dataParecer: string;
-  fotos: FotoItem[]; // 4 defeito + residência
-  cotacaoImg: string;
+  fotos: FotoItem[]; // 4 defeito
+  cotacaoImgs: string[]; // 2 cotação
   residenciaImg: string;
 }
 
 export const defaultAssurant: AssurantData = {
-  numeroOS: "",
   assistencia: "VOX ELETRÔNICA",
   cnpj: "23892561000148",
-  consumidorNome: "",
-  consumidorEndereco: "",
-  consumidorTelefone: "",
   serial: "",
   sinistro: "",
   produtoMarca: "",
@@ -101,9 +92,8 @@ export const defaultAssurant: AssurantData = {
   motivo2: "",
   formaAtendimento: "",
   produtoColetado: "",
-  cotacaoOrcamento: "",
   responsavel: "Jose Tadeu",
-  cidade: "Vitória",
+  cidade: "VITORIA",
   dataParecer: "",
   fotos: [
     { legenda: "FOTO DO DEFEITO ENCONTRADO", dataUrl: "" },
@@ -111,7 +101,7 @@ export const defaultAssurant: AssurantData = {
     { legenda: "FOTO DO DEFEITO ENCONTRADO", dataUrl: "" },
     { legenda: "FOTO DO DEFEITO ENCONTRADO", dataUrl: "" },
   ],
-  cotacaoImg: "",
+  cotacaoImgs: ["", ""],
   residenciaImg: "",
 };
 
