@@ -214,12 +214,38 @@ function Index() {
     setProgressLabel(label);
     setPrinting(true);
 
-    // Imprime usando o próprio documento para preservar 100% do CSS/fontes
-    // já aplicados ao preview (fidelidade ao modelo original).
+    const previousPrintRoot = document.getElementById("parecer-print-root");
+    previousPrintRoot?.remove();
+
+    const printRoot = document.createElement("div");
+    printRoot.id = "parecer-print-root";
+    printRoot.className = "parecer-print-root";
+    printRoot.appendChild(printable.cloneNode(true));
+    document.body.appendChild(printRoot);
+    document.body.classList.add("parecer-printing");
+
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      document.body.classList.remove("parecer-printing");
+      if (document.body.contains(printRoot)) {
+        document.body.removeChild(printRoot);
+      }
+      setPrinting(false);
+      window.removeEventListener("afterprint", cleanup);
+    };
+
+    window.addEventListener("afterprint", cleanup, { once: true });
+
+    // Imprime uma cópia direta do preview no mesmo documento: preserva o CSS
+    // original do modelo e evita PDF em branco causado por contêineres ocultos.
     try {
       window.print();
-    } finally {
-      window.setTimeout(() => setPrinting(false), 1200);
+      window.setTimeout(cleanup, 30000);
+    } catch {
+      cleanup();
+      toast.error("Não foi possível abrir a janela de impressão.");
     }
   };
 
