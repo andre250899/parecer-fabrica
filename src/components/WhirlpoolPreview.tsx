@@ -14,7 +14,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
     .join("   ");
 
   return (
-    <div className="whirlpool-preview print-only">
+    <div id="parecer-print" className="whirlpool-preview print-only">
       <div className="whirlpool-a4">
         {/* Cabeçalho autorizada + central */}
         <table className="wp-t wp-header">
