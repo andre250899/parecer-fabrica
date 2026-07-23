@@ -726,29 +726,25 @@ function Index() {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Não agendados */}
-            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-900">
-                  <Upload className="h-4 w-4" /> Não agendados
-                </h2>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">{naoAgendados.length}</span>
-              </div>
-              <div className="space-y-3">
-                {naoAgendados.length === 0 && (
-                  <p className="text-sm text-slate-500">Nenhum atendimento não agendado. Envie um PDF de OS para criar um.</p>
-                )}
-                {naoAgendados.map((r) => (
-                  <AgendaCard
-                    key={r.id}
-                    row={r}
-                    draggable
-                    onEdit={() => openAtendimento(r.id)}
-                    onDelete={() => deleteAtendimentoHandler(r.id)}
-                    onDragStart={() => {}}
-                  />
-                ))}
-              </div>
-            </section>
+            <DropZone
+              title="Não agendados"
+              icon={<Upload className="h-4 w-4 text-slate-500" />}
+              count={naoAgendados.length}
+              onDrop={(id) => unschedule(id)}
+            >
+              {naoAgendados.length === 0 && (
+                <p className="text-sm text-slate-500">Nenhum atendimento não agendado. Arraste um card para cá ou envie um PDF de OS.</p>
+              )}
+              {naoAgendados.map((r) => (
+                <AgendaCard
+                  key={r.id}
+                  row={r}
+                  draggable
+                  onEdit={() => openAtendimento(r.id)}
+                  onDelete={() => deleteAtendimentoHandler(r.id)}
+                />
+              ))}
+            </DropZone>
 
             {/* Manhã */}
             <DropZone
@@ -764,6 +760,7 @@ function Index() {
                 <AgendaCard
                   key={r.id}
                   row={r}
+                  draggable
                   onEdit={() => openAtendimento(r.id)}
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onUnschedule={() => unschedule(r.id)}
@@ -785,6 +782,7 @@ function Index() {
                 <AgendaCard
                   key={r.id}
                   row={r}
+                  draggable
                   onEdit={() => openAtendimento(r.id)}
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onUnschedule={() => unschedule(r.id)}
