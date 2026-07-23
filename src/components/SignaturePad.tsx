@@ -13,6 +13,7 @@ export default function SignaturePad({
   const [empty, setEmpty] = useState(!value);
   const [saved, setSaved] = useState(false);
   const [locked, setLocked] = useState(!!value);
+  const [enabled, setEnabled] = useState(false);
 
   // Initialize canvas resolution + load existing signature
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function SignaturePad({
   };
 
   const start = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (locked) return;
+    if (locked || !enabled) return;
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
     drawing.current = true;
@@ -103,6 +104,7 @@ export default function SignaturePad({
   const edit = () => {
     setLocked(false);
     setSaved(false);
+    setEnabled(false);
   };
 
   return (
@@ -115,7 +117,7 @@ export default function SignaturePad({
           onPointerUp={end}
           onPointerLeave={end}
           onPointerCancel={end}
-          className={`block h-40 w-full touch-none rounded-md ${locked ? "cursor-not-allowed" : ""}`}
+          className={`block h-40 w-full touch-none rounded-md ${locked || !enabled ? "cursor-not-allowed" : ""}`}
           style={{ touchAction: "none" }}
         />
         {locked && (
@@ -125,7 +127,7 @@ export default function SignaturePad({
         )}
         {empty && (
           <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-slate-400">
-            Assine aqui usando o dedo ou o mouse
+            {enabled ? "Assine aqui usando o dedo ou o mouse" : "Clique em \"Habilitar assinatura\" para assinar"}
           </span>
         )}
       </div>
@@ -135,24 +137,35 @@ export default function SignaturePad({
           <button
             type="button"
             onClick={edit}
-            className="rounded-md bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700"
+            className="rounded bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-blue-700"
           >
             Editar assinatura
           </button>
         ) : (
           <>
-        <button
-          type="button"
-          onClick={save}
-          disabled={empty}
-          className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Salvar assinatura
-        </button>
+        {!enabled ? (
+          <button
+            type="button"
+            onClick={() => setEnabled(true)}
+            className="rounded-md bg-amber-500 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-600"
+          >
+            Habilitar assinatura
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={save}
+            disabled={empty}
+            className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Salvar assinatura
+          </button>
+        )}
         <button
           type="button"
           onClick={clear}
-          className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+          disabled={!enabled}
+          className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Limpar assinatura
         </button>
