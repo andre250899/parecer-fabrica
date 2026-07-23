@@ -686,6 +686,38 @@ function Index() {
                 <h1 className="text-lg font-bold text-slate-900">Agenda Whirlpool</h1>
                 <p className="text-xs text-slate-500">Vox Grupo · {userEmail}</p>
               </div>
+              <div className="ml-3 hidden items-center gap-1 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-900 to-slate-700 px-2 py-1 text-white shadow-sm md:flex">
+                <button
+                  onClick={() => shiftAgendaDate(-1)}
+                  className="rounded-md p-1 hover:bg-white/10"
+                  title="Dia anterior"
+                  aria-label="Dia anterior"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <div className="flex flex-col items-center px-2 leading-tight">
+                  <span className="text-[10px] uppercase tracking-widest text-slate-300">
+                    {isToday ? "Hoje" : "Agenda"}
+                  </span>
+                  <span className="text-sm font-bold">{formatAgendaDateLong(agendaDate)}</span>
+                </div>
+                <input
+                  type="date"
+                  value={agendaDate}
+                  onChange={(e) => setAgendaDate(e.target.value)}
+                  className="w-4 cursor-pointer bg-transparent text-transparent [color-scheme:dark]"
+                  aria-label="Escolher data"
+                  title="Escolher data"
+                />
+                <button
+                  onClick={() => shiftAgendaDate(1)}
+                  className="rounded-md p-1 hover:bg-white/10"
+                  title="Próximo dia"
+                  aria-label="Próximo dia"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {pdfUploading && (
