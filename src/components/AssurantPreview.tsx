@@ -1,4 +1,3 @@
-import voxLogo from "@/assets/vox-logo.png";
 import type { AssurantData } from "@/lib/parecer-extras";
 
 const cellStyle: React.CSSProperties = {
@@ -53,12 +52,10 @@ export default function AssurantPreview({ data }: { data: AssurantData }) {
         boxShadow: "0 2px 16px rgba(0,0,0,0.08)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <img src={voxLogo} alt="Vox" style={{ height: 55 }} />
-        <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: 2, textAlign: "center", flex: 1 }}>
+      <div style={{ marginBottom: 8 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: 2, textAlign: "center" }}>
           ANALISE TÉCNICA
         </h1>
-        <div style={{ width: 90 }} />
       </div>
 
       <div style={headerBar}>ASSISTÊNCIA TÉCNICA</div>
