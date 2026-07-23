@@ -21,6 +21,8 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  Loader2,
+  FileDown,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -121,6 +123,8 @@ function Index() {
   const [agendaSearch, setAgendaSearch] = useState("");
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
+  const [printing, setPrinting] = useState(false);
+  const [progressLabel, setProgressLabel] = useState<string>("");
   const [saveSituacaoOpen, setSaveSituacaoOpen] = useState(false);
   const [leaveGuard, setLeaveGuard] = useState<{ action: () => void; message: string } | null>(null);
   const [postSaveAction, setPostSaveAction] = useState<(() => void) | null>(null);
@@ -169,6 +173,27 @@ function Index() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [isWhirlpoolDirty]);
+
+  // Clear "printing" overlay after the print dialog closes.
+  useEffect(() => {
+    const done = () => setPrinting(false);
+    window.addEventListener("afterprint", done);
+    return () => window.removeEventListener("afterprint", done);
+  }, []);
+
+  const handlePrint = (label = "Preparando documento para impressão…") => {
+    setProgressLabel(label);
+    setPrinting(true);
+    // Give the overlay a frame to paint before the (blocking) print dialog opens.
+    setTimeout(() => {
+      try {
+        window.print();
+      } finally {
+        // Fallback in case `afterprint` doesn't fire (older browsers / dialog dismissed).
+        setTimeout(() => setPrinting(false), 800);
+      }
+    }, 120);
+  };
 
   const fetchAtendimentos = useServerFn(listarAtendimentos);
   const saveAtendimento = useServerFn(salvarAtendimento);
@@ -824,11 +849,47 @@ function Index() {
     </div>
   );
 
+  const progressOverlay = (pdfUploading || printing) && (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm print:hidden"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="w-[min(92vw,340px)] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+        <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 px-5 py-4 text-white">
+          <div className="rounded-lg bg-white/20 p-2">
+            {printing ? <FileDown className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+          </div>
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-bold">
+              {printing ? "Gerando arquivo…" : "Lendo arquivo…"}
+            </h3>
+            <p className="truncate text-[11px] text-white/85">
+              {printing ? (progressLabel || "Preparando PDF para download / impressão") : "Extraindo dados do PDF"}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 px-6 py-5">
+          <Loader2 className="h-6 w-6 shrink-0 animate-spin text-indigo-600" />
+          <div className="min-w-0 flex-1">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+              <div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500" />
+            </div>
+            <p className="mt-2 text-xs text-slate-600">
+              Por favor aguarde, isso leva apenas alguns segundos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Home screen
   if (modo === "home") {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {progressOverlay}
         {leaveModal}
         <header className="border-b bg-white px-6 py-3 flex items-center justify-between">
           <div>
@@ -928,6 +989,7 @@ function Index() {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {progressOverlay}
         {leaveModal}
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
@@ -1248,7 +1310,7 @@ function Index() {
                     <Save className="h-4 w-4" /> Salvar na agenda
                   </button>
                   <button
-                    onClick={() => window.print()}
+                    onClick={() => handlePrint()}
                     className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
                   >
                     <Printer className="h-4 w-4" /> Imprimir
@@ -1344,7 +1406,7 @@ function Index() {
               Meus pareceres
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={() => handlePrint()}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
             >
               <Printer className="h-4 w-4" aria-hidden="true" />
@@ -1370,6 +1432,7 @@ function Index() {
       </header>
 
       {listModal}
+        {progressOverlay}
         {leaveModal}
 
       {!isInstalled && (
