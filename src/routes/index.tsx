@@ -511,7 +511,7 @@ function Index() {
       if (row.data_agenda) setAgendaDate(row.data_agenda);
       setTipo("whirlpool");
       setModo("whirlpool");
-      setListOpen(false);
+      setShowList(false);
     }, "Abrir outro atendimento vai descartar as alterações não salvas do atual. O que deseja fazer?");
   };
 
