@@ -14,6 +14,7 @@ const SaveInput = z.object({
   data_agenda: z.string().default(""),
   periodo: z.enum(["manha", "tarde", ""]).default(""),
   status: z.enum(["nao_agendado", "agendado", "concluido"]).default("nao_agendado"),
+  situacao: z.enum(["em_aberto", "concluido", "realizar_pedido", "cancelado"]).optional(),
 });
 
 const UpdateStatusInput = z.object({
@@ -21,6 +22,7 @@ const UpdateStatusInput = z.object({
   status: z.enum(["nao_agendado", "agendado", "concluido"]),
   data_agenda: z.string().optional(),
   periodo: z.enum(["manha", "tarde", ""]).optional(),
+  situacao: z.enum(["em_aberto", "concluido", "realizar_pedido", "cancelado"]).optional(),
 });
 
 const DeleteInput = z.object({ id: z.string().uuid() });
@@ -54,7 +56,8 @@ export const salvarAtendimento = createServerFn({ method: "POST" })
           data_agenda: data.data_agenda || null,
           periodo: data.periodo || null,
           status: data.status,
-        })
+          ...(data.situacao ? { situacao: data.situacao } : {}),
+        } as never)
         .eq("id", data.id)
         .eq("user_id", userId)
         .select()
@@ -73,7 +76,8 @@ export const salvarAtendimento = createServerFn({ method: "POST" })
         data_agenda: data.data_agenda || null,
         periodo: data.periodo || null,
         status: data.status,
-      })
+        ...(data.situacao ? { situacao: data.situacao } : {}),
+      } as never)
       .select()
       .single();
     if (error) throw error;
@@ -88,6 +92,7 @@ export const atualizarStatusAtendimento = createServerFn({ method: "POST" })
     const update: Partial<Atendimento> = { status: data.status };
     if (data.data_agenda !== undefined) update.data_agenda = data.data_agenda || null;
     if (data.periodo !== undefined) update.periodo = data.periodo || null;
+    if (data.situacao !== undefined) (update as Record<string, unknown>).situacao = data.situacao;
     const { data: result, error } = await supabase
       .from("atendimentos")
       .update(update)
