@@ -205,17 +205,22 @@ function Index() {
   }, []);
 
   const handlePrint = (label = "Preparando documento para impressão…") => {
+    const printable = document.getElementById("parecer-print");
+    if (!printable) {
+      toast.error("Nenhum parecer foi encontrado para impressão.");
+      return;
+    }
+
     setProgressLabel(label);
     setPrinting(true);
-    // Give the overlay a frame to paint before the (blocking) print dialog opens.
-    setTimeout(() => {
-      try {
-        window.print();
-      } finally {
-        // Fallback in case `afterprint` doesn't fire (older browsers / dialog dismissed).
-        setTimeout(() => setPrinting(false), 800);
-      }
-    }, 120);
+
+    try {
+      // Chamar diretamente no clique evita bloqueio do navegador/PWA em celulares.
+      window.print();
+    } finally {
+      // Fallback para navegadores que não disparam afterprint ao cancelar o diálogo.
+      window.setTimeout(() => setPrinting(false), 1200);
+    }
   };
 
   const fetchAtendimentos = useServerFn(listarAtendimentos);
