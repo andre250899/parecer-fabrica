@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      atendimentos: {
+        Row: {
+          cliente_nome: string | null
+          created_at: string
+          dados: Json
+          data_agenda: string | null
+          id: string
+          numero_os: string
+          periodo: string | null
+          status: string
+          tipo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cliente_nome?: string | null
+          created_at?: string
+          dados?: Json
+          data_agenda?: string | null
+          id?: string
+          numero_os: string
+          periodo?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cliente_nome?: string | null
+          created_at?: string
+          dados?: Json
+          data_agenda?: string | null
+          id?: string
+          numero_os?: string
+          periodo?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pareceres: {
         Row: {
           cliente_nome: string | null

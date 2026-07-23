@@ -1,9 +1,32 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Download, Printer, Save, FolderOpen, LogOut, ArrowLeft, Camera, X, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  Download,
+  Printer,
+  Save,
+  FolderOpen,
+  LogOut,
+  ArrowLeft,
+  Camera,
+  X,
+  Search,
+  Calendar,
+  Upload,
+  GripVertical,
+  Clock,
+  Sun,
+  Moon,
+  CheckCircle2,
+  Trash2,
+  FileText,
+  Plus,
+} from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ParecerPreview from "@/components/ParecerPreview";
 import HisensePreview from "@/components/HisensePreview";
 import AssurantPreview from "@/components/AssurantPreview";
+import WhirlpoolPreview from "@/components/WhirlpoolPreview";
 import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
@@ -15,11 +38,23 @@ import {
 import {
   defaultHisense,
   defaultAssurant,
+  defaultWhirlpool,
+  emptyWhirlpoolPeca,
   fileToCompressedDataUrl,
   type HisenseData,
   type AssurantData,
+  type WhirlpoolData,
+  type WhirlpoolPeca,
   type ParecerTipo,
 } from "@/lib/parecer-extras";
+import {
+  listarAtendimentos,
+  salvarAtendimento,
+  atualizarStatusAtendimento,
+  deletarAtendimento,
+} from "@/lib/atendimentos.functions";
+import { extrairDadosWhirlpool } from "@/lib/pdf-extract.functions";
+import { toast } from "sonner";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -30,23 +65,26 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Gerador de Parecer Técnico — Vox Grupo" },
-      { name: "description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
+      { name: "description", content: "Gere pareceres técnicos profissionais VOX, HISENSE, ASSURANT e WHIRLPOOL, com agenda e extração de PDF." },
       { property: "og:title", content: "Gerador de Parecer Técnico — Vox Grupo" },
-      { property: "og:description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
+      { property: "og:description", content: "Gere pareceres técnicos profissionais VOX, HISENSE, ASSURANT e WHIRLPOOL, com agenda e extração de PDF." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Gerador de Parecer Técnico — Vox Grupo" },
-      { name: "twitter:description", content: "Gere pareceres técnicos profissionais com 6 opções de design e exporte para PDF." },
+      { name: "twitter:description", content: "Gere pareceres técnicos profissionais VOX, HISENSE, ASSURANT e WHIRLPOOL, com agenda e extração de PDF." },
     ],
   }),
   component: Index,
 });
 
 function Index() {
+  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool">("home");
   const [tipo, setTipo] = useState<ParecerTipo | null>(null);
   const [data, setData] = useState<ParecerData>(defaultParecer);
   const [hisense, setHisense] = useState<HisenseData>(defaultHisense);
   const [assurant, setAssurant] = useState<AssurantData>(defaultAssurant);
+  const [whirlpool, setWhirlpool] = useState<WhirlpoolData>(defaultWhirlpool);
+  const [whirlpoolAtendimentoId, setWhirlpoolAtendimentoId] = useState<string | null>(null);
   const [themeId, setThemeId] = useState(THEMES[0].id);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installMessage, setInstallMessage] = useState("");
@@ -57,8 +95,24 @@ function Index() {
   const [showList, setShowList] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [agendaSearch, setAgendaSearch] = useState("");
+  const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [pdfUploading, setPdfUploading] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
+
+  const fetchAtendimentos = useServerFn(listarAtendimentos);
+  const saveAtendimento = useServerFn(salvarAtendimento);
+  const moveAtendimento = useServerFn(atualizarStatusAtendimento);
+  const removeAtendimento = useServerFn(deletarAtendimento);
+  const extractPdf = useServerFn(extrairDadosWhirlpool);
+
+  const atendimentosQuery = useQuery({
+    queryKey: ["atendimentos"],
+    queryFn: fetchAtendimentos,
+    enabled: authChecked && modo === "whirlpool",
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -95,12 +149,12 @@ function Index() {
   const saveParecer = async () => {
     if (!tipo) return;
     const numeroOS =
-      tipo === "vox" ? data.numeroOS : tipo === "hisense" ? hisense.numeroOS : assurant.sinistro;
+      tipo === "vox" ? data.numeroOS : tipo === "hisense" ? hisense.numeroOS : tipo === "assurant" ? assurant.sinistro : whirlpool.numeroOS;
     const clienteNome =
-      tipo === "vox" ? data.clienteNome : tipo === "hisense" ? hisense.clienteNome : `Sinistro ${assurant.sinistro}`;
-    const payload = tipo === "vox" ? data : tipo === "hisense" ? hisense : assurant;
+      tipo === "vox" ? data.clienteNome : tipo === "hisense" ? hisense.clienteNome : tipo === "assurant" ? `Sinistro ${assurant.sinistro}` : whirlpool.consumidor;
+    const payload = tipo === "vox" ? data : tipo === "hisense" ? hisense : tipo === "assurant" ? assurant : whirlpool;
     if (!numeroOS.trim()) {
-      setSaveMsg(tipo === "assurant" ? "Informe o Nº do Sinistro antes de salvar." : "Informe o Nº OS antes de salvar.");
+      setSaveMsg("Informe o Nº OS antes de salvar.");
       return;
     }
     const { data: userData } = await supabase.auth.getUser();
@@ -123,10 +177,18 @@ function Index() {
     const { data: row, error } = await supabase.from("pareceres").select("data, tipo").eq("id", id).maybeSingle();
     if (!error && row) {
       const t = row.tipo as ParecerTipo;
-      setTipo(t);
-      if (t === "vox") setData(row.data as unknown as ParecerData);
-      else if (t === "hisense") setHisense(row.data as unknown as HisenseData);
-      else setAssurant(row.data as unknown as AssurantData);
+      if (t === "whirlpool") {
+        setWhirlpool(row.data as unknown as WhirlpoolData);
+        setWhirlpoolAtendimentoId(id);
+        setTipo("whirlpool");
+        setModo("whirlpool");
+      } else {
+        setTipo(t);
+        setModo("parecer");
+        if (t === "vox") setData(row.data as unknown as ParecerData);
+        else if (t === "hisense") setHisense(row.data as unknown as HisenseData);
+        else setAssurant(row.data as unknown as AssurantData);
+      }
       setShowList(false);
     }
   };
@@ -215,7 +277,6 @@ function Index() {
   const updDate = (k: "dataEntrada" | "dataParecer", raw: string) =>
     upd(k, formatDate(raw) as ParecerData[typeof k]);
 
-
   const updItem = (i: number, k: keyof OrcamentoItem, v: string) =>
     setData((d) => {
       const itens = [...d.itens];
@@ -227,6 +288,114 @@ function Index() {
   const removeItem = (i: number) =>
     setData((d) => ({ ...d, itens: d.itens.filter((_, idx) => idx !== i) }));
 
+  const updWhirlpool = <K extends keyof WhirlpoolData>(k: K, v: WhirlpoolData[K]) =>
+    setWhirlpool((d) => ({ ...d, [k]: v }));
+
+  const updWhirlpoolPeca = (i: number, k: keyof WhirlpoolPeca, v: string) =>
+    setWhirlpool((d) => {
+      const pecas = [...d.pecas];
+      pecas[i] = { ...pecas[i], [k]: v };
+      return { ...d, pecas };
+    });
+
+  const addWhirlpoolPeca = () =>
+    setWhirlpool((d) => ({ ...d, pecas: [...d.pecas, emptyWhirlpoolPeca()] }));
+  const removeWhirlpoolPeca = (i: number) =>
+    setWhirlpool((d) => ({ ...d, pecas: d.pecas.filter((_, idx) => idx !== i) }));
+
+  const handlePdfUpload = async (file: File) => {
+    if (!file.type.includes("pdf") && !file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("Envie um arquivo PDF.");
+      return;
+    }
+    setPdfUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(",")[1]);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+      const extracted = await extractPdf({ data: { filename: file.name, mimeType: "application/pdf", base64 } });
+      const novo = await saveAtendimento({
+        data: {
+          numero_os: extracted.numeroOS || "SEM-OS",
+          tipo: "whirlpool",
+          cliente_nome: extracted.consumidor || null,
+          dados: extracted as unknown as Record<string, unknown>,
+          status: "nao_agendado",
+        },
+      });
+      setWhirlpool(extracted);
+      setWhirlpoolAtendimentoId(novo.id);
+      setModo("whirlpool");
+      setTipo("whirlpool");
+      queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+      toast.success(`Atendimento ${extracted.numeroOS || novo.numero_os} criado pelo PDF. Arraste-o para a agenda ou edite os dados.`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Erro ao processar PDF.");
+    } finally {
+      setPdfUploading(false);
+    }
+  };
+
+  const openAtendimento = (id: string) => {
+    const row = atendimentosQuery.data?.find((a) => a.id === id);
+    if (!row) return;
+    setWhirlpool((row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool);
+    setWhirlpoolAtendimentoId(row.id);
+    setTipo("whirlpool");
+    setModo("whirlpool");
+  };
+
+  const saveWhirlpoolAtendimento = async () => {
+    if (!whirlpool.numeroOS.trim()) {
+      toast.error("Informe o Nº OS antes de salvar.");
+      return;
+    }
+    const result = await saveAtendimento({
+      data: {
+        id: whirlpoolAtendimentoId ?? undefined,
+        numero_os: whirlpool.numeroOS.trim(),
+        tipo: "whirlpool",
+        cliente_nome: whirlpool.consumidor || null,
+        dados: whirlpool as unknown as Record<string, unknown>,
+        status: "agendado",
+        data_agenda: agendaDate,
+        periodo: whirlpool.periodo === "MANHÃ" ? "manha" : whirlpool.periodo === "TARDE" ? "tarde" : "",
+      },
+    });
+    setWhirlpoolAtendimentoId(result.id);
+    queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+    toast.success(`Atendimento ${whirlpool.numeroOS} salvo na agenda.`);
+  };
+
+  const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
+    await moveAtendimento({
+      data: { id, status: "agendado", data_agenda: agendaDate, periodo },
+    });
+    queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+    toast.success("Atendimento agendado.");
+  };
+
+  const unschedule = async (id: string) => {
+    await moveAtendimento({ data: { id, status: "nao_agendado", data_agenda: "", periodo: "" } });
+    queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+    toast.success("Atendimento movido para não agendados.");
+  };
+
+  const deleteAtendimentoHandler = async (id: string) => {
+    if (!confirm("Excluir este atendimento?")) return;
+    await removeAtendimento({ data: { id } });
+    queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+    if (whirlpoolAtendimentoId === id) {
+      setWhirlpool(defaultWhirlpool);
+      setWhirlpoolAtendimentoId(null);
+    }
+    toast.success("Atendimento excluído.");
+  };
+
   const inputCls =
     "w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
   const labelCls = "block text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide";
@@ -234,6 +403,16 @@ function Index() {
   if (!authChecked) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Carregando...</div>;
   }
+
+  const allSaved = [...savedList];
+  const filteredList = searchTerm.trim()
+    ? allSaved.filter((r) =>
+        [r.numero_os, r.cliente_nome ?? "", r.tipo]
+          .join(" ")
+          .toLowerCase()
+          .includes(searchTerm.trim().toLowerCase()),
+      )
+    : allSaved;
 
   const listModal = showList && (
     <div
@@ -252,7 +431,7 @@ function Index() {
             <div>
               <h2 className="text-xl font-bold">Meus pareceres salvos</h2>
               <p className="text-xs text-white/70">
-                {savedList.length} {savedList.length === 1 ? "parecer" : "pareceres"} no total
+                {filteredList.length} {filteredList.length === 1 ? "parecer" : "pareceres"} no total
               </p>
             </div>
           </div>
@@ -277,96 +456,74 @@ function Index() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          {(() => {
-            const q = searchTerm.trim().toLowerCase();
-            const filtered = q
-              ? savedList.filter((r) =>
-                  [r.numero_os, r.cliente_nome ?? "", r.tipo]
-                    .join(" ")
-                    .toLowerCase()
-                    .includes(q),
-                )
-              : savedList;
-            const tipoBadge = (t: string) => {
-              if (t === "vox") return "bg-blue-100 text-blue-800";
-              if (t === "hisense") return "bg-red-100 text-red-800";
-              return "bg-slate-200 text-slate-800";
-            };
-            if (savedList.length === 0) {
-              return (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="mb-4 rounded-full bg-slate-100 p-5">
-                    <FolderOpen className="h-10 w-10 text-slate-400" />
-                  </div>
-                  <p className="text-base font-semibold text-slate-700">Nenhum parecer salvo ainda</p>
-                  <p className="mt-1 text-sm text-slate-500">Salve seu primeiro parecer para vê-lo listado aqui.</p>
-                </div>
-              );
-            }
-            if (filtered.length === 0) {
-              return (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="mb-4 rounded-full bg-slate-100 p-5">
-                    <Search className="h-10 w-10 text-slate-400" />
-                  </div>
-                  <p className="text-base font-semibold text-slate-700">Nenhum resultado encontrado</p>
-                  <p className="mt-1 text-sm text-slate-500">Não encontramos pareceres para "{searchTerm}".</p>
-                </div>
-              );
-            }
-            return (
-              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {filtered.map((row) => (
-                  <li
-                    key={row.id}
-                    className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md"
-                  >
-                    <div>
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tipoBadge(row.tipo)}`}>
-                          {row.tipo}
-                        </span>
-                        <span className="text-[11px] font-medium text-slate-400">
-                          {new Date(row.updated_at).toLocaleDateString("pt-BR")}
-                        </span>
-                      </div>
-                      <p className="text-base font-bold text-slate-900">
-                        {row.tipo === "assurant" ? "Sinistro" : "OS"} {row.numero_os}
-                      </p>
-                      <p className="mt-1 line-clamp-1 text-sm text-slate-600">
-                        {row.cliente_nome ?? "Sem cliente informado"}
-                      </p>
-                      <p className="mt-0.5 text-xs text-slate-400">
-                        Atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
-                      </p>
+          {savedList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-4 rounded-full bg-slate-100 p-5">
+                <FolderOpen className="h-10 w-10 text-slate-400" />
+              </div>
+              <p className="text-base font-semibold text-slate-700">Nenhum parecer salvo ainda</p>
+              <p className="mt-1 text-sm text-slate-500">Salve seu primeiro parecer para vê-lo listado aqui.</p>
+            </div>
+          ) : filteredList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-4 rounded-full bg-slate-100 p-5">
+                <Search className="h-10 w-10 text-slate-400" />
+              </div>
+              <p className="text-base font-semibold text-slate-700">Nenhum resultado encontrado</p>
+              <p className="mt-1 text-sm text-slate-500">Não encontramos pareceres para "{searchTerm}".</p>
+            </div>
+          ) : (
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {filteredList.map((row) => (
+                <li
+                  key={row.id}
+                  className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md"
+                >
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tipoBadge(row.tipo)}`}>
+                        {row.tipo}
+                      </span>
+                      <span className="text-[11px] font-medium text-slate-400">
+                        {new Date(row.updated_at).toLocaleDateString("pt-BR")}
+                      </span>
                     </div>
-                    <div className="mt-4 flex gap-2">
-                      <button
-                        onClick={() => loadParecer(row.id)}
-                        className="flex-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
-                      >
-                        Abrir
-                      </button>
-                      <button
-                        onClick={() => deleteParecer(row.id)}
-                        className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                        title="Excluir"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            );
-          })()}
+                    <p className="text-base font-bold text-slate-900">
+                      {row.tipo === "assurant" ? "Sinistro" : "OS"} {row.numero_os}
+                    </p>
+                    <p className="mt-1 line-clamp-1 text-sm text-slate-600">
+                      {row.cliente_nome ?? "Sem cliente informado"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      Atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => loadParecer(row.id)}
+                      className="flex-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      Abrir
+                    </button>
+                    <button
+                      onClick={() => deleteParecer(row.id)}
+                      className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                      title="Excluir"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
   );
 
-  // Model picker screen
-  if (!tipo) {
+  // Home screen
+  if (modo === "home") {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
@@ -376,6 +533,12 @@ function Index() {
             <p className="text-xs text-slate-500">Vox Grupo · {userEmail}</p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setModo("whirlpool")}
+              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <Calendar className="h-4 w-4" /> Agenda
+            </button>
             <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
               <FolderOpen className="h-4 w-4" /> Meus pareceres
             </button>
@@ -384,18 +547,25 @@ function Index() {
             </button>
           </div>
         </header>
-        <main className="mx-auto max-w-5xl px-6 py-12">
+        <main className="mx-auto max-w-6xl px-6 py-12">
           <h2 className="mb-2 text-2xl font-bold text-slate-900">Escolha o modelo de parecer</h2>
-          <p className="mb-8 text-sm text-slate-600">Cada modelo tem layout e campos específicos.</p>
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          <p className="mb-8 text-sm text-slate-600">Cada modelo tem layout e campos específicos. O Whirlpool inclui agenda e importação de PDF.</p>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
             {[
               { id: "vox" as const, name: "VOX", desc: "Parecer técnico corporativo Vox — com 6 opções de design e orçamento.", color: "from-blue-600 to-blue-800" },
               { id: "hisense" as const, name: "HISENSE / GORENJE", desc: "Relatório de atendimento com galeria de 8 fotos e medições de tensão.", color: "from-red-600 to-red-800" },
               { id: "assurant" as const, name: "ASSURANT", desc: "Análise técnica de sinistro com fotos do defeito, cotação e residência.", color: "from-slate-700 to-slate-900" },
+              { id: "whirlpool" as const, name: "WHIRLPOOL", desc: "Agenda de atendimentos com importação de OS por PDF e laudo técnico.", color: "from-cyan-600 to-blue-700" },
             ].map((m) => (
               <button
                 key={m.id}
-                onClick={() => setTipo(m.id)}
+                onClick={() => {
+                  if (m.id === "whirlpool") setModo("whirlpool");
+                  else {
+                    setTipo(m.id);
+                    setModo("parecer");
+                  }
+                }}
                 className={`group rounded-xl bg-gradient-to-br ${m.color} p-6 text-left text-white shadow-lg transition hover:scale-[1.02]`}
               >
                 <div className="text-2xl font-extrabold tracking-wide">{m.name}</div>
@@ -409,6 +579,226 @@ function Index() {
     );
   }
 
+  // Whirlpool agenda screen
+  if (modo === "whirlpool") {
+    const rows = atendimentosQuery.data ?? [];
+    const q = agendaSearch.trim().toLowerCase();
+    const filtered = q
+      ? rows.filter((r) =>
+          [r.numero_os, r.cliente_nome ?? "", r.tipo, (r.dados as { consumidor?: string })?.consumidor ?? ""]
+            .join(" ")
+            .toLowerCase()
+            .includes(q),
+        )
+      : rows;
+    const naoAgendados = filtered.filter((r) => r.status === "nao_agendado");
+    const agendadosManha = filtered.filter((r) => r.status === "agendado" && r.data_agenda === agendaDate && r.periodo === "manha");
+    const agendadosTarde = filtered.filter((r) => r.status === "agendado" && r.data_agenda === agendaDate && r.periodo === "tarde");
+    const concluidos = filtered.filter((r) => r.status === "concluido");
+
+    return (
+      <div className="min-h-screen bg-slate-100">
+        {listModal}
+        <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
+          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setModo("home")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <div>
+                <h1 className="text-lg font-bold text-slate-900">Agenda Whirlpool</h1>
+                <p className="text-xs text-slate-500">Vox Grupo · {userEmail}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                <Upload className="h-4 w-4" />
+                {pdfUploading ? "Lendo PDF..." : "Enviar PDF de OS"}
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  className="hidden"
+                  disabled={pdfUploading}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.currentTarget.value = "";
+                    if (f) handlePdfUpload(f);
+                  }}
+                />
+              </label>
+              <button
+                onClick={() => {
+                  setWhirlpool(defaultWhirlpool);
+                  setWhirlpoolAtendimentoId(null);
+                  setTipo("whirlpool");
+                  setModo("whirlpool");
+                }}
+                className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <Plus className="h-4 w-4" /> Novo atendimento
+              </button>
+              <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                <FolderOpen className="h-4 w-4" /> Meus pareceres
+              </button>
+              <button onClick={signOut} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                <LogOut className="h-4 w-4" /> Sair
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {!isInstalled && (
+          <button
+            onClick={handleInstall}
+            title={installMessage || "Instalar app no dispositivo"}
+            aria-label="Instalar app"
+            className="fixed bottom-5 left-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-600 text-white shadow-lg ring-1 ring-white/40 transition-transform hover:scale-105 hover:shadow-xl print:hidden"
+          >
+            <Download className="h-5 w-5" aria-hidden="true" />
+          </button>
+        )}
+
+        <main className="mx-auto max-w-[1600px] p-6 print:hidden">
+          <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                value={agendaSearch}
+                onChange={(e) => setAgendaSearch(e.target.value)}
+                placeholder="Buscar atendimentos por OS, cliente, endereço..."
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-slate-500" />
+              <input
+                type="date"
+                value={agendaDate}
+                onChange={(e) => setAgendaDate(e.target.value)}
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Não agendados */}
+            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-900">
+                  <Upload className="h-4 w-4" /> Não agendados
+                </h2>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">{naoAgendados.length}</span>
+              </div>
+              <div className="space-y-3">
+                {naoAgendados.length === 0 && (
+                  <p className="text-sm text-slate-500">Nenhum atendimento não agendado. Envie um PDF de OS para criar um.</p>
+                )}
+                {naoAgendados.map((r) => (
+                  <AgendaCard
+                    key={r.id}
+                    row={r}
+                    draggable
+                    onEdit={() => openAtendimento(r.id)}
+                    onDelete={() => deleteAtendimentoHandler(r.id)}
+                    onDragStart={() => {}}
+                  />
+                ))}
+              </div>
+            </section>
+
+            {/* Manhã */}
+            <DropZone
+              title="Manhã"
+              icon={<Sun className="h-4 w-4 text-amber-500" />}
+              count={agendadosManha.length}
+              onDrop={(id) => scheduleTo(id, "manha")}
+            >
+              {agendadosManha.length === 0 && (
+                <p className="text-sm text-slate-500">Arraste atendimentos ou clique em agendar para a manhã.</p>
+              )}
+              {agendadosManha.map((r) => (
+                <AgendaCard
+                  key={r.id}
+                  row={r}
+                  onEdit={() => openAtendimento(r.id)}
+                  onDelete={() => deleteAtendimentoHandler(r.id)}
+                  onUnschedule={() => unschedule(r.id)}
+                />
+              ))}
+            </DropZone>
+
+            {/* Tarde */}
+            <DropZone
+              title="Tarde"
+              icon={<Moon className="h-4 w-4 text-indigo-500" />}
+              count={agendadosTarde.length}
+              onDrop={(id) => scheduleTo(id, "tarde")}
+            >
+              {agendadosTarde.length === 0 && (
+                <p className="text-sm text-slate-500">Arraste atendimentos ou clique em agendar para a tarde.</p>
+              )}
+              {agendadosTarde.map((r) => (
+                <AgendaCard
+                  key={r.id}
+                  row={r}
+                  onEdit={() => openAtendimento(r.id)}
+                  onDelete={() => deleteAtendimentoHandler(r.id)}
+                  onUnschedule={() => unschedule(r.id)}
+                />
+              ))}
+            </DropZone>
+          </div>
+
+          {/* Concluídos */}
+          {concluidos.length > 0 && (
+            <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-900">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Concluídos
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {concluidos.map((r) => (
+                  <AgendaCard
+                    key={r.id}
+                    row={r}
+                    onEdit={() => openAtendimento(r.id)}
+                    onDelete={() => deleteAtendimentoHandler(r.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Whirlpool form inline */}
+          {tipo === "whirlpool" && (
+            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr]">
+              <aside className="space-y-6 rounded-lg border border-border bg-white p-5 shadow-sm print:hidden">
+                <WhirlpoolForm data={whirlpool} setData={setWhirlpool} inputCls={inputCls} labelCls={labelCls} formatDate={formatDate} />
+                <div className="flex gap-2">
+                  <button
+                    onClick={saveWhirlpoolAtendimento}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                  >
+                    <Save className="h-4 w-4" /> Salvar na agenda
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                  >
+                    <Printer className="h-4 w-4" /> Imprimir
+                  </button>
+                </div>
+              </aside>
+              <main className="overflow-x-auto">
+                <WhirlpoolPreview data={whirlpool} />
+              </main>
+            </div>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // Parecer screen (vox/hisense/assurant)
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Top bar */}
@@ -416,7 +806,7 @@ function Index() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
           <div>
             <div className="flex items-center gap-3">
-              <button onClick={() => setTipo(null)} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
+              <button onClick={() => setModo("home")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <h1 className="text-lg font-bold text-slate-900">
@@ -504,7 +894,6 @@ function Index() {
               <div>
                 <label className={labelCls}>Data de Entrada</label>
                 <input className={inputCls} value={data.dataEntrada} onChange={(e) => updDate("dataEntrada", e.target.value)} placeholder="DD/MM/AAAA" inputMode="numeric" />
-
               </div>
             </div>
           </section>
@@ -607,7 +996,6 @@ function Index() {
               <div>
                 <label className={labelCls}>Data</label>
                 <input className={inputCls} value={data.dataParecer} onChange={(e) => updDate("dataParecer", e.target.value)} placeholder="DD/MM/AAAA" inputMode="numeric" />
-
               </div>
             </div>
             <label className={labelCls + " mt-3"}>Garantia</label>
@@ -633,6 +1021,246 @@ function Index() {
         </main>
       </div>
     </div>
+  );
+}
+
+function tipoBadge(t: string) {
+  if (t === "vox") return "bg-blue-100 text-blue-800";
+  if (t === "hisense") return "bg-red-100 text-red-800";
+  if (t === "whirlpool") return "bg-cyan-100 text-cyan-800";
+  return "bg-slate-200 text-slate-800";
+}
+
+// ============ Agenda components ============
+function AgendaCard({
+  row,
+  draggable,
+  onEdit,
+  onDelete,
+  onUnschedule,
+  onDragStart,
+}: {
+  row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown };
+  draggable?: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+  onUnschedule?: () => void;
+  onDragStart?: () => void;
+}) {
+  const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string }) ?? {};
+  return (
+    <div
+      draggable={draggable}
+      onDragStart={(e) => {
+        e.dataTransfer.setData("atendimentoId", row.id);
+        onDragStart?.();
+      }}
+      className="group cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-400 hover:shadow-md active:cursor-grabbing"
+    >
+      <div className="mb-1 flex items-start justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          {draggable && <GripVertical className="h-3.5 w-3.5 text-slate-400" />}
+          <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white">OS {row.numero_os}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {onUnschedule && (
+            <button onClick={onUnschedule} title="Desagendar" className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800">
+              <Clock className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button onClick={onEdit} title="Editar" className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800">
+            <FileText className="h-3.5 w-3.5" />
+          </button>
+          <button onClick={onDelete} title="Excluir" className="rounded p-1 text-slate-500 hover:bg-red-50 hover:text-red-600">
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+      <p className="text-sm font-semibold text-slate-900">{dados.consumidor || row.cliente_nome || "Sem consumidor"}</p>
+      <p className="text-xs text-slate-600 line-clamp-1">{dados.endereco}</p>
+      <p className="text-xs text-slate-500 line-clamp-1">
+        {dados.bairro} {dados.cidade && `· ${dados.cidade}`}
+      </p>
+      {dados.produto && <p className="mt-1 text-[10px] font-medium text-cyan-700 line-clamp-1">{dados.produto}</p>}
+    </div>
+  );
+}
+
+function DropZone({
+  title,
+  icon,
+  count,
+  children,
+  onDrop,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  count: number;
+  children: React.ReactNode;
+  onDrop: (id: string) => void;
+}) {
+  const [dragOver, setDragOver] = useState(false);
+  return (
+    <section
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const id = e.dataTransfer.getData("atendimentoId");
+        if (id) onDrop(id);
+      }}
+      className={`rounded-xl border-2 p-4 shadow-sm transition ${dragOver ? "border-cyan-500 bg-cyan-50/50" : "border-slate-200 bg-white"}`}
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-900">
+          {icon} {title}
+        </h2>
+        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">{count}</span>
+      </div>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
+}
+
+// ============ Whirlpool Form ============
+function WhirlpoolForm({
+  data,
+  setData,
+  inputCls,
+  labelCls,
+  formatDate,
+}: {
+  data: WhirlpoolData;
+  setData: React.Dispatch<React.SetStateAction<WhirlpoolData>>;
+  inputCls: string;
+  labelCls: string;
+  formatDate: (r: string) => string;
+}) {
+  const upd = <K extends keyof WhirlpoolData>(k: K, v: WhirlpoolData[K]) => setData((d) => ({ ...d, [k]: v }));
+  const updPeca = (i: number, k: keyof WhirlpoolPeca, v: string) =>
+    setData((d) => {
+      const pecas = [...d.pecas];
+      pecas[i] = { ...pecas[i], [k]: v };
+      return { ...d, pecas };
+    });
+  const addPeca = () => setData((d) => ({ ...d, pecas: [...d.pecas, emptyWhirlpoolPeca()] }));
+  const removePeca = (i: number) => setData((d) => ({ ...d, pecas: d.pecas.filter((_, idx) => idx !== i) }));
+
+  return (
+    <>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Ordem de Serviço</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Nº OS</label><input className={inputCls} value={data.numeroOS} onChange={(e) => upd("numeroOS", e.target.value)} /></div>
+          <div><label className={labelCls}>Técnico</label><input className={inputCls} value={data.tecnico} onChange={(e) => upd("tecnico", e.target.value)} /></div>
+          <div><label className={labelCls}>Data Agenda</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataAgenda} onChange={(e) => upd("dataAgenda", formatDate(e.target.value))} /></div>
+          <div><label className={labelCls}>Data Chamado</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataChamado} onChange={(e) => upd("dataChamado", formatDate(e.target.value))} /></div>
+          <div>
+            <label className={labelCls}>Período</label>
+            <select className={inputCls} value={data.periodo} onChange={(e) => upd("periodo", e.target.value as "MANHÃ" | "TARDE" | "")}>
+              <option value="">Selecionar</option>
+              <option value="MANHÃ">Manhã</option>
+              <option value="TARDE">Tarde</option>
+            </select>
+          </div>
+          <div><label className={labelCls}>Tipo Agenda</label><input className={inputCls} value={data.tipoAgenda} onChange={(e) => upd("tipoAgenda", e.target.value)} /></div>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Consumidor</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2"><label className={labelCls}>Nome</label><input className={inputCls} value={data.consumidor} onChange={(e) => upd("consumidor", e.target.value)} /></div>
+          <div><label className={labelCls}>CPF/CNPJ</label><input className={inputCls} value={data.cnpjCpf} onChange={(e) => upd("cnpjCpf", e.target.value)} /></div>
+          <div><label className={labelCls}>CEP</label><input className={inputCls} value={data.cep} onChange={(e) => upd("cep", e.target.value)} /></div>
+          <div className="col-span-2"><label className={labelCls}>Endereço</label><input className={inputCls} value={data.endereco} onChange={(e) => upd("endereco", e.target.value)} /></div>
+          <div><label className={labelCls}>Complemento</label><input className={inputCls} value={data.complemento} onChange={(e) => upd("complemento", e.target.value)} /></div>
+          <div><label className={labelCls}>Bairro</label><input className={inputCls} value={data.bairro} onChange={(e) => upd("bairro", e.target.value)} /></div>
+          <div><label className={labelCls}>Cidade</label><input className={inputCls} value={data.cidade} onChange={(e) => upd("cidade", e.target.value)} /></div>
+          <div><label className={labelCls}>UF</label><input className={inputCls} value={data.uf} onChange={(e) => upd("uf", e.target.value)} /></div>
+          <div className="col-span-2"><label className={labelCls}>Telefones</label><input className={inputCls} value={`${data.foneResidencia} ${data.foneComercial} ${data.foneOutros}`.trim()} onChange={(e) => upd("foneOutros", e.target.value)} /></div>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Produto</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Produto</label><input className={inputCls} value={data.produto} onChange={(e) => upd("produto", e.target.value)} /></div>
+          <div><label className={labelCls}>Marca</label><input className={inputCls} value={data.marca} onChange={(e) => upd("marca", e.target.value)} /></div>
+          <div><label className={labelCls}>Linha</label><input className={inputCls} value={data.linha} onChange={(e) => upd("linha", e.target.value)} /></div>
+          <div><label className={labelCls}>Série</label><input className={inputCls} value={data.serie} onChange={(e) => upd("serie", e.target.value)} /></div>
+          <div><label className={labelCls}>Nº Nota Fiscal</label><input className={inputCls} value={data.nrNotaFiscal} onChange={(e) => upd("nrNotaFiscal", e.target.value)} /></div>
+          <div><label className={labelCls}>Data Compra</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataCompra} onChange={(e) => upd("dataCompra", formatDate(e.target.value))} /></div>
+          <div><label className={labelCls}>Cor</label><input className={inputCls} value={data.cor} onChange={(e) => upd("cor", e.target.value)} /></div>
+          <div><label className={labelCls}>Voltagem</label><input className={inputCls} value={data.voltagem} onChange={(e) => upd("voltagem", e.target.value)} /></div>
+        </div>
+      </section>
+
+      <section>
+        <label className={labelCls}>Defeito Reclamado</label>
+        <textarea rows={2} className={inputCls} value={data.defeitoReclamado} onChange={(e) => upd("defeitoReclamado", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Defeito Constatado</label>
+        <textarea rows={2} className={inputCls} value={data.defeitoConstatado} onChange={(e) => upd("defeitoConstatado", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Reclamação Atendimento</label>
+        <textarea rows={3} className={inputCls} value={data.reclamacaoAtendimento} onChange={(e) => upd("reclamacaoAtendimento", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Laudo Técnico</label>
+        <textarea rows={3} className={inputCls} value={data.laudoTecnico} onChange={(e) => upd("laudoTecnico", e.target.value)} />
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-900">Peças / Orçamento</h2>
+          <button onClick={addPeca} className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold hover:bg-slate-100">+ Peça</button>
+        </div>
+        <div className="space-y-3">
+          {data.pecas.map((p, i) => (
+            <div key={i} className="rounded-md border border-slate-200 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-600">Peça #{i + 1}</span>
+                {data.pecas.length > 1 && (
+                  <button onClick={() => removePeca(i)} className="text-xs text-red-600 hover:underline">Remover</button>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <input placeholder="Qtd" className={inputCls} value={p.quantidade} onChange={(e) => updPeca(i, "quantidade", e.target.value)} />
+                <input placeholder="Código" className={inputCls} value={p.codigo} onChange={(e) => updPeca(i, "codigo", e.target.value)} />
+                <input placeholder="Valor" className={inputCls} value={p.valor} onChange={(e) => updPeca(i, "valor", e.target.value)} />
+                <input placeholder="FCTA" className={inputCls} value={p.fcta} onChange={(e) => updPeca(i, "fcta", e.target.value)} />
+                <input placeholder="OCOR" className={inputCls} value={p.ocor} onChange={(e) => updPeca(i, "ocor", e.target.value)} />
+              </div>
+              <input placeholder="Descrição" className={`${inputCls} mt-2 w-full`} value={p.descricao} onChange={(e) => updPeca(i, "descricao", e.target.value)} />
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Total Peças</label><input className={inputCls} value={data.totalPecas} onChange={(e) => upd("totalPecas", e.target.value)} /></div>
+          <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} value={data.maoDeObra} onChange={(e) => upd("maoDeObra", e.target.value)} /></div>
+          <div><label className={labelCls}>Total Orçamento</label><input className={inputCls} value={data.totalOrcamento} onChange={(e) => upd("totalOrcamento", e.target.value)} /></div>
+          <div><label className={labelCls}>Valor Orçamento</label><input className={inputCls} value={data.valorOrcamento} onChange={(e) => upd("valorOrcamento", e.target.value)} /></div>
+        </div>
+      </section>
+
+      <section>
+        <label className={labelCls}>Observação</label>
+        <textarea rows={2} className={inputCls} value={data.observacao} onChange={(e) => upd("observacao", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Validade Orçamento</label>
+        <textarea rows={2} className={inputCls} value={data.validadeOrcamento} onChange={(e) => upd("validadeOrcamento", e.target.value)} />
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Garantia Serviço (meses)</label><input className={inputCls} value={data.garantiaServicoMeses} onChange={(e) => upd("garantiaServicoMeses", e.target.value)} /></div>
+          <div><label className={labelCls}>Garantia Peças (meses)</label><input className={inputCls} value={data.garantiaPecasMeses} onChange={(e) => upd("garantiaPecasMeses", e.target.value)} /></div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Data Conclusão</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataConclusao} onChange={(e) => upd("dataConclusao", formatDate(e.target.value))} /></div>
+          <div><label className={labelCls}>Data Parecer</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataParecer} onChange={(e) => upd("dataParecer", formatDate(e.target.value))} /></div>
+        </div>
+        <label className={labelCls + " mt-3"}>Responsável</label>
+        <input className={inputCls} value={data.responsavel} onChange={(e) => upd("responsavel", e.target.value)} />
+      </section>
+    </>
   );
 }
 
