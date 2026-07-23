@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Download, Printer, Save, FolderOpen, LogOut, ArrowLeft, Camera, X } from "lucide-react";
+import { Download, Printer, Save, FolderOpen, LogOut, ArrowLeft, Camera, X, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import ParecerPreview from "@/components/ParecerPreview";
 import HisensePreview from "@/components/HisensePreview";
@@ -56,6 +56,7 @@ function Index() {
   const [savedList, setSavedList] = useState<Array<{ id: string; numero_os: string; cliente_nome: string | null; updated_at: string; tipo: string }>>([]);
   const [showList, setShowList] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
 
@@ -76,16 +77,17 @@ function Index() {
   }, [navigate]);
 
   const loadList = async () => {
-    if (!tipo) return;
-    const { data: rows, error } = await supabase
+    let query = supabase
       .from("pareceres")
       .select("id, numero_os, cliente_nome, updated_at, tipo")
-      .eq("tipo", tipo)
       .order("updated_at", { ascending: false });
+    if (tipo) query = query.eq("tipo", tipo);
+    const { data: rows, error } = await query;
     if (!error && rows) setSavedList(rows);
   };
 
   const openList = async () => {
+    setSearchTerm("");
     await loadList();
     setShowList(true);
   };
@@ -233,18 +235,81 @@ function Index() {
     return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Carregando...</div>;
   }
 
+  const listModal = showList && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 print:hidden" onClick={() => setShowList(false)}>
+      <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">Meus pareceres salvos</h2>
+          <button onClick={() => setShowList(false)} className="text-sm text-slate-500 hover:text-slate-900">Fechar</button>
+        </div>
+        <div className="relative mb-4">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            autoFocus
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por Nº OS/Sinistro, cliente ou tipo..."
+            className="w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+          />
+        </div>
+        {(() => {
+          const q = searchTerm.trim().toLowerCase();
+          const filtered = q
+            ? savedList.filter((r) =>
+                [r.numero_os, r.cliente_nome ?? "", r.tipo]
+                  .join(" ")
+                  .toLowerCase()
+                  .includes(q),
+              )
+            : savedList;
+          return savedList.length === 0 ? (
+            <p className="text-sm text-slate-500">Nenhum parecer salvo ainda.</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-sm text-slate-500">Nenhum resultado para "{searchTerm}".</p>
+          ) : (
+            <ul className="divide-y divide-slate-200">
+              {filtered.map((row) => (
+                <li key={row.id} className="flex items-center justify-between gap-3 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      <span className="mr-2 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] uppercase text-slate-700">{row.tipo}</span>
+                      {row.tipo === "assurant" ? "Sinistro" : "OS"} {row.numero_os}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {row.cliente_nome ?? "—"} · atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => loadParecer(row.id)} className="rounded-md bg-slate-900 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800">Abrir</button>
+                    <button onClick={() => deleteParecer(row.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50">Excluir</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          );
+        })()}
+      </div>
+    </div>
+  );
+
   // Model picker screen
   if (!tipo) {
     return (
       <div className="min-h-screen bg-slate-100">
+        {listModal}
         <header className="border-b bg-white px-6 py-3 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold text-slate-900">Gerador de Parecer Técnico</h1>
             <p className="text-xs text-slate-500">Vox Grupo · {userEmail}</p>
           </div>
-          <button onClick={signOut} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-            <LogOut className="h-4 w-4" /> Sair
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+              <FolderOpen className="h-4 w-4" /> Meus pareceres
+            </button>
+            <button onClick={signOut} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+              <LogOut className="h-4 w-4" /> Sair
+            </button>
+          </div>
         </header>
         <main className="mx-auto max-w-5xl px-6 py-12">
           <h2 className="mb-2 text-2xl font-bold text-slate-900">Escolha o modelo de parecer</h2>
@@ -350,36 +415,7 @@ function Index() {
         </div>
       </header>
 
-      {showList && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 print:hidden" onClick={() => setShowList(false)}>
-          <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">Meus pareceres salvos</h2>
-              <button onClick={() => setShowList(false)} className="text-sm text-slate-500 hover:text-slate-900">Fechar</button>
-            </div>
-            {savedList.length === 0 ? (
-              <p className="text-sm text-slate-500">Nenhum parecer salvo ainda.</p>
-            ) : (
-              <ul className="divide-y divide-slate-200">
-                {savedList.map((row) => (
-                  <li key={row.id} className="flex items-center justify-between gap-3 py-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">OS {row.numero_os}</p>
-                      <p className="text-xs text-slate-500">
-                        {row.cliente_nome ?? "—"} · atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => loadParecer(row.id)} className="rounded-md bg-slate-900 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800">Abrir</button>
-                      <button onClick={() => deleteParecer(row.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50">Excluir</button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      )}
+      {listModal}
 
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 p-6 lg:grid-cols-[420px_1fr] print:block print:p-0">
         {/* FORM */}
