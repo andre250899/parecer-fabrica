@@ -59,6 +59,8 @@ import {
 } from "@/lib/atendimentos.functions";
 import { extrairDadosWhirlpool } from "@/lib/pdf-extract.functions";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
 
 const SITUACAO_LABEL: Record<string, string> = {
   em_aberto: "Em aberto",
