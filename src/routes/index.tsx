@@ -582,7 +582,13 @@ function Index() {
   };
 
   const deleteAtendimentoHandler = async (id: string) => {
-    if (!confirm("Excluir este atendimento?")) return;
+    const pwd = window.prompt("Exclusão protegida — informe a senha de administrador:");
+    if (pwd === null) return;
+    if (pwd !== "V271088") {
+      toast.error("Senha incorreta. Exclusão cancelada.");
+      return;
+    }
+    if (!confirm("Confirmar exclusão deste atendimento? Esta ação não pode ser desfeita.")) return;
     await removeAtendimento({ data: { id } });
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
     if (whirlpoolAtendimentoId === id) {
