@@ -1,0 +1,1 @@
+ALTER TABLE public.atendimentos ADD COLUMN IF NOT EXISTS situacao TEXT NOT NULL DEFAULT 'em_aberto';

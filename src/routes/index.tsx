@@ -60,6 +60,20 @@ import {
 import { extrairDadosWhirlpool } from "@/lib/pdf-extract.functions";
 import { toast } from "sonner";
 
+const SITUACAO_LABEL: Record<string, string> = {
+  em_aberto: "Em aberto",
+  concluido: "Concluído",
+  realizar_pedido: "Realizar pedido",
+  cancelado: "Cancelado",
+};
+
+const SITUACAO_STYLE: Record<string, { border: string; bg: string; badge: string; dot: string; label: string }> = {
+  em_aberto: { border: "border-amber-400", bg: "bg-amber-50", badge: "bg-amber-100 text-amber-800", dot: "bg-amber-500", label: "Em aberto" },
+  concluido: { border: "border-emerald-500", bg: "bg-emerald-50", badge: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-500", label: "Concluído" },
+  realizar_pedido: { border: "border-sky-500", bg: "bg-sky-50", badge: "bg-sky-100 text-sky-800", dot: "bg-sky-500", label: "Realizar pedido" },
+  cancelado: { border: "border-rose-500", bg: "bg-rose-50", badge: "bg-rose-100 text-rose-700", dot: "bg-rose-500", label: "Cancelado" },
+};
+
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
@@ -102,6 +116,7 @@ function Index() {
   const [agendaSearch, setAgendaSearch] = useState("");
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
+  const [saveSituacaoOpen, setSaveSituacaoOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
@@ -372,7 +387,9 @@ function Index() {
     setModo("whirlpool");
   };
 
-  const saveWhirlpoolAtendimento = async () => {
+  const saveWhirlpoolAtendimento = async (
+    situacao: "em_aberto" | "concluido" | "realizar_pedido" | "cancelado",
+  ) => {
     if (!whirlpool.numeroOS.trim()) {
       toast.error("Informe o Nº OS antes de salvar.");
       return;
@@ -387,11 +404,13 @@ function Index() {
         status: "agendado",
         data_agenda: agendaDate,
         periodo: whirlpool.periodo === "MANHÃ" ? "manha" : whirlpool.periodo === "TARDE" ? "tarde" : "",
+        situacao,
       },
     });
     setWhirlpoolAtendimentoId(result.id);
+    setSaveSituacaoOpen(false);
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
-    toast.success(`Atendimento ${whirlpool.numeroOS} salvo na agenda.`);
+    toast.success(`Atendimento ${whirlpool.numeroOS} salvo como ${SITUACAO_LABEL[situacao]}.`);
   };
 
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
@@ -804,6 +823,18 @@ function Index() {
           </div>
 
           <div className="relative">
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-sm">
+              <span className="font-semibold text-slate-600">Situação:</span>
+              {(["concluido", "em_aberto", "realizar_pedido", "cancelado"] as const).map((s) => {
+                const st = SITUACAO_STYLE[s];
+                return (
+                  <span key={s} className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 ${st.badge}`}>
+                    <span className={`h-2 w-2 rounded-full ${st.dot}`} />
+                    {st.label}
+                  </span>
+                );
+              })}
+            </div>
             <button
               onClick={() => shiftAgendaDate(-1)}
               className="absolute -left-3 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition hover:scale-105 hover:bg-slate-50 md:inline-flex"
@@ -935,7 +966,13 @@ function Index() {
                 <WhirlpoolForm data={whirlpool} setData={setWhirlpool} inputCls={inputCls} labelCls={labelCls} formatDate={formatDate} />
                 <div className="flex gap-2">
                   <button
-                    onClick={saveWhirlpoolAtendimento}
+                    onClick={() => {
+                      if (!whirlpool.numeroOS.trim()) {
+                        toast.error("Informe o Nº OS antes de salvar.");
+                        return;
+                      }
+                      setSaveSituacaoOpen(true);
+                    }}
                     className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
                   >
                     <Save className="h-4 w-4" /> Salvar na agenda
@@ -951,6 +988,41 @@ function Index() {
               <main className="overflow-x-auto">
                 <WhirlpoolPreview data={whirlpool} />
               </main>
+            </div>
+          )}
+
+          {saveSituacaoOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 print:hidden">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-slate-900">Salvar atendimento como…</h3>
+                  <p className="mt-1 text-xs text-slate-500">Escolha a situação do atendimento OS {whirlpool.numeroOS}.</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {(["concluido", "em_aberto", "realizar_pedido", "cancelado"] as const).map((s) => {
+                    const st = SITUACAO_STYLE[s];
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => saveWhirlpoolAtendimento(s)}
+                        className={`flex items-center justify-between rounded-lg border-2 ${st.border} ${st.bg} px-4 py-3 text-left transition hover:brightness-95`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className={`h-3 w-3 rounded-full ${st.dot}`} />
+                          <span className="text-sm font-semibold text-slate-900">{st.label}</span>
+                        </span>
+                        <Save className="h-4 w-4 text-slate-500" />
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setSaveSituacaoOpen(false)}
+                  className="mt-4 w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           )}
         </main>
@@ -1200,7 +1272,7 @@ function AgendaCard({
   onUnschedule,
   onDragStart,
 }: {
-  row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown };
+  row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown; situacao?: string | null };
   draggable?: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -1208,6 +1280,8 @@ function AgendaCard({
   onDragStart?: () => void;
 }) {
   const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string }) ?? {};
+  const sit = (row.situacao || "em_aberto") as keyof typeof SITUACAO_STYLE;
+  const st = SITUACAO_STYLE[sit] ?? SITUACAO_STYLE.em_aberto;
   return (
     <div
       draggable={draggable}
@@ -1216,7 +1290,7 @@ function AgendaCard({
         e.dataTransfer.setData("text/plain", `atendimento:${row.id}`);
         onDragStart?.();
       }}
-      className="group cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-400 hover:shadow-md active:cursor-grabbing"
+      className={`group cursor-grab rounded-lg border-l-4 ${st.border} border-y border-r border-slate-200 ${st.bg} p-3 shadow-sm transition hover:shadow-md active:cursor-grabbing`}
     >
       <div className="mb-1 flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
@@ -1237,6 +1311,10 @@ function AgendaCard({
             OS {row.numero_os}
             <FileText className="h-3 w-3" />
           </button>
+          <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${st.badge}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
+            {st.label}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           {onUnschedule && (
