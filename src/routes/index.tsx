@@ -698,7 +698,7 @@ function Index() {
               <FolderOpen className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Meus pareceres salvos</h2>
+              <h2 className="text-xl font-bold">Atendimentos salvos</h2>
               <p className="text-xs text-white/70">
                 {filteredList.length} {filteredList.length === 1 ? "parecer" : "pareceres"} no total
               </p>
@@ -904,7 +904,7 @@ function Index() {
               <Calendar className="h-4 w-4" /> Agenda
             </button>
             <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-              <FolderOpen className="h-4 w-4" /> Meus pareceres
+              <FolderOpen className="h-4 w-4" /> Atendimentos
             </button>
             <button onClick={signOut} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
               <LogOut className="h-4 w-4" /> Sair
@@ -1067,7 +1067,7 @@ function Index() {
                 <Plus className="h-4 w-4" /> Novo atendimento
               </button>
               <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                <FolderOpen className="h-4 w-4" /> Meus pareceres
+                <FolderOpen className="h-4 w-4" /> Atendimentos
               </button>
               <button onClick={signOut} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                 <LogOut className="h-4 w-4" /> Sair
@@ -1403,7 +1403,7 @@ function Index() {
               className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
             >
               <FolderOpen className="h-4 w-4" aria-hidden="true" />
-              Meus pareceres
+              Atendimentos
             </button>
             <button
               onClick={() => handlePrint()}
