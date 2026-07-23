@@ -1260,7 +1260,7 @@ function AgendaCard({
   onUnschedule,
   onDragStart,
 }: {
-  row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown };
+  row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown; situacao?: string | null };
   draggable?: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -1268,6 +1268,8 @@ function AgendaCard({
   onDragStart?: () => void;
 }) {
   const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string }) ?? {};
+  const sit = (row.situacao || "em_aberto") as keyof typeof SITUACAO_STYLE;
+  const st = SITUACAO_STYLE[sit] ?? SITUACAO_STYLE.em_aberto;
   return (
     <div
       draggable={draggable}
@@ -1276,7 +1278,7 @@ function AgendaCard({
         e.dataTransfer.setData("text/plain", `atendimento:${row.id}`);
         onDragStart?.();
       }}
-      className="group cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-400 hover:shadow-md active:cursor-grabbing"
+      className={`group cursor-grab rounded-lg border-l-4 ${st.border} border-y border-r border-slate-200 ${st.bg} p-3 shadow-sm transition hover:shadow-md active:cursor-grabbing`}
     >
       <div className="mb-1 flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
@@ -1297,6 +1299,10 @@ function AgendaCard({
             OS {row.numero_os}
             <FileText className="h-3 w-3" />
           </button>
+          <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${st.badge}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
+            {st.label}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           {onUnschedule && (
