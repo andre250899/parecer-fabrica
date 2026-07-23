@@ -775,6 +775,7 @@ function Index() {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {leaveModal}
         <header className="border-b bg-white px-6 py-3 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold text-slate-900">Gerador de Parecer Técnico</h1>
@@ -864,6 +865,7 @@ function Index() {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {leaveModal}
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-3">
@@ -1272,6 +1274,7 @@ function Index() {
       </header>
 
       {listModal}
+        {leaveModal}
 
       {!isInstalled && (
         <button
