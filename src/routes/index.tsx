@@ -83,6 +83,29 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
+type SavedListRow = {
+  id: string;
+  numero_os: string;
+  cliente_nome: string | null;
+  updated_at: string;
+  tipo: string;
+  source: "atendimento" | "parecer";
+  data_agenda?: string | null;
+  periodo?: string | null;
+  status?: string | null;
+  dados?: unknown;
+};
+
+const normalizeAgendaDate = (value?: string | null) => {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+  const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  const day = match?.[1];
+  const month = match?.[2];
+  const year = match?.[3];
+  return day && month && year ? `${year}-${month}-${day}` : value;
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -116,7 +139,7 @@ function Index() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [savedList, setSavedList] = useState<Array<{ id: string; numero_os: string; cliente_nome: string | null; updated_at: string; tipo: string }>>([]);
+  const [savedList, setSavedList] = useState<SavedListRow[]>([]);
   const [showList, setShowList] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -200,6 +223,7 @@ function Index() {
   const moveAtendimento = useServerFn(atualizarStatusAtendimento);
   const removeAtendimento = useServerFn(deletarAtendimento);
   const extractPdf = useServerFn(extrairDadosWhirlpool);
+  const skipNextWhirlpoolTodayResetRef = useRef(false);
 
   const atendimentosQuery = useQuery({
     queryKey: ["atendimentos"],
@@ -213,7 +237,11 @@ function Index() {
     // Assim, abrir um atendimento pela busca (que já ajusta a agendaDate para o dia
     // do atendimento) não é sobrescrito por este efeito.
     if (modo === "whirlpool" && prevModoRef.current !== "whirlpool") {
-      setAgendaDate(new Date().toISOString().split("T")[0]);
+      if (skipNextWhirlpoolTodayResetRef.current) {
+        skipNextWhirlpoolTodayResetRef.current = false;
+      } else {
+        setAgendaDate(new Date().toISOString().split("T")[0]);
+      }
     }
     prevModoRef.current = modo;
   }, [modo]);
@@ -235,13 +263,36 @@ function Index() {
   }, [navigate]);
 
   const loadList = async () => {
-    let query = supabase
+    let parecerQuery = supabase
       .from("pareceres")
       .select("id, numero_os, cliente_nome, updated_at, tipo")
       .order("updated_at", { ascending: false });
-    if (tipo) query = query.eq("tipo", tipo);
-    const { data: rows, error } = await query;
-    if (!error && rows) setSavedList(rows);
+    let atendimentoQuery = supabase
+      .from("atendimentos")
+      .select("id, numero_os, cliente_nome, updated_at, tipo, data_agenda, periodo, status, dados")
+      .order("updated_at", { ascending: false });
+    if (tipo) {
+      parecerQuery = parecerQuery.eq("tipo", tipo);
+      atendimentoQuery = atendimentoQuery.eq("tipo", tipo);
+    }
+    const [parecerResult, atendimentoResult] = await Promise.all([parecerQuery, atendimentoQuery]);
+    const parecerRows: SavedListRow[] = (parecerResult.data ?? []).map((row) => ({
+      ...row,
+      source: "parecer" as const,
+    }));
+    const atendimentoRows: SavedListRow[] = (atendimentoResult.data ?? []).map((row) => ({
+      ...row,
+      source: "atendimento" as const,
+    }));
+    if (parecerResult.error && atendimentoResult.error) {
+      toast.error("Erro ao carregar atendimentos salvos.");
+      return;
+    }
+    setSavedList(
+      [...atendimentoRows, ...parecerRows].sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+      ),
+    );
   };
 
   const openList = async () => {
@@ -278,6 +329,43 @@ function Index() {
   };
 
   const loadParecer = async (id: string) => {
+    const cachedRow = savedList.find((row) => row.id === id);
+    if (cachedRow?.source === "atendimento") {
+      const { data: row, error } = await supabase
+        .from("atendimentos")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) {
+        toast.error("Erro ao abrir atendimento.");
+        return;
+      }
+      const atendimentoRow = row ?? cachedRow;
+      requestLeave(() => {
+        const raw = (atendimentoRow.dados as unknown as Partial<WhirlpoolData>) ?? {};
+        const merged: WhirlpoolData = {
+          ...defaultWhirlpool,
+          ...raw,
+          pecas:
+            Array.isArray(raw.pecas) && raw.pecas.length > 0
+              ? raw.pecas
+              : defaultWhirlpool.pecas,
+        };
+        const scheduledDate = normalizeAgendaDate(atendimentoRow.data_agenda);
+        setWhirlpool(merged);
+        setWhirlpoolBaseline(JSON.stringify(merged));
+        setWhirlpoolAtendimentoId(atendimentoRow.id);
+        setTipo("whirlpool");
+        if (scheduledDate) {
+          skipNextWhirlpoolTodayResetRef.current = true;
+          setAgendaDate(scheduledDate);
+        }
+        setModo("whirlpool");
+        setShowList(false);
+        setSearchTerm("");
+      }, "Abrir outro atendimento vai descartar as alterações não salvas do atual. O que deseja fazer?");
+      return;
+    }
     const { data: row, error } = await supabase.from("pareceres").select("data, tipo").eq("id", id).maybeSingle();
     if (!error && row) {
       const t = row.tipo as ParecerTipo;
@@ -286,6 +374,7 @@ function Index() {
         setWhirlpoolAtendimentoId(id);
         setWhirlpoolBaseline(JSON.stringify(row.data));
         setTipo("whirlpool");
+        skipNextWhirlpoolTodayResetRef.current = true;
         setModo("whirlpool");
       } else {
         setTipo(t);
@@ -512,12 +601,14 @@ function Index() {
       setWhirlpoolBaseline(JSON.stringify(merged));
       setWhirlpoolAtendimentoId(row.id);
       setTipo("whirlpool");
-      setModo("whirlpool");
       // Sincroniza a agenda para o dia em que o atendimento está alocado,
       // para que ao abrir pela busca o usuário veja o card na coluna correta.
-      if (row.data_agenda) {
-        setAgendaDate(row.data_agenda);
+      const scheduledDate = normalizeAgendaDate(row.data_agenda);
+      if (scheduledDate) {
+        skipNextWhirlpoolTodayResetRef.current = true;
+        setAgendaDate(scheduledDate);
       }
+      setModo("whirlpool");
     }, "Abrir outro atendimento vai descartar as alterações não salvas do atual. O que deseja fazer?");
   };
 
