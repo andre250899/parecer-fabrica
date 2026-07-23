@@ -560,6 +560,47 @@ function Index() {
     }
   };
 
+  const novoAtendimentoAutoSave = async () => {
+    const os = window.prompt("Informe o Nº da OS para o novo atendimento:")?.trim();
+    if (!os) {
+      toast.error("Nº OS obrigatório para criar o atendimento.");
+      return;
+    }
+    const existente = atendimentosQuery.data?.find(
+      (a) => a.tipo === "whirlpool" && a.numero_os.trim() === os,
+    );
+    if (existente) {
+      toast.info(`Já existe um atendimento com a OS ${os}. Abrindo o existente.`);
+      openAtendimento(existente.id);
+      return;
+    }
+    const base: WhirlpoolData = { ...defaultWhirlpool, numeroOS: os };
+    try {
+      const result = await saveAtendimento({
+        data: {
+          numero_os: os,
+          tipo: "whirlpool",
+          cliente_nome: null,
+          dados: base as unknown as Record<string, unknown>,
+          status: "nao_agendado",
+          data_agenda: "",
+          periodo: "",
+          situacao: "em_aberto",
+        },
+      });
+      setWhirlpool(base);
+      setWhirlpoolBaseline(JSON.stringify(base));
+      setWhirlpoolAtendimentoId(result.id);
+      setTipo("whirlpool");
+      setModo("whirlpool");
+      queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+      toast.success(`Atendimento ${os} criado e disponível na pesquisa.`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Erro ao criar atendimento.");
+    }
+  };
+
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     const dadosAtuais = (row?.dados as Record<string, unknown> | undefined) ?? {};
@@ -698,7 +739,7 @@ function Index() {
               <FolderOpen className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Meus pareceres salvos</h2>
+              <h2 className="text-xl font-bold">Atendimentos salvos</h2>
               <p className="text-xs text-white/70">
                 {filteredList.length} {filteredList.length === 1 ? "parecer" : "pareceres"} no total
               </p>
@@ -904,7 +945,7 @@ function Index() {
               <Calendar className="h-4 w-4" /> Agenda
             </button>
             <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-              <FolderOpen className="h-4 w-4" /> Meus pareceres
+              <FolderOpen className="h-4 w-4" /> Atendimentos
             </button>
             <button onClick={signOut} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
               <LogOut className="h-4 w-4" /> Sair
@@ -1055,11 +1096,7 @@ function Index() {
               <button
                 onClick={() => {
                   requestLeave(() => {
-                    setWhirlpool(defaultWhirlpool);
-                    setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
-                    setWhirlpoolAtendimentoId(null);
-                    setTipo("whirlpool");
-                    setModo("whirlpool");
+                    void novoAtendimentoAutoSave();
                   }, "Criar um novo atendimento vai descartar as alterações não salvas do atual. Continuar?");
                 }}
                 className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -1067,7 +1104,7 @@ function Index() {
                 <Plus className="h-4 w-4" /> Novo atendimento
               </button>
               <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                <FolderOpen className="h-4 w-4" /> Meus pareceres
+                <FolderOpen className="h-4 w-4" /> Atendimentos
               </button>
               <button onClick={signOut} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
                 <LogOut className="h-4 w-4" /> Sair
@@ -1403,7 +1440,7 @@ function Index() {
               className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
             >
               <FolderOpen className="h-4 w-4" aria-hidden="true" />
-              Meus pareceres
+              Atendimentos
             </button>
             <button
               onClick={() => handlePrint()}
