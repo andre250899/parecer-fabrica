@@ -1155,6 +1155,7 @@ function DropZone({
     <section
       onDragOver={(e) => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
         setDragOver(true);
       }}
       onDragLeave={() => setDragOver(false)}
@@ -1168,7 +1169,8 @@ function DropZone({
           onPdfDrop?.(file);
           return;
         }
-        const id = e.dataTransfer.getData("atendimentoId");
+        const raw = e.dataTransfer.getData("text/plain");
+        const id = raw.startsWith("atendimento:") ? raw.slice("atendimento:".length) : "";
         if (id) onDrop(id);
       }}
       className={`rounded-xl border-2 p-4 shadow-sm transition ${dragOver ? "border-cyan-500 bg-cyan-50/50" : "border-slate-200 bg-white"}`}
