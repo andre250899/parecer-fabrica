@@ -520,6 +520,9 @@ function Index() {
     }
     const osTrim = whirlpool.numeroOS.trim();
     let idAlvo = whirlpoolAtendimentoId ?? undefined;
+    let existenteRow = idAlvo
+      ? atendimentosQuery.data?.find((a) => a.id === idAlvo)
+      : undefined;
     if (!idAlvo) {
       const existente = atendimentosQuery.data?.find(
         (a) => a.tipo === "whirlpool" && a.numero_os.trim() === osTrim,
@@ -533,8 +536,16 @@ function Index() {
           return;
         }
         idAlvo = existente.id;
+        existenteRow = existente;
       }
     }
+    // Preserve current agenda placement so changing situação never removes
+    // the atendimento from where the user parked it on the agenda.
+    const preservedStatus = (existenteRow?.status as "nao_agendado" | "agendado" | "concluido" | undefined) ?? "agendado";
+    const preservedData = existenteRow?.data_agenda ?? (preservedStatus === "agendado" ? agendaDate : "");
+    const preservedPeriodo =
+      (existenteRow?.periodo as "manha" | "tarde" | "" | null | undefined) ??
+      (whirlpool.periodo === "MANHÃ" ? "manha" : whirlpool.periodo === "TARDE" ? "tarde" : "");
     const result = await saveAtendimento({
       data: {
         id: idAlvo,
@@ -542,9 +553,9 @@ function Index() {
         tipo: "whirlpool",
         cliente_nome: whirlpool.consumidor || null,
         dados: whirlpool as unknown as Record<string, unknown>,
-        status: "agendado",
-        data_agenda: agendaDate,
-        periodo: whirlpool.periodo === "MANHÃ" ? "manha" : whirlpool.periodo === "TARDE" ? "tarde" : "",
+        status: preservedStatus,
+        data_agenda: preservedData || "",
+        periodo: (preservedPeriodo || "") as "manha" | "tarde" | "",
         situacao,
       },
     });
