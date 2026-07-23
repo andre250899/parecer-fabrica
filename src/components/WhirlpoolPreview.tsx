@@ -233,11 +233,20 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
           </p>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "18px" }}>
             <div>
-              ____/____/__________<br />
+              {data.dataAprovacao || "____/____/__________"}<br />
               <strong>DATA DA APROVAÇÃO</strong>
             </div>
             <div style={{ textAlign: "right" }}>
-              _________________________________________<br />
+              {data.assinaturaConsumidor ? (
+                <img
+                  src={data.assinaturaConsumidor}
+                  alt="Assinatura"
+                  style={{ height: "40px", display: "inline-block", borderBottom: "1px solid #000" }}
+                />
+              ) : (
+                <>_________________________________________</>
+              )}
+              <br />
               <strong>ASSINATURA DO CONSUMIDOR</strong>
             </div>
           </div>

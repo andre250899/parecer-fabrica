@@ -27,6 +27,7 @@ import ParecerPreview from "@/components/ParecerPreview";
 import HisensePreview from "@/components/HisensePreview";
 import AssurantPreview from "@/components/AssurantPreview";
 import WhirlpoolPreview from "@/components/WhirlpoolPreview";
+import SignaturePad from "@/components/SignaturePad";
 import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
@@ -1332,6 +1333,10 @@ function WhirlpoolForm({
         <div className="grid grid-cols-2 gap-3">
           <div><label className={labelCls}>Data da Aprovação</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataAprovacao} onChange={(e) => upd("dataAprovacao", formatDate(e.target.value))} /></div>
           <div><label className={labelCls}>Data Parecer</label><input disabled={!advanced} className={lockCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataParecer} onChange={(e) => upd("dataParecer", formatDate(e.target.value))} /></div>
+        </div>
+        <div className="mt-4">
+          <label className={labelCls}>Assinatura do Consumidor</label>
+          <SignaturePad value={data.assinaturaConsumidor} onChange={(v) => upd("assinaturaConsumidor", v)} />
         </div>
         <label className={labelCls + " mt-3"}>Observação</label>
         <textarea rows={2} disabled={!advanced} className={lockCls} value={data.observacao} onChange={(e) => upd("observacao", e.target.value)} />
