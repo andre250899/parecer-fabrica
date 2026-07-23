@@ -145,31 +145,43 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
         *** Consultar a vista explodida no sistema para inserir o código correto da peça. ***
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 12px" }}>
-        {data.fotos.map((f, i) => (
-          <div key={i} data-avoid-break>
-            <div style={photoCaptionStyle}>{f.legenda}</div>
-            <div
-              style={{
-                background: "#fff",
-                border: "1px solid #000",
-                borderTop: "none",
-                height: 130,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-              }}
-            >
-              {f.dataUrl ? (
-                <img src={f.dataUrl} alt={f.legenda} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-              ) : (
-                <span style={{ color: "#bbb", fontSize: 10 }}>&nbsp;</span>
-              )}
+      {[0, 4].map((start) => (
+        <div
+          key={start}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "10px 12px",
+            marginTop: start === 0 ? 0 : 10,
+            pageBreakBefore: start === 4 ? "always" : "auto",
+            breakBefore: start === 4 ? "page" : "auto",
+          }}
+        >
+          {data.fotos.slice(start, start + 4).map((f, i) => (
+            <div key={i} data-avoid-break>
+              <div style={photoCaptionStyle}>{f.legenda}</div>
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #000",
+                  borderTop: "none",
+                  height: 220,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                {f.dataUrl ? (
+                  <img src={f.dataUrl} alt={f.legenda} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                ) : (
+                  <span style={{ color: "#bbb", fontSize: 10 }}>&nbsp;</span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ))}
 
       <p style={{ fontSize: 11, fontStyle: "italic", marginTop: 12, marginBottom: 4 }}>
         Detalhamento da Tensão de Alimentação do Produto:
