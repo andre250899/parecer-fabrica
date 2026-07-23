@@ -120,6 +120,8 @@ function Index() {
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
   const [saveSituacaoOpen, setSaveSituacaoOpen] = useState(false);
+  const [leaveGuard, setLeaveGuard] = useState<{ action: () => void; message: string } | null>(null);
+  const [postSaveAction, setPostSaveAction] = useState<(() => void) | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
@@ -130,11 +132,30 @@ function Index() {
     JSON.stringify(whirlpool) !== whirlpoolBaseline;
 
   const confirmLeaveIfDirty = (message?: string) => {
-    if (!isWhirlpoolDirty) return true;
-    return window.confirm(
-      message ??
-        "Você tem alterações não salvas neste atendimento. Deseja sair mesmo assim? As mudanças serão perdidas.",
-    );
+    // Legacy sync guard kept as no-op fallback — modal-based requestLeave handles UX.
+    return !isWhirlpoolDirty;
+  };
+
+  const requestLeave = (action: () => void, message?: string) => {
+    if (!isWhirlpoolDirty) {
+      action();
+      return;
+    }
+    setLeaveGuard({
+      action,
+      message:
+        message ??
+        "Você tem alterações não salvas neste atendimento. O que deseja fazer?",
+    });
+  };
+
+  const discardWhirlpoolChanges = () => {
+    try {
+      const base = JSON.parse(whirlpoolBaseline) as WhirlpoolData;
+      setWhirlpool(base);
+    } catch {
+      setWhirlpool(defaultWhirlpool);
+    }
   };
 
   useEffect(() => {
@@ -252,9 +273,10 @@ function Index() {
   };
 
   const signOut = async () => {
-    if (!confirmLeaveIfDirty("Você tem alterações não salvas. Sair da conta mesmo assim?")) return;
-    await supabase.auth.signOut();
-    navigate({ to: "/auth" });
+    requestLeave(async () => {
+      await supabase.auth.signOut();
+      navigate({ to: "/auth" });
+    }, "Você tem alterações não salvas neste atendimento. O que deseja fazer antes de sair da conta?");
   };
 
   useEffect(() => {
@@ -443,13 +465,14 @@ function Index() {
   const openAtendimento = (id: string) => {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     if (!row) return;
-    if (!confirmLeaveIfDirty()) return;
-    const dados = (row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool;
-    setWhirlpool(dados);
-    setWhirlpoolBaseline(JSON.stringify(dados));
-    setWhirlpoolAtendimentoId(row.id);
-    setTipo("whirlpool");
-    setModo("whirlpool");
+    requestLeave(() => {
+      const dados = (row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool;
+      setWhirlpool(dados);
+      setWhirlpoolBaseline(JSON.stringify(dados));
+      setWhirlpoolAtendimentoId(row.id);
+      setTipo("whirlpool");
+      setModo("whirlpool");
+    }, "Abrir outro atendimento vai descartar as alterações não salvas do atual. O que deseja fazer?");
   };
 
   const saveWhirlpoolAtendimento = async (
@@ -494,6 +517,11 @@ function Index() {
     setSaveSituacaoOpen(false);
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
     toast.success(`Atendimento ${whirlpool.numeroOS} salvo como ${SITUACAO_LABEL[situacao]}.`);
+    if (postSaveAction) {
+      const act = postSaveAction;
+      setPostSaveAction(null);
+      act();
+    }
   };
 
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
@@ -690,11 +718,70 @@ function Index() {
     </div>
   );
 
+  const leaveModal = leaveGuard && (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm print:hidden"
+      onClick={() => setLeaveGuard(null)}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-4 text-white">
+          <div className="rounded-lg bg-white/20 p-2">
+            <Save className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold">Alterações não salvas</h3>
+            <p className="text-[11px] text-white/85">Proteja seu trabalho antes de sair</p>
+          </div>
+        </div>
+        <div className="px-6 py-5">
+          <p className="text-sm text-slate-700">{leaveGuard.message}</p>
+          <div className="mt-5 flex flex-col gap-2">
+            <button
+              onClick={() => {
+                if (!whirlpool.numeroOS.trim()) {
+                  toast.error("Informe o Nº OS antes de salvar.");
+                  return;
+                }
+                setPostSaveAction(() => leaveGuard.action);
+                setLeaveGuard(null);
+                setSaveSituacaoOpen(true);
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+            >
+              <Save className="h-4 w-4" /> Salvar agora
+            </button>
+            <button
+              onClick={() => {
+                const act = leaveGuard.action;
+                discardWhirlpoolChanges();
+                setLeaveGuard(null);
+                act();
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+            >
+              <X className="h-4 w-4" /> Descartar alterações e sair
+            </button>
+            <button
+              onClick={() => setLeaveGuard(null)}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Continuar editando
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Home screen
   if (modo === "home") {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {leaveModal}
         <header className="border-b bg-white px-6 py-3 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold text-slate-900">Gerador de Parecer Técnico</h1>
@@ -784,10 +871,11 @@ function Index() {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {leaveModal}
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-3">
-              <button onClick={() => { if (confirmLeaveIfDirty()) setModo("home"); }} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
+              <button onClick={() => requestLeave(() => setModo("home"), "Você tem alterações não salvas neste atendimento. Sair para o menu inicial?")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div>
@@ -837,12 +925,13 @@ function Index() {
               )}
               <button
                 onClick={() => {
-                  if (!confirmLeaveIfDirty()) return;
-                  setWhirlpool(defaultWhirlpool);
-                  setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
-                  setWhirlpoolAtendimentoId(null);
-                  setTipo("whirlpool");
-                  setModo("whirlpool");
+                  requestLeave(() => {
+                    setWhirlpool(defaultWhirlpool);
+                    setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
+                    setWhirlpoolAtendimentoId(null);
+                    setTipo("whirlpool");
+                    setModo("whirlpool");
+                  }, "Criar um novo atendimento vai descartar as alterações não salvas do atual. Continuar?");
                 }}
                 className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
               >
@@ -1108,7 +1197,7 @@ function Index() {
                   })}
                 </div>
                 <button
-                  onClick={() => setSaveSituacaoOpen(false)}
+                  onClick={() => { setSaveSituacaoOpen(false); setPostSaveAction(null); }}
                   className="mt-4 w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Cancelar
@@ -1129,7 +1218,7 @@ function Index() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
           <div>
             <div className="flex items-center gap-3">
-              <button onClick={() => { if (confirmLeaveIfDirty()) setModo("home"); }} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
+              <button onClick={() => requestLeave(() => setModo("home"), "Você tem alterações não salvas. Trocar de modelo mesmo assim?")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <h1 className="text-lg font-bold text-slate-900">
@@ -1191,6 +1280,7 @@ function Index() {
       </header>
 
       {listModal}
+        {leaveModal}
 
       {!isInstalled && (
         <button
