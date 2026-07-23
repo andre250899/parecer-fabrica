@@ -255,6 +255,8 @@ export const defaultWhirlpool: WhirlpoolData = {
   responsavel: "Jefferson Hoffmann",
   dataParecer: "",
   assinaturaConsumidor: "",
+  anexoNotaFiscal: "",
+  anexoEtiqueta: "",
 };
 
 // Compress an image file to a JPEG data URL, max ~900px, quality 0.72
