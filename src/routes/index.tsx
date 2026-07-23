@@ -236,58 +236,131 @@ function Index() {
   }
 
   const listModal = showList && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 print:hidden" onClick={() => setShowList(false)}>
-      <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900">Meus pareceres salvos</h2>
-          <button onClick={() => setShowList(false)} className="text-sm text-slate-500 hover:text-slate-900">Fechar</button>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:hidden"
+      onClick={() => setShowList(false)}
+    >
+      <div
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-slate-700 px-6 py-5 text-white">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-white/10 p-2.5">
+              <FolderOpen className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Meus pareceres salvos</h2>
+              <p className="text-xs text-white/70">
+                {savedList.length} {savedList.length === 1 ? "parecer" : "pareceres"} no total
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowList(false)}
+            className="rounded-lg p-2 text-white/80 transition hover:bg-white/10 hover:text-white"
+            title="Fechar"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        <div className="relative mb-4">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            autoFocus
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por Nº OS/Sinistro, cliente ou tipo..."
-            className="w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
-          />
+        <div className="border-b border-slate-100 bg-slate-50 px-6 py-4">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <input
+              autoFocus
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por Nº OS, Sinistro, cliente ou tipo..."
+              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm shadow-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+            />
+          </div>
         </div>
-        {(() => {
-          const q = searchTerm.trim().toLowerCase();
-          const filtered = q
-            ? savedList.filter((r) =>
-                [r.numero_os, r.cliente_nome ?? "", r.tipo]
-                  .join(" ")
-                  .toLowerCase()
-                  .includes(q),
-              )
-            : savedList;
-          return savedList.length === 0 ? (
-            <p className="text-sm text-slate-500">Nenhum parecer salvo ainda.</p>
-          ) : filtered.length === 0 ? (
-            <p className="text-sm text-slate-500">Nenhum resultado para "{searchTerm}".</p>
-          ) : (
-            <ul className="divide-y divide-slate-200">
-              {filtered.map((row) => (
-                <li key={row.id} className="flex items-center justify-between gap-3 py-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      <span className="mr-2 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] uppercase text-slate-700">{row.tipo}</span>
-                      {row.tipo === "assurant" ? "Sinistro" : "OS"} {row.numero_os}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {row.cliente_nome ?? "—"} · atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
-                    </p>
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {(() => {
+            const q = searchTerm.trim().toLowerCase();
+            const filtered = q
+              ? savedList.filter((r) =>
+                  [r.numero_os, r.cliente_nome ?? "", r.tipo]
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(q),
+                )
+              : savedList;
+            const tipoBadge = (t: string) => {
+              if (t === "vox") return "bg-blue-100 text-blue-800";
+              if (t === "hisense") return "bg-red-100 text-red-800";
+              return "bg-slate-200 text-slate-800";
+            };
+            if (savedList.length === 0) {
+              return (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="mb-4 rounded-full bg-slate-100 p-5">
+                    <FolderOpen className="h-10 w-10 text-slate-400" />
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => loadParecer(row.id)} className="rounded-md bg-slate-900 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800">Abrir</button>
-                    <button onClick={() => deleteParecer(row.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50">Excluir</button>
+                  <p className="text-base font-semibold text-slate-700">Nenhum parecer salvo ainda</p>
+                  <p className="mt-1 text-sm text-slate-500">Salve seu primeiro parecer para vê-lo listado aqui.</p>
+                </div>
+              );
+            }
+            if (filtered.length === 0) {
+              return (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="mb-4 rounded-full bg-slate-100 p-5">
+                    <Search className="h-10 w-10 text-slate-400" />
                   </div>
-                </li>
-              ))}
-            </ul>
-          );
-        })()}
+                  <p className="text-base font-semibold text-slate-700">Nenhum resultado encontrado</p>
+                  <p className="mt-1 text-sm text-slate-500">Não encontramos pareceres para "{searchTerm}".</p>
+                </div>
+              );
+            }
+            return (
+              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((row) => (
+                  <li
+                    key={row.id}
+                    className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md"
+                  >
+                    <div>
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tipoBadge(row.tipo)}`}>
+                          {row.tipo}
+                        </span>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          {new Date(row.updated_at).toLocaleDateString("pt-BR")}
+                        </span>
+                      </div>
+                      <p className="text-base font-bold text-slate-900">
+                        {row.tipo === "assurant" ? "Sinistro" : "OS"} {row.numero_os}
+                      </p>
+                      <p className="mt-1 line-clamp-1 text-sm text-slate-600">
+                        {row.cliente_nome ?? "Sem cliente informado"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        Atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        onClick={() => loadParecer(row.id)}
+                        className="flex-1 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        Abrir
+                      </button>
+                      <button
+                        onClick={() => deleteParecer(row.id)}
+                        className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                        title="Excluir"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
+        </div>
       </div>
     </div>
   );
