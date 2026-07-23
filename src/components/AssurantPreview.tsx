@@ -5,12 +5,14 @@ const cellStyle: React.CSSProperties = {
   padding: "6px 8px",
   fontSize: 11,
   verticalAlign: "top",
+  height: 22,
 };
 const labelStyle: React.CSSProperties = {
   ...cellStyle,
   fontWeight: 700,
   background: "#dbeafe",
   whiteSpace: "nowrap",
+  width: "22%",
 };
 const headerBar: React.CSSProperties = {
   background: "#1e3a8a",
@@ -59,37 +61,55 @@ export default function AssurantPreview({ data }: { data: AssurantData }) {
       </div>
 
       <div style={headerBar}>ASSISTÊNCIA TÉCNICA</div>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 6 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 6, tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: "22%" }} />
+          <col style={{ width: "28%" }} />
+          <col style={{ width: "22%" }} />
+          <col style={{ width: "28%" }} />
+        </colgroup>
         <tbody>
           <tr>
             <td style={labelStyle}>Assistência:</td>
-            <td style={cellStyle}>{data.assistencia}</td>
+            <td style={cellStyle}>{data.assistencia || "\u00A0"}</td>
             <td style={labelStyle}>CNPJ:</td>
-            <td style={cellStyle}>{data.cnpj}</td>
+            <td style={cellStyle}>{data.cnpj || "\u00A0"}</td>
           </tr>
         </tbody>
       </table>
 
       <div style={headerBar}>CONSUMIDOR</div>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 6 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 6, tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: "22%" }} />
+          <col style={{ width: "28%" }} />
+          <col style={{ width: "22%" }} />
+          <col style={{ width: "28%" }} />
+        </colgroup>
         <tbody>
           <tr>
             <td style={labelStyle}>Serial:</td>
-            <td style={cellStyle}>{data.serial}</td>
+            <td style={cellStyle}>{data.serial || "\u00A0"}</td>
             <td style={labelStyle}>Sinistro:</td>
-            <td style={cellStyle}>{data.sinistro}</td>
+            <td style={cellStyle}>{data.sinistro || "\u00A0"}</td>
           </tr>
         </tbody>
       </table>
 
       <div style={headerBar}>PRODUTO</div>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 6 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 6, tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: "22%" }} />
+          <col style={{ width: "28%" }} />
+          <col style={{ width: "22%" }} />
+          <col style={{ width: "28%" }} />
+        </colgroup>
         <tbody>
           <tr>
             <td style={labelStyle}>Marca:</td>
-            <td style={cellStyle}>{data.produtoMarca}</td>
+            <td style={cellStyle}>{data.produtoMarca || "\u00A0"}</td>
             <td style={labelStyle}>Modelo:</td>
-            <td style={cellStyle}>{data.produtoModelo}</td>
+            <td style={cellStyle}>{data.produtoModelo || "\u00A0"}</td>
           </tr>
         </tbody>
       </table>
@@ -100,23 +120,27 @@ export default function AssurantPreview({ data }: { data: AssurantData }) {
       <div style={{ ...headerBar, marginTop: 6 }}>PEÇA QUE NECESSITA SER TROCADA E MOTIVO?</div>
       <div style={{ border: "1px solid #333", borderTop: "none", padding: 8, fontSize: 11, minHeight: 40, whiteSpace: "pre-wrap" }}>{data.pecaTrocar}</div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 6 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 6, tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: "44%" }} />
+          <col style={{ width: "56%" }} />
+        </colgroup>
         <tbody>
           <tr>
-            <td style={labelStyle}>MOTIVO:</td>
-            <td style={cellStyle}>{data.motivo1}</td>
+            <td style={{ ...labelStyle, width: "44%" }}>MOTIVO:</td>
+            <td style={cellStyle}>{data.motivo1 || "\u00A0"}</td>
           </tr>
           <tr>
-            <td style={labelStyle}>MOTIVO:</td>
-            <td style={cellStyle}>{data.motivo2}</td>
+            <td style={{ ...labelStyle, width: "44%" }}>MOTIVO:</td>
+            <td style={cellStyle}>{data.motivo2 || "\u00A0"}</td>
           </tr>
           <tr>
-            <td style={labelStyle}>QUAL FOI A FORMA DE ATENDIMENTO?</td>
-            <td style={cellStyle}>{data.formaAtendimento}</td>
+            <td style={{ ...labelStyle, width: "44%" }}>QUAL FOI A FORMA DE ATENDIMENTO?</td>
+            <td style={cellStyle}>{data.formaAtendimento || "\u00A0"}</td>
           </tr>
           <tr>
-            <td style={labelStyle}>PRODUTO FOI COLETADO?</td>
-            <td style={cellStyle}>{data.produtoColetado}</td>
+            <td style={{ ...labelStyle, width: "44%" }}>PRODUTO FOI COLETADO?</td>
+            <td style={cellStyle}>{data.produtoColetado || "\u00A0"}</td>
           </tr>
         </tbody>
       </table>
