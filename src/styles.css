@@ -148,12 +148,20 @@
    ============================================================ */
 
 @media print {
+  body.parecer-printing,
+  body.parecer-printing * {
+    visibility: visible !important;
+  }
+
   body.parecer-printing > *:not(#parecer-print-root) {
     display: none !important;
   }
 
   body.parecer-printing #parecer-print-root {
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
   }
 
   body.parecer-printing #parecer-print-root #parecer-print,
