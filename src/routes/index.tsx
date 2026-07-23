@@ -207,10 +207,15 @@ function Index() {
     enabled: authChecked && modo === "whirlpool",
   });
 
+  const prevModoRef = useRef(modo);
   useEffect(() => {
-    if (modo === "whirlpool") {
+    // Só reseta para hoje quando o usuário ENTRA no modo whirlpool vindo de outra tela.
+    // Assim, abrir um atendimento pela busca (que já ajusta a agendaDate para o dia
+    // do atendimento) não é sobrescrito por este efeito.
+    if (modo === "whirlpool" && prevModoRef.current !== "whirlpool") {
       setAgendaDate(new Date().toISOString().split("T")[0]);
     }
+    prevModoRef.current = modo;
   }, [modo]);
 
   useEffect(() => {
