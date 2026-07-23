@@ -592,6 +592,37 @@ function Index() {
     toast.success("Atendimento movido para não agendados.");
   };
 
+  const moveToDate = async (id: string, isoDate: string) => {
+    const row = atendimentosQuery.data?.find((a) => a.id === id);
+    if (!row) return;
+    const dadosAtuais = (row.dados as Record<string, unknown> | undefined) ?? {};
+    const [y, m, d] = isoDate.split("-");
+    const dataBR = y && m && d ? `${d}/${m}/${y}` : "";
+    // Preserve existing period; default to manhã when moving from não agendado
+    const periodo = (row.periodo === "manha" || row.periodo === "tarde")
+      ? (row.periodo as "manha" | "tarde")
+      : "manha";
+    const periodoLabel = periodo === "manha" ? "MANHÃ" : "TARDE";
+    const novosDados = { ...dadosAtuais, dataAgenda: dataBR, periodo: periodoLabel };
+    await saveAtendimento({
+      data: {
+        id,
+        numero_os: row.numero_os,
+        tipo: row.tipo,
+        cliente_nome: row.cliente_nome ?? null,
+        dados: novosDados,
+        status: "agendado",
+        data_agenda: isoDate,
+        periodo,
+      },
+    });
+    if (whirlpoolAtendimentoId === id) {
+      setWhirlpool((data) => ({ ...data, dataAgenda: dataBR, periodo: periodoLabel }));
+    }
+    queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+    toast.success(`Atendimento transferido para ${dataBR}.`);
+  };
+
   const deleteAtendimentoHandler = async (id: string) => {
     const pwd = window.prompt("Exclusão protegida — informe a senha de administrador:");
     if (pwd === null) return;
