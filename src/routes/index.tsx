@@ -1100,7 +1100,8 @@ function AgendaCard({
     <div
       draggable={draggable}
       onDragStart={(e) => {
-        e.dataTransfer.setData("atendimentoId", row.id);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", `atendimento:${row.id}`);
         onDragStart?.();
       }}
       className="group cursor-grab rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-400 hover:shadow-md active:cursor-grabbing"
