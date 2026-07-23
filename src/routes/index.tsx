@@ -1193,39 +1193,76 @@ function WhirlpoolForm({
   const addPeca = () => setData((d) => ({ ...d, pecas: [...d.pecas, emptyWhirlpoolPeca()] }));
   const removePeca = (i: number) => setData((d) => ({ ...d, pecas: d.pecas.filter((_, idx) => idx !== i) }));
 
+  const [advanced, setAdvanced] = useState(false);
+  const toggleAdvanced = () => {
+    if (advanced) {
+      setAdvanced(false);
+      toast.info("Edição avançada bloqueada.");
+      return;
+    }
+    const pwd = window.prompt("Digite a senha de administrador:");
+    if (pwd === null) return;
+    if (pwd === "V271088") {
+      setAdvanced(true);
+      toast.success("Edição avançada liberada.");
+    } else {
+      toast.error("Senha incorreta.");
+    }
+  };
+  const lockCls = advanced ? inputCls : `${inputCls} bg-slate-100 text-slate-500 cursor-not-allowed`;
+
   return (
     <>
+      <div className="flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+        <div className="text-xs text-amber-900">
+          <strong>Modo:</strong>{" "}
+          {advanced ? (
+            <span className="text-emerald-700">Edição avançada (todos os campos)</span>
+          ) : (
+            <span>Edição básica (campos limitados)</span>
+          )}
+        </div>
+        <button
+          onClick={toggleAdvanced}
+          className={`rounded-md px-3 py-1 text-xs font-semibold ${
+            advanced ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-amber-600 text-white hover:bg-amber-700"
+          }`}
+        >
+          {advanced ? "Bloquear edição" : "Edição avançada"}
+        </button>
+      </div>
+
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Ordem de Serviço</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Nº OS</label><input className={inputCls} value={data.numeroOS} onChange={(e) => upd("numeroOS", e.target.value)} /></div>
+          <div><label className={labelCls}>Nº OS</label><input disabled={!advanced} className={lockCls} value={data.numeroOS} onChange={(e) => upd("numeroOS", e.target.value)} /></div>
           <div><label className={labelCls}>Técnico</label><input className={inputCls} value={data.tecnico} onChange={(e) => upd("tecnico", e.target.value)} /></div>
-          <div><label className={labelCls}>Data Agenda</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataAgenda} onChange={(e) => upd("dataAgenda", formatDate(e.target.value))} /></div>
-          <div><label className={labelCls}>Data Chamado</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataChamado} onChange={(e) => upd("dataChamado", formatDate(e.target.value))} /></div>
+          <div><label className={labelCls}>Data Agenda</label><input disabled={!advanced} className={lockCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataAgenda} onChange={(e) => upd("dataAgenda", formatDate(e.target.value))} /></div>
+          <div><label className={labelCls}>Data Chamado</label><input disabled={!advanced} className={lockCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataChamado} onChange={(e) => upd("dataChamado", formatDate(e.target.value))} /></div>
           <div>
             <label className={labelCls}>Período</label>
-            <select className={inputCls} value={data.periodo} onChange={(e) => upd("periodo", e.target.value as "MANHÃ" | "TARDE" | "")}>
+            <select disabled={!advanced} className={lockCls} value={data.periodo} onChange={(e) => upd("periodo", e.target.value as "MANHÃ" | "TARDE" | "")}>
               <option value="">Selecionar</option>
               <option value="MANHÃ">Manhã</option>
               <option value="TARDE">Tarde</option>
             </select>
           </div>
-          <div><label className={labelCls}>Tipo Agenda</label><input className={inputCls} value={data.tipoAgenda} onChange={(e) => upd("tipoAgenda", e.target.value)} /></div>
+          <div><label className={labelCls}>Tipo Agenda</label><input disabled={!advanced} className={lockCls} value={data.tipoAgenda} onChange={(e) => upd("tipoAgenda", e.target.value)} /></div>
         </div>
       </section>
 
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Consumidor</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2"><label className={labelCls}>Nome</label><input className={inputCls} value={data.consumidor} onChange={(e) => upd("consumidor", e.target.value)} /></div>
-          <div><label className={labelCls}>CPF/CNPJ</label><input className={inputCls} value={data.cnpjCpf} onChange={(e) => upd("cnpjCpf", e.target.value)} /></div>
-          <div><label className={labelCls}>CEP</label><input className={inputCls} value={data.cep} onChange={(e) => upd("cep", e.target.value)} /></div>
-          <div className="col-span-2"><label className={labelCls}>Endereço</label><input className={inputCls} value={data.endereco} onChange={(e) => upd("endereco", e.target.value)} /></div>
-          <div><label className={labelCls}>Complemento</label><input className={inputCls} value={data.complemento} onChange={(e) => upd("complemento", e.target.value)} /></div>
-          <div><label className={labelCls}>Bairro</label><input className={inputCls} value={data.bairro} onChange={(e) => upd("bairro", e.target.value)} /></div>
-          <div><label className={labelCls}>Cidade</label><input className={inputCls} value={data.cidade} onChange={(e) => upd("cidade", e.target.value)} /></div>
-          <div><label className={labelCls}>UF</label><input className={inputCls} value={data.uf} onChange={(e) => upd("uf", e.target.value)} /></div>
-          <div className="col-span-2"><label className={labelCls}>Telefones</label><input className={inputCls} value={`${data.foneResidencia} ${data.foneComercial} ${data.foneOutros}`.trim()} onChange={(e) => upd("foneOutros", e.target.value)} /></div>
+          <div className="col-span-2"><label className={labelCls}>Nome</label><input disabled={!advanced} className={lockCls} value={data.consumidor} onChange={(e) => upd("consumidor", e.target.value)} /></div>
+          <div><label className={labelCls}>CPF/CNPJ</label><input disabled={!advanced} className={lockCls} value={data.cnpjCpf} onChange={(e) => upd("cnpjCpf", e.target.value)} /></div>
+          <div><label className={labelCls}>CEP</label><input disabled={!advanced} className={lockCls} value={data.cep} onChange={(e) => upd("cep", e.target.value)} /></div>
+          <div className="col-span-2"><label className={labelCls}>Endereço</label><input disabled={!advanced} className={lockCls} value={data.endereco} onChange={(e) => upd("endereco", e.target.value)} /></div>
+          <div><label className={labelCls}>Complemento</label><input disabled={!advanced} className={lockCls} value={data.complemento} onChange={(e) => upd("complemento", e.target.value)} /></div>
+          <div><label className={labelCls}>Bairro</label><input disabled={!advanced} className={lockCls} value={data.bairro} onChange={(e) => upd("bairro", e.target.value)} /></div>
+          <div><label className={labelCls}>Cidade</label><input disabled={!advanced} className={lockCls} value={data.cidade} onChange={(e) => upd("cidade", e.target.value)} /></div>
+          <div><label className={labelCls}>UF</label><input disabled={!advanced} className={lockCls} value={data.uf} onChange={(e) => upd("uf", e.target.value)} /></div>
+          <div className="col-span-2"><label className={labelCls}>Telefones</label><input disabled={!advanced} className={lockCls} value={`${data.foneResidencia} ${data.foneComercial} ${data.foneOutros}`.trim()} onChange={(e) => upd("foneOutros", e.target.value)} /></div>
         </div>
       </section>
 
@@ -1239,17 +1276,21 @@ function WhirlpoolForm({
           <div><label className={labelCls}>Nº Nota Fiscal</label><input className={inputCls} value={data.nrNotaFiscal} onChange={(e) => upd("nrNotaFiscal", e.target.value)} /></div>
           <div><label className={labelCls}>Data Compra</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataCompra} onChange={(e) => upd("dataCompra", formatDate(e.target.value))} /></div>
           <div><label className={labelCls}>Cor</label><input className={inputCls} value={data.cor} onChange={(e) => upd("cor", e.target.value)} /></div>
-          <div><label className={labelCls}>Voltagem</label><input className={inputCls} value={data.voltagem} onChange={(e) => upd("voltagem", e.target.value)} /></div>
+          <div><label className={labelCls}>Voltagem</label><input disabled={!advanced} className={lockCls} value={data.voltagem} onChange={(e) => upd("voltagem", e.target.value)} /></div>
         </div>
       </section>
 
       <section>
-        <label className={labelCls}>Defeito Reclamado</label>
+        <label className={labelCls}>Defeito Reclamado 1</label>
         <textarea rows={2} className={inputCls} value={data.defeitoReclamado} onChange={(e) => upd("defeitoReclamado", e.target.value)} />
-        <label className={labelCls + " mt-3"}>Defeito Constatado</label>
+        <label className={labelCls + " mt-3"}>Defeito Reclamado 2</label>
+        <textarea rows={2} className={inputCls} value={data.defeitoReclamado2} onChange={(e) => upd("defeitoReclamado2", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Defeito Constatado 1</label>
         <textarea rows={2} className={inputCls} value={data.defeitoConstatado} onChange={(e) => upd("defeitoConstatado", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Defeito Constatado 2</label>
+        <textarea rows={2} className={inputCls} value={data.defeitoConstatado2} onChange={(e) => upd("defeitoConstatado2", e.target.value)} />
         <label className={labelCls + " mt-3"}>Reclamação Atendimento</label>
-        <textarea rows={3} className={inputCls} value={data.reclamacaoAtendimento} onChange={(e) => upd("reclamacaoAtendimento", e.target.value)} />
+        <textarea rows={3} disabled={!advanced} className={lockCls} value={data.reclamacaoAtendimento} onChange={(e) => upd("reclamacaoAtendimento", e.target.value)} />
         <label className={labelCls + " mt-3"}>Laudo Técnico</label>
         <textarea rows={3} className={inputCls} value={data.laudoTecnico} onChange={(e) => upd("laudoTecnico", e.target.value)} />
       </section>
@@ -1282,26 +1323,27 @@ function WhirlpoolForm({
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div><label className={labelCls}>Total Peças</label><input className={inputCls} value={data.totalPecas} onChange={(e) => upd("totalPecas", e.target.value)} /></div>
           <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} value={data.maoDeObra} onChange={(e) => upd("maoDeObra", e.target.value)} /></div>
-          <div><label className={labelCls}>Total Orçamento</label><input className={inputCls} value={data.totalOrcamento} onChange={(e) => upd("totalOrcamento", e.target.value)} /></div>
-          <div><label className={labelCls}>Valor Orçamento</label><input className={inputCls} value={data.valorOrcamento} onChange={(e) => upd("valorOrcamento", e.target.value)} /></div>
+          <div><label className={labelCls}>Total Orçamento</label><input disabled={!advanced} className={lockCls} value={data.totalOrcamento} onChange={(e) => upd("totalOrcamento", e.target.value)} /></div>
+          <div><label className={labelCls}>Valor Orçamento</label><input disabled={!advanced} className={lockCls} value={data.valorOrcamento} onChange={(e) => upd("valorOrcamento", e.target.value)} /></div>
         </div>
       </section>
 
       <section>
-        <label className={labelCls}>Observação</label>
-        <textarea rows={2} className={inputCls} value={data.observacao} onChange={(e) => upd("observacao", e.target.value)} />
-        <label className={labelCls + " mt-3"}>Validade Orçamento</label>
-        <textarea rows={2} className={inputCls} value={data.validadeOrcamento} onChange={(e) => upd("validadeOrcamento", e.target.value)} />
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Garantia Serviço (meses)</label><input className={inputCls} value={data.garantiaServicoMeses} onChange={(e) => upd("garantiaServicoMeses", e.target.value)} /></div>
-          <div><label className={labelCls}>Garantia Peças (meses)</label><input className={inputCls} value={data.garantiaPecasMeses} onChange={(e) => upd("garantiaPecasMeses", e.target.value)} /></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Data da Aprovação</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataAprovacao} onChange={(e) => upd("dataAprovacao", formatDate(e.target.value))} /></div>
+          <div><label className={labelCls}>Data Parecer</label><input disabled={!advanced} className={lockCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataParecer} onChange={(e) => upd("dataParecer", formatDate(e.target.value))} /></div>
         </div>
+        <label className={labelCls + " mt-3"}>Observação</label>
+        <textarea rows={2} disabled={!advanced} className={lockCls} value={data.observacao} onChange={(e) => upd("observacao", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Validade Orçamento</label>
+        <textarea rows={2} disabled={!advanced} className={lockCls} value={data.validadeOrcamento} onChange={(e) => upd("validadeOrcamento", e.target.value)} />
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Data Conclusão</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataConclusao} onChange={(e) => upd("dataConclusao", formatDate(e.target.value))} /></div>
-          <div><label className={labelCls}>Data Parecer</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataParecer} onChange={(e) => upd("dataParecer", formatDate(e.target.value))} /></div>
+          <div><label className={labelCls}>Garantia Serviço (meses)</label><input disabled={!advanced} className={lockCls} value={data.garantiaServicoMeses} onChange={(e) => upd("garantiaServicoMeses", e.target.value)} /></div>
+          <div><label className={labelCls}>Garantia Peças (meses)</label><input disabled={!advanced} className={lockCls} value={data.garantiaPecasMeses} onChange={(e) => upd("garantiaPecasMeses", e.target.value)} /></div>
+          <div><label className={labelCls}>Data Conclusão</label><input disabled={!advanced} className={lockCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataConclusao} onChange={(e) => upd("dataConclusao", formatDate(e.target.value))} /></div>
         </div>
         <label className={labelCls + " mt-3"}>Responsável</label>
-        <input className={inputCls} value={data.responsavel} onChange={(e) => upd("responsavel", e.target.value)} />
+        <input disabled={!advanced} className={lockCls} value={data.responsavel} onChange={(e) => upd("responsavel", e.target.value)} />
       </section>
     </>
   );
