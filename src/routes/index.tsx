@@ -1215,7 +1215,14 @@ function AgendaCard({
       <div className="mb-1 flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
           {draggable && <GripVertical className="h-3.5 w-3.5 text-slate-400" />}
-          <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white">OS {row.numero_os}</span>
+          <button
+            onClick={onEdit}
+            title="Abrir para edição"
+            className="inline-flex items-center gap-1 rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white transition hover:bg-cyan-700"
+          >
+            OS {row.numero_os}
+            <FileText className="h-3 w-3" />
+          </button>
         </div>
         <div className="flex items-center gap-1">
           {onUnschedule && (
@@ -1223,9 +1230,6 @@ function AgendaCard({
               <Clock className="h-3.5 w-3.5" />
             </button>
           )}
-          <button onClick={onEdit} title="Editar" className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800">
-            <FileText className="h-3.5 w-3.5" />
-          </button>
           <button onClick={onDelete} title="Excluir" className="rounded p-1 text-slate-500 hover:bg-red-50 hover:text-red-600">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
