@@ -506,8 +506,12 @@ function Index() {
       setWhirlpool(merged);
       setWhirlpoolBaseline(JSON.stringify(merged));
       setWhirlpoolAtendimentoId(row.id);
+      // Jump the agenda to the day where this atendimento is scheduled
+      // so the user lands on the same day the appointment lives on.
+      if (row.data_agenda) setAgendaDate(row.data_agenda);
       setTipo("whirlpool");
       setModo("whirlpool");
+      setListOpen(false);
     }, "Abrir outro atendimento vai descartar as alterações não salvas do atual. O que deseja fazer?");
   };
 
