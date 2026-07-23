@@ -459,10 +459,27 @@ function Index() {
       toast.error("Informe o Nº OS antes de salvar.");
       return;
     }
+    const osTrim = whirlpool.numeroOS.trim();
+    let idAlvo = whirlpoolAtendimentoId ?? undefined;
+    if (!idAlvo) {
+      const existente = atendimentosQuery.data?.find(
+        (a) => a.tipo === "whirlpool" && a.numero_os.trim() === osTrim,
+      );
+      if (existente) {
+        const ok = window.confirm(
+          `Já existe um atendimento com a OS ${osTrim} na sua agenda.\n\nDeseja substituir o atendimento existente pelos dados atuais?\n\n(Cancelar mantém o atendimento existente sem alterações.)`,
+        );
+        if (!ok) {
+          setSaveSituacaoOpen(false);
+          return;
+        }
+        idAlvo = existente.id;
+      }
+    }
     const result = await saveAtendimento({
       data: {
-        id: whirlpoolAtendimentoId ?? undefined,
-        numero_os: whirlpool.numeroOS.trim(),
+        id: idAlvo,
+        numero_os: osTrim,
         tipo: "whirlpool",
         cliente_nome: whirlpool.consumidor || null,
         dados: whirlpool as unknown as Record<string, unknown>,
