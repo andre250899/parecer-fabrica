@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Download, Printer, Save, FolderOpen, LogOut, ArrowLeft, Camera, X } from "lucide-react";
+import { Download, Printer, Save, FolderOpen, LogOut, ArrowLeft, Camera, X, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import ParecerPreview from "@/components/ParecerPreview";
 import HisensePreview from "@/components/HisensePreview";
@@ -56,6 +56,7 @@ function Index() {
   const [savedList, setSavedList] = useState<Array<{ id: string; numero_os: string; cliente_nome: string | null; updated_at: string; tipo: string }>>([]);
   const [showList, setShowList] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
 
@@ -76,16 +77,17 @@ function Index() {
   }, [navigate]);
 
   const loadList = async () => {
-    if (!tipo) return;
-    const { data: rows, error } = await supabase
+    let query = supabase
       .from("pareceres")
       .select("id, numero_os, cliente_nome, updated_at, tipo")
-      .eq("tipo", tipo)
       .order("updated_at", { ascending: false });
+    if (tipo) query = query.eq("tipo", tipo);
+    const { data: rows, error } = await query;
     if (!error && rows) setSavedList(rows);
   };
 
   const openList = async () => {
+    setSearchTerm("");
     await loadList();
     setShowList(true);
   };
