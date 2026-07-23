@@ -1216,9 +1216,17 @@ function AgendaCard({
         <div className="flex items-center gap-1.5">
           {draggable && <GripVertical className="h-3.5 w-3.5 text-slate-400" />}
           <button
-            onClick={onEdit}
+            type="button"
+            draggable={false}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onEdit();
+            }}
             title="Abrir para edição"
-            className="inline-flex items-center gap-1 rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white transition hover:bg-cyan-700"
+            className="inline-flex cursor-pointer items-center gap-1 rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white transition hover:bg-cyan-700"
           >
             OS {row.numero_os}
             <FileText className="h-3 w-3" />
