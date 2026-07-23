@@ -373,7 +373,9 @@ function Index() {
     setModo("whirlpool");
   };
 
-  const saveWhirlpoolAtendimento = async () => {
+  const saveWhirlpoolAtendimento = async (
+    situacao: "em_aberto" | "concluido" | "realizar_pedido" | "cancelado",
+  ) => {
     if (!whirlpool.numeroOS.trim()) {
       toast.error("Informe o Nº OS antes de salvar.");
       return;
@@ -388,11 +390,13 @@ function Index() {
         status: "agendado",
         data_agenda: agendaDate,
         periodo: whirlpool.periodo === "MANHÃ" ? "manha" : whirlpool.periodo === "TARDE" ? "tarde" : "",
+        situacao,
       },
     });
     setWhirlpoolAtendimentoId(result.id);
+    setSaveSituacaoOpen(false);
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
-    toast.success(`Atendimento ${whirlpool.numeroOS} salvo na agenda.`);
+    toast.success(`Atendimento ${whirlpool.numeroOS} salvo como ${SITUACAO_LABEL[situacao]}.`);
   };
 
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
