@@ -177,6 +177,8 @@ export interface WhirlpoolData {
   responsavel: string;
   dataParecer: string;
   assinaturaConsumidor: string;
+  anexoNotaFiscal: string;
+  anexoEtiqueta: string;
 }
 
 export const emptyWhirlpoolPeca = (): WhirlpoolPeca => ({
