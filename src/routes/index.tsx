@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Download, Printer, Save, FolderOpen, LogOut } from "lucide-react";
+import { Download, Printer, Save, FolderOpen, LogOut, ArrowLeft, Camera, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import ParecerPreview from "@/components/ParecerPreview";
+import HisensePreview from "@/components/HisensePreview";
+import AssurantPreview from "@/components/AssurantPreview";
 import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
@@ -10,6 +12,14 @@ import {
   type ParecerData,
   type OrcamentoItem,
 } from "@/lib/parecer-types";
+import {
+  defaultHisense,
+  defaultAssurant,
+  fileToCompressedDataUrl,
+  type HisenseData,
+  type AssurantData,
+  type ParecerTipo,
+} from "@/lib/parecer-extras";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -33,14 +43,17 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const [tipo, setTipo] = useState<ParecerTipo | null>(null);
   const [data, setData] = useState<ParecerData>(defaultParecer);
+  const [hisense, setHisense] = useState<HisenseData>(defaultHisense);
+  const [assurant, setAssurant] = useState<AssurantData>(defaultAssurant);
   const [themeId, setThemeId] = useState(THEMES[0].id);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installMessage, setInstallMessage] = useState("");
   const [isInstalled, setIsInstalled] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [savedList, setSavedList] = useState<Array<{ id: string; numero_os: string; cliente_nome: string | null; updated_at: string }>>([]);
+  const [savedList, setSavedList] = useState<Array<{ id: string; numero_os: string; cliente_nome: string | null; updated_at: string; tipo: string }>>([]);
   const [showList, setShowList] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const navigate = useNavigate();
@@ -63,9 +76,11 @@ function Index() {
   }, [navigate]);
 
   const loadList = async () => {
+    if (!tipo) return;
     const { data: rows, error } = await supabase
       .from("pareceres")
-      .select("id, numero_os, cliente_nome, updated_at")
+      .select("id, numero_os, cliente_nome, updated_at, tipo")
+      .eq("tipo", tipo)
       .order("updated_at", { ascending: false });
     if (!error && rows) setSavedList(rows);
   };
@@ -76,7 +91,13 @@ function Index() {
   };
 
   const saveParecer = async () => {
-    if (!data.numeroOS.trim()) {
+    if (!tipo) return;
+    const numeroOS =
+      tipo === "vox" ? data.numeroOS : tipo === "hisense" ? hisense.numeroOS : assurant.numeroOS;
+    const clienteNome =
+      tipo === "vox" ? data.clienteNome : tipo === "hisense" ? hisense.clienteNome : assurant.consumidorNome;
+    const payload = tipo === "vox" ? data : tipo === "hisense" ? hisense : assurant;
+    if (!numeroOS.trim()) {
       setSaveMsg("Informe o Nº OS antes de salvar.");
       return;
     }
@@ -85,20 +106,25 @@ function Index() {
     const { error } = await supabase.from("pareceres").upsert(
       {
         user_id: userData.user.id,
-        numero_os: data.numeroOS.trim(),
-        cliente_nome: data.clienteNome || null,
-        data: data as unknown as never,
+        numero_os: numeroOS.trim(),
+        cliente_nome: clienteNome || null,
+        tipo,
+        data: payload as unknown as never,
       },
-      { onConflict: "user_id,numero_os" },
+      { onConflict: "user_id,tipo,numero_os" },
     );
-    setSaveMsg(error ? `Erro: ${error.message}` : `Parecer OS ${data.numeroOS} salvo com sucesso.`);
+    setSaveMsg(error ? `Erro: ${error.message}` : `Parecer OS ${numeroOS} salvo com sucesso.`);
     setTimeout(() => setSaveMsg(""), 4000);
   };
 
   const loadParecer = async (id: string) => {
-    const { data: row, error } = await supabase.from("pareceres").select("data").eq("id", id).maybeSingle();
+    const { data: row, error } = await supabase.from("pareceres").select("data, tipo").eq("id", id).maybeSingle();
     if (!error && row) {
-      setData(row.data as unknown as ParecerData);
+      const t = row.tipo as ParecerTipo;
+      setTipo(t);
+      if (t === "vox") setData(row.data as unknown as ParecerData);
+      else if (t === "hisense") setHisense(row.data as unknown as HisenseData);
+      else setAssurant(row.data as unknown as AssurantData);
       setShowList(false);
     }
   };
