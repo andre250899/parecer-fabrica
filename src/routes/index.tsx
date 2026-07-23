@@ -386,9 +386,11 @@ function Index() {
         (a) => a.tipo === "whirlpool" && a.numero_os.trim() === numeroOsNovo,
       );
       if (existente) {
+        const [ay, am, ad] = agendaDate.split("-");
+        const dataBR = ay && am && ad ? `${ad}/${am}/${ay}` : agendaDate;
         const destino =
           status === "agendado"
-            ? `${formatAgendaDateLong(agendaDate)} — ${periodo === "manha" ? "Manhã" : "Tarde"}`
+            ? `${dataBR} — ${periodo === "manha" ? "Manhã" : "Tarde"}`
             : "Não agendados";
         const ok = window.confirm(
           `Já existe um atendimento com a OS ${numeroOsNovo} na sua agenda.\n\nDeseja atualizar esse atendimento para:\n${destino}?\n\n(Cancelar mantém o atendimento existente sem alterações.)`,
