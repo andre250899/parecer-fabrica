@@ -241,7 +241,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
                 <img
                   src={data.assinaturaConsumidor}
                   alt="Assinatura"
-                  style={{ height: "40px", display: "inline-block", borderBottom: "1px solid #000" }}
+                  style={{ height: "80px", maxWidth: "320px", display: "inline-block", borderBottom: "1px solid #000" }}
                 />
               ) : (
                 <>_________________________________________</>
