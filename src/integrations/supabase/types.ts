@@ -23,6 +23,7 @@ export type Database = {
           id: string
           numero_os: string
           periodo: string | null
+          situacao: string
           status: string
           tipo: string
           updated_at: string
@@ -36,6 +37,7 @@ export type Database = {
           id?: string
           numero_os: string
           periodo?: string | null
+          situacao?: string
           status?: string
           tipo?: string
           updated_at?: string
@@ -49,6 +51,7 @@ export type Database = {
           id?: string
           numero_os?: string
           periodo?: string | null
+          situacao?: string
           status?: string
           tipo?: string
           updated_at?: string
