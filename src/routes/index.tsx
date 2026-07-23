@@ -686,36 +686,38 @@ function Index() {
                 <h1 className="text-lg font-bold text-slate-900">Agenda Whirlpool</h1>
                 <p className="text-xs text-slate-500">Vox Grupo · {userEmail}</p>
               </div>
-              <div className="ml-3 hidden items-center gap-1 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-900 to-slate-700 px-2 py-1 text-white shadow-sm md:flex">
+              <div className="ml-3 flex items-center gap-2 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 px-3 py-2 text-white shadow-lg ring-2 ring-amber-300/40">
                 <button
                   onClick={() => shiftAgendaDate(-1)}
-                  className="rounded-md p-1 hover:bg-white/10"
+                  className="rounded-lg bg-white/15 p-1.5 hover:bg-white/25"
                   title="Dia anterior"
                   aria-label="Dia anterior"
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
-                <div className="flex flex-col items-center px-2 leading-tight">
-                  <span className="text-[10px] uppercase tracking-widest text-slate-300">
-                    {isToday ? "Hoje" : "Agenda"}
+                <label className="relative flex cursor-pointer flex-col items-center px-3 leading-tight">
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? "text-amber-300" : "text-white/80"}`}>
+                    {isToday ? "★ Hoje" : "Agenda"}
                   </span>
-                  <span className="text-sm font-bold">{formatAgendaDateLong(agendaDate)}</span>
-                </div>
-                <input
-                  type="date"
-                  value={agendaDate}
-                  onChange={(e) => setAgendaDate(e.target.value)}
-                  className="w-4 cursor-pointer bg-transparent text-transparent [color-scheme:dark]"
-                  aria-label="Escolher data"
-                  title="Escolher data"
-                />
+                  <span className="whitespace-nowrap text-base font-extrabold tracking-tight md:text-lg drop-shadow">
+                    {formatAgendaDateLong(agendaDate)}
+                  </span>
+                  <input
+                    type="date"
+                    value={agendaDate}
+                    onChange={(e) => setAgendaDate(e.target.value)}
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                    aria-label="Escolher data"
+                    title="Escolher data"
+                  />
+                </label>
                 <button
                   onClick={() => shiftAgendaDate(1)}
-                  className="rounded-md p-1 hover:bg-white/10"
+                  className="rounded-lg bg-white/15 p-1.5 hover:bg-white/25"
                   title="Próximo dia"
                   aria-label="Próximo dia"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
             </div>
