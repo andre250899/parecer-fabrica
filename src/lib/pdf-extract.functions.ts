@@ -80,9 +80,12 @@ function emptyWhirlpoolPeca() {
   return { quantidade: "", codigo: "", descricao: "", fcta: "", ocor: "", valor: "" };
 }
 
-function mergeWithDefaults(parsed: z.infer<typeof WhirlpoolSchema>): WhirlpoolData {
+type ParsedWhirlpool = z.infer<typeof WhirlpoolSchema>;
+type ParsedPeca = NonNullable<ParsedWhirlpool["pecas"]>[number];
+
+function mergeWithDefaults(parsed: ParsedWhirlpool): WhirlpoolData {
   const clean = (v: string | null | undefined) => (v == null ? "" : v);
-  const cleanPeca = (p: z.infer<typeof WhirlpoolSchema>["pecas"][number]) => ({
+  const cleanPeca = (p: ParsedPeca) => ({
     quantidade: clean(p.quantidade),
     codigo: clean(p.codigo),
     descricao: clean(p.descricao),
