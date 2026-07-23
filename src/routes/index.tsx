@@ -451,17 +451,6 @@ function Index() {
               <FolderOpen className="h-4 w-4" aria-hidden="true" />
               Meus pareceres
             </button>
-            <div className="flex flex-col items-end gap-1">
-              <button
-                onClick={handleInstall}
-                disabled={isInstalled}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Download className="h-4 w-4" aria-hidden="true" />
-                {isInstalled ? "Instalado" : "Instalar app"}
-              </button>
-              {installMessage && <p className="max-w-72 text-right text-[11px] leading-snug text-slate-600">{installMessage}</p>}
-            </div>
             <button
               onClick={() => window.print()}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
