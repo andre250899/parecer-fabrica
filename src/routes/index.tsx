@@ -381,6 +381,38 @@ function Index() {
         dadosFinal.dataAgenda = y && m && d ? `${d}/${m}/${y}` : dadosFinal.dataAgenda;
         dadosFinal.periodo = periodo === "manha" ? "MANHÃ" : periodo === "tarde" ? "TARDE" : dadosFinal.periodo;
       }
+      const numeroOsNovo = (extracted.numeroOS || "SEM-OS").trim();
+      const existente = atendimentosQuery.data?.find(
+        (a) => a.tipo === "whirlpool" && a.numero_os.trim() === numeroOsNovo,
+      );
+      if (existente) {
+        const destino =
+          status === "agendado"
+            ? `${formatAgendaDateLong(agendaDate)} — ${periodo === "manha" ? "Manhã" : "Tarde"}`
+            : "Não agendados";
+        const ok = window.confirm(
+          `Já existe um atendimento com a OS ${numeroOsNovo} na sua agenda.\n\nDeseja atualizar esse atendimento para:\n${destino}?\n\n(Cancelar mantém o atendimento existente sem alterações.)`,
+        );
+        if (!ok) {
+          setPdfUploading(false);
+          return;
+        }
+        await saveAtendimento({
+          data: {
+            id: existente.id,
+            numero_os: numeroOsNovo,
+            tipo: "whirlpool",
+            cliente_nome: extracted.consumidor || existente.cliente_nome || null,
+            dados: dadosFinal as unknown as Record<string, unknown>,
+            status,
+            data_agenda: status === "agendado" ? agendaDate : "",
+            periodo: status === "agendado" ? (periodo as "manha" | "tarde") : "",
+          },
+        });
+        queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+        toast.success(`OS ${numeroOsNovo} atualizada.`);
+        return;
+      }
       const novo = await saveAtendimento({
         data: {
           numero_os: extracted.numeroOS || "SEM-OS",
