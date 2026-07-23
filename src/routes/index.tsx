@@ -1055,11 +1055,7 @@ function Index() {
               <button
                 onClick={() => {
                   requestLeave(() => {
-                    setWhirlpool(defaultWhirlpool);
-                    setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
-                    setWhirlpoolAtendimentoId(null);
-                    setTipo("whirlpool");
-                    setModo("whirlpool");
+                    void novoAtendimentoAutoSave();
                   }, "Criar um novo atendimento vai descartar as alterações não salvas do atual. Continuar?");
                 }}
                 className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
