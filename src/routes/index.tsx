@@ -1541,6 +1541,7 @@ function AgendaCard({
   onEdit,
   onDelete,
   onUnschedule,
+  onMoveToDate,
   onDragStart,
 }: {
   row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown; situacao?: string | null };
@@ -1548,11 +1549,16 @@ function AgendaCard({
   onEdit: () => void;
   onDelete: () => void;
   onUnschedule?: () => void;
+  onMoveToDate?: (isoDate: string) => void;
   onDragStart?: () => void;
 }) {
   const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string }) ?? {};
   const sit = (row.situacao || "em_aberto") as keyof typeof SITUACAO_STYLE;
   const st = SITUACAO_STYLE[sit] ?? SITUACAO_STYLE.em_aberto;
+  const [dateOpen, setDateOpen] = useState(false);
+  const currentDate = row.data_agenda
+    ? (() => { const [y, m, d] = row.data_agenda!.split("-").map(Number); return new Date(y, (m || 1) - 1, d || 1); })()
+    : undefined;
   return (
     <div
       draggable={draggable}
@@ -1588,10 +1594,48 @@ function AgendaCard({
           </span>
         </div>
         <div className="flex items-center gap-1">
-          {onUnschedule && (
-            <button onClick={onUnschedule} title="Desagendar" className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800">
-              <Clock className="h-3.5 w-3.5" />
-            </button>
+          {onMoveToDate && (
+            <Popover open={dateOpen} onOpenChange={setDateOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  draggable={false}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  title="Transferir para outra data"
+                  className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                >
+                  <Clock className="h-3.5 w-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-auto p-0 pointer-events-auto">
+                <div className="border-b border-slate-200 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  Transferir atendimento
+                </div>
+                <CalendarUI
+                  mode="single"
+                  selected={currentDate}
+                  onSelect={(d) => {
+                    if (!d) return;
+                    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                    setDateOpen(false);
+                    onMoveToDate(iso);
+                  }}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+                {onUnschedule && (
+                  <button
+                    type="button"
+                    onClick={() => { setDateOpen(false); onUnschedule(); }}
+                    className="w-full border-t border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  >
+                    Mover para Não agendados
+                  </button>
+                )}
+              </PopoverContent>
+            </Popover>
           )}
           <button onClick={onDelete} title="Excluir" className="rounded p-1 text-slate-500 hover:bg-red-50 hover:text-red-600">
             <Trash2 className="h-3.5 w-3.5" />
