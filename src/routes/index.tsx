@@ -750,7 +750,6 @@ function Index() {
               onClick={() => {
                 const act = leaveGuard.action;
                 discardWhirlpoolChanges();
-                setWhirlpoolBaseline(JSON.stringify(JSON.parse(whirlpoolBaseline)));
                 setLeaveGuard(null);
                 act();
               }}
