@@ -19,6 +19,8 @@ import {
   Trash2,
   FileText,
   Plus,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
