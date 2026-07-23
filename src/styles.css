@@ -148,9 +148,21 @@
    ============================================================ */
 
 @media print {
+  html,
+  body {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: white !important;
+  }
+
   body.parecer-printing,
   body.parecer-printing * {
     visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   body.parecer-printing > *:not(#parecer-print-root) {
@@ -159,9 +171,12 @@
 
   body.parecer-printing #parecer-print-root {
     display: block !important;
+    width: 210mm !important;
+    height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
+    overflow: hidden !important;
   }
 
   body.parecer-printing #parecer-print-root #parecer-print,
@@ -172,9 +187,73 @@
   body.parecer-printing #parecer-print-root #parecer-print {
     position: static !important;
     width: 210mm !important;
-    min-height: auto !important;
-    margin: 0 auto !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
     box-shadow: none !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    break-after: avoid-page !important;
+  }
+
+  body.parecer-printing #parecer-print-root .whirlpool-preview {
+    box-sizing: border-box !important;
+    font-size: 7.45pt !important;
+    line-height: 1.12 !important;
+  }
+
+  body.parecer-printing #parecer-print-root .whirlpool-a4 {
+    box-sizing: border-box !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    padding: 4mm 6mm !important;
+    overflow: hidden !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-t th,
+  body.parecer-printing #parecer-print-root .wp-t td {
+    padding: 1.6px 3px !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-header td {
+    padding: 2px 4px !important;
+    line-height: 1.16 !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-lbl,
+  body.parecer-printing #parecer-print-root .wp-parts th {
+    font-size: 7pt !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-strong {
+    font-size: 9.5pt !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-title-inline {
+    font-size: 8.5pt !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-multi {
+    min-height: 18px !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-parts td {
+    height: 11px !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-obs {
+    min-height: 24px !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-box {
+    padding: 3px 4px !important;
+  }
+
+  body.parecer-printing #parecer-print-root .wp-box p {
+    margin: 2px 0 !important;
+    font-size: 7.2pt !important;
+    line-height: 1.1 !important;
   }
 
   body * {
@@ -215,7 +294,7 @@
   }
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 0;
   }
 }
 
