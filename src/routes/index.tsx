@@ -121,6 +121,7 @@ function Index() {
   const [pdfUploading, setPdfUploading] = useState(false);
   const [saveSituacaoOpen, setSaveSituacaoOpen] = useState(false);
   const [leaveGuard, setLeaveGuard] = useState<{ action: () => void; message: string } | null>(null);
+  const [postSaveAction, setPostSaveAction] = useState<(() => void) | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
