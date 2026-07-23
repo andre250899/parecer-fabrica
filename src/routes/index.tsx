@@ -482,6 +482,7 @@ function Index() {
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 p-6 lg:grid-cols-[420px_1fr] print:block print:p-0">
         {/* FORM */}
         <aside className="space-y-6 rounded-lg border border-border bg-white p-5 shadow-sm print:hidden">
+          {/* placeholder for install float below */}
           {tipo === "vox" && (<>
           <section>
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Ordem de Serviço</h2>
