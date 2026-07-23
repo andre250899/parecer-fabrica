@@ -889,6 +889,7 @@ function Index() {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {progressOverlay}
         {leaveModal}
         <header className="border-b bg-white px-6 py-3 flex items-center justify-between">
           <div>
@@ -988,6 +989,7 @@ function Index() {
     return (
       <div className="min-h-screen bg-slate-100">
         {listModal}
+        {progressOverlay}
         {leaveModal}
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
@@ -1430,6 +1432,7 @@ function Index() {
       </header>
 
       {listModal}
+        {progressOverlay}
         {leaveModal}
 
       {!isInstalled && (
