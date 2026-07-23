@@ -103,6 +103,9 @@ function Index() {
   const [assurant, setAssurant] = useState<AssurantData>(defaultAssurant);
   const [whirlpool, setWhirlpool] = useState<WhirlpoolData>(defaultWhirlpool);
   const [whirlpoolAtendimentoId, setWhirlpoolAtendimentoId] = useState<string | null>(null);
+  const [whirlpoolBaseline, setWhirlpoolBaseline] = useState<string>(() =>
+    JSON.stringify(defaultWhirlpool),
+  );
   const [themeId, setThemeId] = useState(THEMES[0].id);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installMessage, setInstallMessage] = useState("");
@@ -120,6 +123,29 @@ function Index() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
+
+  const isWhirlpoolDirty =
+    modo === "whirlpool" &&
+    tipo === "whirlpool" &&
+    JSON.stringify(whirlpool) !== whirlpoolBaseline;
+
+  const confirmLeaveIfDirty = (message?: string) => {
+    if (!isWhirlpoolDirty) return true;
+    return window.confirm(
+      message ??
+        "Você tem alterações não salvas neste atendimento. Deseja sair mesmo assim? As mudanças serão perdidas.",
+    );
+  };
+
+  useEffect(() => {
+    if (!isWhirlpoolDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isWhirlpoolDirty]);
 
   const fetchAtendimentos = useServerFn(listarAtendimentos);
   const saveAtendimento = useServerFn(salvarAtendimento);
@@ -205,6 +231,7 @@ function Index() {
       if (t === "whirlpool") {
         setWhirlpool(row.data as unknown as WhirlpoolData);
         setWhirlpoolAtendimentoId(id);
+        setWhirlpoolBaseline(JSON.stringify(row.data));
         setTipo("whirlpool");
         setModo("whirlpool");
       } else {
@@ -225,6 +252,7 @@ function Index() {
   };
 
   const signOut = async () => {
+    if (!confirmLeaveIfDirty("Você tem alterações não salvas. Sair da conta mesmo assim?")) return;
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
   };
@@ -381,7 +409,10 @@ function Index() {
   const openAtendimento = (id: string) => {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     if (!row) return;
-    setWhirlpool((row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool);
+    if (!confirmLeaveIfDirty()) return;
+    const dados = (row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool;
+    setWhirlpool(dados);
+    setWhirlpoolBaseline(JSON.stringify(dados));
     setWhirlpoolAtendimentoId(row.id);
     setTipo("whirlpool");
     setModo("whirlpool");
@@ -408,6 +439,7 @@ function Index() {
       },
     });
     setWhirlpoolAtendimentoId(result.id);
+    setWhirlpoolBaseline(JSON.stringify(whirlpool));
     setSaveSituacaoOpen(false);
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
     toast.success(`Atendimento ${whirlpool.numeroOS} salvo como ${SITUACAO_LABEL[situacao]}.`);
@@ -704,7 +736,7 @@ function Index() {
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-3">
-              <button onClick={() => setModo("home")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
+              <button onClick={() => { if (confirmLeaveIfDirty()) setModo("home"); }} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div>
@@ -754,7 +786,9 @@ function Index() {
               )}
               <button
                 onClick={() => {
+                  if (!confirmLeaveIfDirty()) return;
                   setWhirlpool(defaultWhirlpool);
+                  setWhirlpoolBaseline(JSON.stringify(defaultWhirlpool));
                   setWhirlpoolAtendimentoId(null);
                   setTipo("whirlpool");
                   setModo("whirlpool");
@@ -964,6 +998,12 @@ function Index() {
             <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr]">
               <aside className="space-y-6 rounded-lg border border-border bg-white p-5 shadow-sm print:hidden">
                 <WhirlpoolForm data={whirlpool} setData={setWhirlpool} inputCls={inputCls} labelCls={labelCls} formatDate={formatDate} />
+                {isWhirlpoolDirty && (
+                  <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+                    Alterações não salvas — clique em <span className="underline">Salvar na agenda</span> antes de sair.
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
@@ -1038,7 +1078,7 @@ function Index() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
           <div>
             <div className="flex items-center gap-3">
-              <button onClick={() => setModo("home")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
+              <button onClick={() => { if (confirmLeaveIfDirty()) setModo("home"); }} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Trocar modelo">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <h1 className="text-lg font-bold text-slate-900">
