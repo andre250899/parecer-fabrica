@@ -1314,6 +1314,24 @@ function WhirlpoolForm({
       </section>
 
       <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Anexos do Atendimento</h2>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <AttachmentField
+            label="Nota Fiscal"
+            value={data.anexoNotaFiscal}
+            onChange={(v) => upd("anexoNotaFiscal", v)}
+            accent="emerald"
+          />
+          <AttachmentField
+            label="Etiqueta"
+            value={data.anexoEtiqueta}
+            onChange={(v) => upd("anexoEtiqueta", v)}
+            accent="blue"
+          />
+        </div>
+      </section>
+
+      <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-900">Peças / Orçamento</h2>
           <button onClick={addPeca} className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold hover:bg-slate-100">+ Peça</button>
