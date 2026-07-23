@@ -214,70 +214,11 @@ function Index() {
     setProgressLabel(label);
     setPrinting(true);
 
-    const printableStyles = Array.from(document.styleSheets)
-      .map((sheet) => {
-        try {
-          return Array.from(sheet.cssRules)
-            .map((rule) => rule.cssText)
-            .join("\n");
-        } catch {
-          return "";
-        }
-      })
-      .join("\n");
-
-    const frame = document.createElement("iframe");
-    frame.setAttribute("title", "Impressão do parecer técnico");
-    frame.style.position = "fixed";
-    frame.style.width = "0";
-    frame.style.height = "0";
-    frame.style.border = "0";
-    frame.style.opacity = "0";
-    frame.style.pointerEvents = "none";
-    document.body.appendChild(frame);
-
-    const cleanupFrame = () => {
-      if (document.body.contains(frame)) {
-        document.body.removeChild(frame);
-      }
-      setPrinting(false);
-    };
-
+    // Imprime usando o próprio documento para preservar 100% do CSS/fontes
+    // já aplicados ao preview (fidelidade ao modelo original).
     try {
-      const printWindow = frame.contentWindow;
-      const printDocument = frame.contentDocument ?? printWindow?.document;
-      if (!printWindow || !printDocument) {
-        window.print();
-        window.setTimeout(cleanupFrame, 1200);
-        return;
-      }
-
-      printDocument.open();
-      printDocument.write(`<!doctype html>
-        <html lang="pt-BR">
-          <head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <title>Parecer técnico</title>
-            <style>${printableStyles}</style>
-            <style>
-              html, body { margin: 0; background: #fff; }
-              #parecer-print { margin: 0 auto !important; box-shadow: none !important; }
-              @media print {
-                body * { visibility: visible !important; }
-                #parecer-print { position: static !important; left: auto !important; top: auto !important; }
-              }
-            </style>
-          </head>
-          <body>${printable.outerHTML}</body>
-        </html>`);
-      printDocument.close();
-
-      printWindow.focus();
-      printWindow.print();
-      window.setTimeout(cleanupFrame, 1200);
+      window.print();
     } finally {
-      // Fallback para navegadores que não disparam afterprint ao cancelar o diálogo.
       window.setTimeout(() => setPrinting(false), 1200);
     }
   };
