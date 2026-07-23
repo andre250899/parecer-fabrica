@@ -102,6 +102,7 @@ function Index() {
   const [agendaSearch, setAgendaSearch] = useState("");
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
+  const [saveSituacaoOpen, setSaveSituacaoOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const theme = THEMES.find((t) => t.id === themeId) ?? THEMES[0];
