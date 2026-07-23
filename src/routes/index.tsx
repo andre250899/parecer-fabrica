@@ -479,6 +479,17 @@ function Index() {
 
       {listModal}
 
+      {!isInstalled && (
+        <button
+          onClick={handleInstall}
+          title={installMessage || "Instalar app no dispositivo"}
+          aria-label="Instalar app"
+          className="fixed bottom-5 left-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-600 text-white shadow-lg ring-1 ring-white/40 transition-transform hover:scale-105 hover:shadow-xl print:hidden"
+        >
+          <Download className="h-5 w-5" aria-hidden="true" />
+        </button>
+      )}
+
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 p-6 lg:grid-cols-[420px_1fr] print:block print:p-0">
         {/* FORM */}
         <aside className="space-y-6 rounded-lg border border-border bg-white p-5 shadow-sm print:hidden">
