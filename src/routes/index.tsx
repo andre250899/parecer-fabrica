@@ -1197,7 +1197,7 @@ function Index() {
                   })}
                 </div>
                 <button
-                  onClick={() => setSaveSituacaoOpen(false)}
+                  onClick={() => { setSaveSituacaoOpen(false); setPostSaveAction(null); }}
                   className="mt-4 w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Cancelar
