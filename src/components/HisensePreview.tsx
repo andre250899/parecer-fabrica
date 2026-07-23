@@ -149,17 +149,26 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
       </p>
 
       {[0, 4].map((start) => (
-        <div
-          key={start}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "10px 12px",
-            marginTop: start === 0 ? 0 : 10,
-            pageBreakBefore: start === 4 ? "always" : "auto",
-            breakBefore: start === 4 ? "page" : "auto",
-          }}
-        >
+        <div key={start}>
+          {start === 4 && (
+            <div
+              style={{
+                pageBreakBefore: "always",
+                breakBefore: "page",
+                marginTop: 0,
+              }}
+            >
+              {Header}
+            </div>
+          )}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "10px 12px",
+              marginTop: start === 0 ? 0 : 10,
+            }}
+          >
           {data.fotos.slice(start, start + 4).map((f, i) => (
             <div key={i} data-avoid-break>
               <div style={photoCaptionStyle}>{f.legenda}</div>
@@ -183,6 +192,7 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
               </div>
             </div>
           ))}
+          </div>
         </div>
       ))}
 
