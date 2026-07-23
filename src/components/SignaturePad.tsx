@@ -11,6 +11,7 @@ export default function SignaturePad({
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
   const [empty, setEmpty] = useState(!value);
+  const [saved, setSaved] = useState(false);
 
   // Initialize canvas resolution + load existing signature
   useEffect(() => {
@@ -83,7 +84,16 @@ export default function SignaturePad({
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, rect.width, rect.height);
     setEmpty(true);
+    setSaved(false);
     onChange("");
+  };
+
+  const save = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || empty) return;
+    onChange(canvas.toDataURL("image/png"));
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
   };
 
   return (
@@ -105,7 +115,16 @@ export default function SignaturePad({
           </span>
         )}
       </div>
-      <div className="mt-2 flex justify-end">
+      <div className="mt-2 flex items-center justify-end gap-2">
+        {saved && <span className="text-xs font-medium text-emerald-600">Assinatura salva</span>}
+        <button
+          type="button"
+          onClick={save}
+          disabled={empty}
+          className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Salvar assinatura
+        </button>
         <button
           type="button"
           onClick={clear}
