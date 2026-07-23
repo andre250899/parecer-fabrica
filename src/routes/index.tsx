@@ -786,9 +786,7 @@ function AssurantForm({
         <label className={labelCls + " mt-3"}>Peça que Necessita ser Trocada e Motivo</label>
         <textarea rows={2} className={inputCls} value={data.pecaTrocar} onChange={(e) => upd("pecaTrocar", e.target.value)} />
         <label className={labelCls + " mt-3"}>Motivo</label>
-        <input className={inputCls} value={data.motivo1} onChange={(e) => upd("motivo1", e.target.value)} />
-        <label className={labelCls + " mt-3"}>Motivo (2)</label>
-        <input className={inputCls} value={data.motivo2} onChange={(e) => upd("motivo2", e.target.value)} />
+        <input className={inputCls} value={data.motivo} onChange={(e) => upd("motivo", e.target.value)} />
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div><label className={labelCls}>Forma de Atendimento</label><input className={inputCls} value={data.formaAtendimento} onChange={(e) => upd("formaAtendimento", e.target.value)} /></div>
           <div><label className={labelCls}>Produto Coletado?</label><input className={inputCls} value={data.produtoColetado} onChange={(e) => upd("produtoColetado", e.target.value)} /></div>
