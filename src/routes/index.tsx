@@ -871,6 +871,15 @@ function Index() {
       return `${dias[dt.getDay()]}, ${String(dt.getDate()).padStart(2, "0")} ${meses[dt.getMonth()]} ${dt.getFullYear()}`;
     };
     const isToday = agendaDate === new Date().toISOString().slice(0, 10);
+    const agendaDateObj = (() => {
+      const [y, m, d] = (agendaDate || new Date().toISOString().slice(0, 10)).split("-").map(Number);
+      return new Date(y, (m || 1) - 1, d || 1);
+    })();
+    const setAgendaDateFromObj = (dt: Date | undefined) => {
+      if (!dt) return;
+      const iso = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+      setAgendaDate(iso);
+    };
     const q = agendaSearch.trim().toLowerCase();
     const filtered = q
       ? rows.filter((r) =>
@@ -908,22 +917,32 @@ function Index() {
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <label className="relative flex cursor-pointer flex-col items-center px-3 leading-tight">
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? "text-amber-300" : "text-white/80"}`}>
-                    {isToday ? "★ Hoje" : "Agenda"}
-                  </span>
-                  <span className="whitespace-nowrap text-base font-extrabold tracking-tight md:text-lg drop-shadow">
-                    {formatAgendaDateLong(agendaDate)}
-                  </span>
-                  <input
-                    type="date"
-                    value={agendaDate}
-                    onChange={(e) => setAgendaDate(e.target.value)}
-                    className="absolute inset-0 cursor-pointer opacity-0"
-                    aria-label="Escolher data"
-                    title="Escolher data"
-                  />
-                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex cursor-pointer flex-col items-center px-3 leading-tight text-white outline-none focus-visible:ring-2 focus-visible:ring-amber-300 rounded-lg"
+                      title="Escolher data"
+                      aria-label="Escolher data"
+                    >
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? "text-amber-300" : "text-white/80"}`}>
+                        {isToday ? "★ Hoje" : "Agenda"}
+                      </span>
+                      <span className="whitespace-nowrap text-base font-extrabold tracking-tight md:text-lg drop-shadow">
+                        {formatAgendaDateLong(agendaDate)}
+                      </span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="center" className="w-auto p-0 pointer-events-auto">
+                    <CalendarUI
+                      mode="single"
+                      selected={agendaDateObj}
+                      onSelect={setAgendaDateFromObj}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
                 <button
                   onClick={() => shiftAgendaDate(1)}
                   className="rounded-lg bg-white/15 p-1.5 hover:bg-white/25"
@@ -994,15 +1013,29 @@ function Index() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <div className="flex flex-1 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">
-                <Calendar className="h-4 w-4 text-slate-500" />
-                <input
-                  type="date"
-                  value={agendaDate}
-                  onChange={(e) => setAgendaDate(e.target.value)}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                />
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex flex-1 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50"
+                    aria-label="Escolher data"
+                  >
+                    <Calendar className="h-4 w-4 text-slate-500" />
+                    <span className="flex-1 text-left font-medium">
+                      {formatAgendaDateLong(agendaDate)}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto p-0 pointer-events-auto">
+                  <CalendarUI
+                    mode="single"
+                    selected={agendaDateObj}
+                    onSelect={setAgendaDateFromObj}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
               <button
                 onClick={() => shiftAgendaDate(1)}
                 className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
