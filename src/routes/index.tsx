@@ -60,6 +60,20 @@ import {
 import { extrairDadosWhirlpool } from "@/lib/pdf-extract.functions";
 import { toast } from "sonner";
 
+const SITUACAO_LABEL: Record<string, string> = {
+  em_aberto: "Em aberto",
+  concluido: "Concluído",
+  realizar_pedido: "Realizar pedido",
+  cancelado: "Cancelado",
+};
+
+const SITUACAO_STYLE: Record<string, { border: string; bg: string; badge: string; dot: string; label: string }> = {
+  em_aberto: { border: "border-amber-400", bg: "bg-amber-50", badge: "bg-amber-100 text-amber-800", dot: "bg-amber-500", label: "Em aberto" },
+  concluido: { border: "border-emerald-500", bg: "bg-emerald-50", badge: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-500", label: "Concluído" },
+  realizar_pedido: { border: "border-sky-500", bg: "bg-sky-50", badge: "bg-sky-100 text-sky-800", dot: "bg-sky-500", label: "Realizar pedido" },
+  cancelado: { border: "border-rose-500", bg: "bg-rose-50", badge: "bg-rose-100 text-rose-700", dot: "bg-rose-500", label: "Cancelado" },
+};
+
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
