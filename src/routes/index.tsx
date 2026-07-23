@@ -658,20 +658,9 @@ function AssurantForm({
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Ordem de Serviço</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Nº OS</label><input className={inputCls} value={data.numeroOS} onChange={(e) => upd("numeroOS", e.target.value)} /></div>
           <div><label className={labelCls}>Sinistro</label><input className={inputCls} value={data.sinistro} onChange={(e) => upd("sinistro", e.target.value)} /></div>
           <div><label className={labelCls}>Assistência</label><input className={inputCls} value={data.assistencia} onChange={(e) => upd("assistencia", e.target.value)} /></div>
           <div><label className={labelCls}>CNPJ</label><input className={inputCls} value={data.cnpj} onChange={(e) => upd("cnpj", e.target.value)} /></div>
-        </div>
-      </section>
-      <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Consumidor</h2>
-        <label className={labelCls}>Nome</label>
-        <input className={inputCls} value={data.consumidorNome} onChange={(e) => upd("consumidorNome", e.target.value)} />
-        <label className={labelCls + " mt-3"}>Endereço</label>
-        <input className={inputCls} value={data.consumidorEndereco} onChange={(e) => upd("consumidorEndereco", e.target.value)} />
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Telefone</label><input className={inputCls} value={data.consumidorTelefone} onChange={(e) => upd("consumidorTelefone", e.target.value)} /></div>
           <div><label className={labelCls}>Serial</label><input className={inputCls} value={data.serial} onChange={(e) => upd("serial", e.target.value)} /></div>
         </div>
       </section>
@@ -704,7 +693,10 @@ function AssurantForm({
           ))}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <PhotoField label="Cotação do Orçamento (até 30 dias)" value={data.cotacaoImg} onChange={(v) => upd("cotacaoImg", v)} />
+          <PhotoField label="Cotação do Orçamento 1 (até 30 dias)" value={data.cotacaoImgs[0] ?? ""} onChange={(v) => upd("cotacaoImgs", [v, data.cotacaoImgs[1] ?? ""])} />
+          <PhotoField label="Cotação do Orçamento 2 (até 30 dias)" value={data.cotacaoImgs[1] ?? ""} onChange={(v) => upd("cotacaoImgs", [data.cotacaoImgs[0] ?? "", v])} />
+        </div>
+        <div className="mt-3">
           <PhotoField label="Foto Residência do Segurado" value={data.residenciaImg} onChange={(v) => upd("residenciaImg", v)} />
         </div>
       </section>
