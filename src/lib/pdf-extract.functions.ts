@@ -9,70 +9,71 @@ const ExtractInput = z.object({
 });
 
 const WhirlpoolSchema = z.object({
-  numeroOS: z.string().optional().default(""),
-  tecnico: z.string().optional().default(""),
-  dataAgenda: z.string().optional().default(""),
-  dataChamado: z.string().optional().default(""),
+  numeroOS: z.string().nullable().optional().default(""),
+  tecnico: z.string().nullable().optional().default(""),
+  dataAgenda: z.string().nullable().optional().default(""),
+  dataChamado: z.string().nullable().optional().default(""),
   periodo: z.enum(["MANHÃ", "TARDE", ""]).optional().default(""),
-  tipoAgenda: z.string().optional().default(""),
-  consumidor: z.string().optional().default(""),
-  cep: z.string().optional().default(""),
-  regiao: z.string().optional().default(""),
-  endereco: z.string().optional().default(""),
-  bairro: z.string().optional().default(""),
-  complemento: z.string().optional().default(""),
-  cidade: z.string().optional().default(""),
-  uf: z.string().optional().default(""),
-  cnpjCpf: z.string().optional().default(""),
-  enderecoEletronico: z.string().optional().default(""),
-  foneResidencia: z.string().optional().default(""),
-  foneComercial: z.string().optional().default(""),
-  foneOutros: z.string().optional().default(""),
-  localizacao: z.string().optional().default(""),
-  produto: z.string().optional().default(""),
-  marca: z.string().optional().default(""),
-  produtoConsumidor: z.string().optional().default(""),
-  linha: z.string().optional().default(""),
-  serie: z.string().optional().default(""),
-  nomeComercial: z.string().optional().default(""),
-  tempoUso: z.string().optional().default(""),
-  tipoOS: z.string().optional().default(""),
-  nrNotaFiscal: z.string().optional().default(""),
-  dataCompra: z.string().optional().default(""),
-  cor: z.string().optional().default(""),
-  voltagem: z.string().optional().default(""),
-  capacidade: z.string().optional().default(""),
-  defeitoReclamado: z.string().optional().default(""),
-  defeitoConstatado: z.string().optional().default(""),
-  reclamacaoAtendimento: z.string().optional().default(""),
-  laudoTecnico: z.string().optional().default(""),
+  tipoAgenda: z.string().nullable().optional().default(""),
+  consumidor: z.string().nullable().optional().default(""),
+  cep: z.string().nullable().optional().default(""),
+  regiao: z.string().nullable().optional().default(""),
+  endereco: z.string().nullable().optional().default(""),
+  bairro: z.string().nullable().optional().default(""),
+  complemento: z.string().nullable().optional().default(""),
+  cidade: z.string().nullable().optional().default(""),
+  uf: z.string().nullable().optional().default(""),
+  cnpjCpf: z.string().nullable().optional().default(""),
+  enderecoEletronico: z.string().nullable().optional().default(""),
+  foneResidencia: z.string().nullable().optional().default(""),
+  foneComercial: z.string().nullable().optional().default(""),
+  foneOutros: z.string().nullable().optional().default(""),
+  localizacao: z.string().nullable().optional().default(""),
+  produto: z.string().nullable().optional().default(""),
+  marca: z.string().nullable().optional().default(""),
+  produtoConsumidor: z.string().nullable().optional().default(""),
+  linha: z.string().nullable().optional().default(""),
+  serie: z.string().nullable().optional().default(""),
+  nomeComercial: z.string().nullable().optional().default(""),
+  tempoUso: z.string().nullable().optional().default(""),
+  tipoOS: z.string().nullable().optional().default(""),
+  nrNotaFiscal: z.string().nullable().optional().default(""),
+  dataCompra: z.string().nullable().optional().default(""),
+  cor: z.string().nullable().optional().default(""),
+  voltagem: z.string().nullable().optional().default(""),
+  capacidade: z.string().nullable().optional().default(""),
+  defeitoReclamado: z.string().nullable().optional().default(""),
+  defeitoConstatado: z.string().nullable().optional().default(""),
+  reclamacaoAtendimento: z.string().nullable().optional().default(""),
+  laudoTecnico: z.string().nullable().optional().default(""),
   pecas: z
     .array(
       z.object({
-        quantidade: z.string().optional().default(""),
-        codigo: z.string().optional().default(""),
-        descricao: z.string().optional().default(""),
-        fcta: z.string().optional().default(""),
-        ocor: z.string().optional().default(""),
-        valor: z.string().optional().default(""),
+        quantidade: z.string().nullable().optional().default(""),
+        codigo: z.string().nullable().optional().default(""),
+        descricao: z.string().nullable().optional().default(""),
+        fcta: z.string().nullable().optional().default(""),
+        ocor: z.string().nullable().optional().default(""),
+        valor: z.string().nullable().optional().default(""),
       }),
     )
+    .nullable()
     .optional()
     .default([]),
-  observacao: z.string().optional().default(""),
-  totalPecas: z.string().optional().default(""),
-  maoDeObra: z.string().optional().default(""),
-  totalOrcamento: z.string().optional().default(""),
-  validadeOrcamento: z.string().optional().default(""),
-  parcelas: z.string().optional().default(""),
-  vencimento: z.string().optional().default(""),
-  valorOrcamento: z.string().optional().default(""),
-  condicaoPagamento: z.string().optional().default(""),
-  dataAprovacao: z.string().optional().default(""),
-  garantiaServicoMeses: z.string().optional().default(""),
-  garantiaPecasMeses: z.string().optional().default(""),
-  dataConclusao: z.string().optional().default(""),
-  responsavel: z.string().optional().default(""),
+  observacao: z.string().nullable().optional().default(""),
+  totalPecas: z.string().nullable().optional().default(""),
+  maoDeObra: z.string().nullable().optional().default(""),
+  totalOrcamento: z.string().nullable().optional().default(""),
+  validadeOrcamento: z.string().nullable().optional().default(""),
+  parcelas: z.string().nullable().optional().default(""),
+  vencimento: z.string().nullable().optional().default(""),
+  valorOrcamento: z.string().nullable().optional().default(""),
+  condicaoPagamento: z.string().nullable().optional().default(""),
+  dataAprovacao: z.string().nullable().optional().default(""),
+  garantiaServicoMeses: z.string().nullable().optional().default(""),
+  garantiaPecasMeses: z.string().nullable().optional().default(""),
+  dataConclusao: z.string().nullable().optional().default(""),
+  responsavel: z.string().nullable().optional().default(""),
 });
 
 function emptyWhirlpoolPeca() {
@@ -83,27 +84,31 @@ function mergeWithDefaults(parsed: z.infer<typeof WhirlpoolSchema>): WhirlpoolDa
   return {
     ...defaultWhirlpool,
     ...parsed,
-    pecas: parsed.pecas.length ? parsed.pecas : [emptyWhirlpoolPeca()],
+    pecas: parsed.pecas?.length ? parsed.pecas : [emptyWhirlpoolPeca()],
   };
 }
 
 const SYSTEM_PROMPT = `Você é um extrator de dados de Ordens de Serviço (OS) da marca Whirlpool/Consul.
 
-Extraia TODOS os campos visíveis no PDF e retorne um JSON estruturado seguindo exatamente o schema fornecido.
+Extraia TODOS os campos visíveis no PDF e retorne um único objeto JSON. Siga as regras abaixo rigorosamente:
 
-Regras importantes:
-- Preserve textos, acentos e formatações originais quando possível.
-- Para "periodo", retorne apenas "MANHÃ" ou "TARDE" (ou vazio se não constar).
-- Para datas, mantenha o formato DD/MM/AAAA ou DD.MM.AAAA conforme apareça no documento.
-- Para CNPJ/CPF, mantenha a pontuação original.
-- Para telefones, mantenha DDD e traços.
-- A tabela de peças deve ser extraída linha a linha; se não houver peças, retorne array vazio.
-- O campo "reclamacaoAtendimento" é o texto longo da seção RECLAMAÇÃO ATENDIMENTO.
-- O campo "laudoTecnico" é o conteúdo da seção LAUDO TÉCNICO.
-- O campo "numeroOS" é o "NÚMERO DA OS" (não confunda com número da nota fiscal).
-- Campos que não existirem no PDF devem vir como string vazia.
+1. NUNCA retorne null. Se um campo não existir no PDF, use string vazia "".
+2. Preserve textos, acentos e formatações originais quando possível.
+3. Para "periodo", retorne apenas "MANHÃ" ou "TARDE" (ou vazio se não constar).
+4. Para datas, mantenha o formato original (DD/MM/AAAA, DD.MM.AAAA ou similar).
+5. Para CNPJ/CPF, mantenha a pontuação original.
+6. Para telefones, mantenha DDD e traços.
+7. A tabela de peças deve ser extraída linha a linha; se não houver peças, retorne array vazio [] e nunca null.
+8. "numeroOS" é o campo "NÚMERO DA OS".
+9. "defeitoReclamado" é o defeito informado pelo consumidor.
+10. "defeitoConstatado" é o defeito encontrado pelo técnico.
+11. "reclamacaoAtendimento" é o texto longo da seção RECLAMAÇÃO ATENDIMENTO.
+12. "laudoTecnico" é o conteúdo da seção LAUDO TÉCNICO.
 
-Retorne apenas o objeto JSON, sem explicações.`;
+Campos esperados no JSON:
+numeroOS, tecnico, dataAgenda, dataChamado, periodo, tipoAgenda, consumidor, cep, regiao, endereco, bairro, complemento, cidade, uf, cnpjCpf, enderecoEletronico, foneResidencia, foneComercial, foneOutros, localizacao, produto, marca, produtoConsumidor, linha, serie, nomeComercial, tempoUso, tipoOS, nrNotaFiscal, dataCompra, cor, voltagem, capacidade, defeitoReclamado, defeitoConstatado, reclamacaoAtendimento, laudoTecnico, pecas (array de {quantidade, codigo, descricao, fcta, ocor, valor}), observacao, totalPecas, maoDeObra, totalOrcamento, validadeOrcamento, parcelas, vencimento, valorOrcamento, condicaoPagamento, dataAprovacao, garantiaServicoMeses, garantiaPecasMeses, dataConclusao, responsavel.
+
+Retorne APENAS o objeto JSON, sem explicações, sem markdown, sem blocos de código.`;
 
 export const extrairDadosWhirlpool = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ExtractInput.parse(input))
