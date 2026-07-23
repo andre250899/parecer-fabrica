@@ -147,7 +147,7 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 12px" }}>
         {data.fotos.map((f, i) => (
-          <div key={i}>
+          <div key={i} data-avoid-break>
             <div style={photoCaptionStyle}>{f.legenda}</div>
             <div
               style={{

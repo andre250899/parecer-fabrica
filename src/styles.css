@@ -161,6 +161,29 @@
     top: 0;
     width: 100%;
   }
+  /* Evita cortar conteúdo entre páginas */
+  #parecer-print table,
+  #parecer-print tr,
+  #parecer-print td,
+  #parecer-print th,
+  #parecer-print img,
+  #parecer-print figure,
+  #parecer-print h1,
+  #parecer-print h2,
+  #parecer-print h3,
+  #parecer-print p {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  #parecer-print .avoid-break,
+  #parecer-print [data-avoid-break] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  #parecer-print img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
   @page {
     size: A4;
     margin: 12mm;

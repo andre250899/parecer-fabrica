@@ -25,7 +25,7 @@ const headerBar: React.CSSProperties = {
 
 function PhotoBox({ src, label }: { src: string; label: string }) {
   return (
-    <div style={{ border: "1px solid #333" }}>
+    <div data-avoid-break style={{ border: "1px solid #333" }}>
       <div style={headerBar}>{label}</div>
       <div style={{ height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", overflow: "hidden" }}>
         {src ? (
