@@ -508,6 +508,11 @@ function Index() {
       setWhirlpoolAtendimentoId(row.id);
       setTipo("whirlpool");
       setModo("whirlpool");
+      // Sincroniza a agenda para o dia em que o atendimento está alocado,
+      // para que ao abrir pela busca o usuário veja o card na coluna correta.
+      if (row.data_agenda) {
+        setAgendaDate(row.data_agenda);
+      }
     }, "Abrir outro atendimento vai descartar as alterações não salvas do atual. O que deseja fazer?");
   };
 
