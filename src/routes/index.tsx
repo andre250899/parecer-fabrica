@@ -466,9 +466,18 @@ function Index() {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     if (!row) return;
     requestLeave(() => {
-      const dados = (row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool;
-      setWhirlpool(dados);
-      setWhirlpoolBaseline(JSON.stringify(dados));
+      const raw = (row.dados as unknown as Partial<WhirlpoolData>) ?? {};
+      // Merge with defaults so older records missing new fields (pecas, anexos, etc.) don't crash the form/preview.
+      const merged: WhirlpoolData = {
+        ...defaultWhirlpool,
+        ...raw,
+        pecas:
+          Array.isArray(raw.pecas) && raw.pecas.length > 0
+            ? raw.pecas
+            : defaultWhirlpool.pecas,
+      };
+      setWhirlpool(merged);
+      setWhirlpoolBaseline(JSON.stringify(merged));
       setWhirlpoolAtendimentoId(row.id);
       setTipo("whirlpool");
       setModo("whirlpool");
