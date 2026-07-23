@@ -372,15 +372,59 @@ function Index() {
   };
 
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
-    await moveAtendimento({
-      data: { id, status: "agendado", data_agenda: agendaDate, periodo },
-    });
+  const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
+    const row = atendimentosQuery.data?.find((a) => a.id === id);
+    const dadosAtuais = (row?.dados as Record<string, unknown> | undefined) ?? {};
+    const [y, m, d] = agendaDate.split("-");
+    const dataBR = y && m && d ? `${d}/${m}/${y}` : "";
+    const periodoLabel = periodo === "manha" ? "MANHÃ" : "TARDE";
+    const novosDados = { ...dadosAtuais, dataAgenda: dataBR, periodo: periodoLabel };
+    if (row) {
+      await saveAtendimento({
+        data: {
+          id,
+          numero_os: row.numero_os,
+          tipo: row.tipo,
+          cliente_nome: row.cliente_nome ?? null,
+          dados: novosDados,
+          status: "agendado",
+          data_agenda: agendaDate,
+          periodo,
+        },
+      });
+    } else {
+      await moveAtendimento({ data: { id, status: "agendado", data_agenda: agendaDate, periodo } });
+    }
+    if (whirlpoolAtendimentoId === id) {
+      setWhirlpool((d) => ({ ...d, dataAgenda: dataBR, periodo: periodoLabel }));
+    }
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
     toast.success("Atendimento agendado.");
   };
 
   const unschedule = async (id: string) => {
-    await moveAtendimento({ data: { id, status: "nao_agendado", data_agenda: "", periodo: "" } });
+    const row = atendimentosQuery.data?.find((a) => a.id === id);
+    const dadosAtuais = (row?.dados as Record<string, unknown> | undefined) ?? {};
+    const novosDados = { ...dadosAtuais, dataAgenda: "", periodo: "" };
+    if (row) {
+      await saveAtendimento({
+        data: {
+          id,
+          numero_os: row.numero_os,
+          tipo: row.tipo,
+          cliente_nome: row.cliente_nome ?? null,
+          dados: novosDados,
+          status: "nao_agendado",
+          data_agenda: "",
+          periodo: "",
+        },
+      });
+    } else {
+      await moveAtendimento({ data: { id, status: "nao_agendado", data_agenda: "", periodo: "" } });
+    }
+    if (whirlpoolAtendimentoId === id) {
+      setWhirlpool((d) => ({ ...d, dataAgenda: "", periodo: "" }));
+    }
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
     toast.success("Atendimento movido para não agendados.");
   };
