@@ -28,6 +28,7 @@ import HisensePreview from "@/components/HisensePreview";
 import AssurantPreview from "@/components/AssurantPreview";
 import WhirlpoolPreview from "@/components/WhirlpoolPreview";
 import SignaturePad from "@/components/SignaturePad";
+import AttachmentField from "@/components/AttachmentField";
 import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
