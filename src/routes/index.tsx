@@ -341,7 +341,11 @@ function Index() {
           </div>
         </div>
         <div className="border-t border-slate-100 bg-slate-50 px-6 py-2 text-xs text-slate-600">
-          <span className="font-semibold">Design ativo:</span> {theme.name} — {theme.description}
+          {tipo === "vox" ? (
+            <><span className="font-semibold">Design ativo:</span> {theme.name} — {theme.description}</>
+          ) : (
+            <><span className="font-semibold">Modelo:</span> {tipo === "hisense" ? "Hisense / Gorenje" : "Assurant"} — layout fixo conforme padrão do fabricante.</>
+          )}
           {saveMsg && <span className="ml-3 font-semibold text-emerald-700">{saveMsg}</span>}
         </div>
       </header>
