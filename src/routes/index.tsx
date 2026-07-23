@@ -517,6 +517,11 @@ function Index() {
     setSaveSituacaoOpen(false);
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
     toast.success(`Atendimento ${whirlpool.numeroOS} salvo como ${SITUACAO_LABEL[situacao]}.`);
+    if (postSaveAction) {
+      const act = postSaveAction;
+      setPostSaveAction(null);
+      act();
+    }
   };
 
   const scheduleTo = async (id: string, periodo: "manha" | "tarde") => {
