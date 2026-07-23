@@ -642,6 +642,23 @@ function Index() {
   // Whirlpool agenda screen
   if (modo === "whirlpool") {
     const rows = atendimentosQuery.data ?? [];
+    // Date helpers for the agenda date navigation
+    const shiftAgendaDate = (days: number) => {
+      const [y, m, d] = (agendaDate || new Date().toISOString().slice(0, 10)).split("-").map(Number);
+      const dt = new Date(y, (m || 1) - 1, d || 1);
+      dt.setDate(dt.getDate() + days);
+      const iso = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+      setAgendaDate(iso);
+    };
+    const formatAgendaDateLong = (iso: string) => {
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-").map(Number);
+      const dt = new Date(y, (m || 1) - 1, d || 1);
+      const dias = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+      const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      return `${dias[dt.getDay()]}, ${String(dt.getDate()).padStart(2, "0")} ${meses[dt.getMonth()]} ${dt.getFullYear()}`;
+    };
+    const isToday = agendaDate === new Date().toISOString().slice(0, 10);
     const q = agendaSearch.trim().toLowerCase();
     const filtered = q
       ? rows.filter((r) =>
