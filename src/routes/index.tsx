@@ -888,16 +888,16 @@ function Index() {
         {listModal}
         {leaveModal}
         <header className="sticky top-0 z-10 border-b border-border bg-white/95 backdrop-blur print:hidden">
-          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-3">
-            <div className="flex items-center gap-3">
+          <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
+            <div className="flex min-w-0 items-center gap-3">
               <button onClick={() => requestLeave(() => setModo("home"), "Você tem alterações não salvas neste atendimento. Sair para o menu inicial?")} className="rounded-md border border-slate-300 bg-white p-1.5 hover:bg-slate-50" title="Voltar">
                 <ArrowLeft className="h-4 w-4" />
               </button>
-              <div>
-                <h1 className="text-lg font-bold text-slate-900">Agenda Whirlpool</h1>
-                <p className="text-xs text-slate-500">Vox Grupo · {userEmail}</p>
+              <div className="min-w-0">
+                <h1 className="truncate text-lg font-bold text-slate-900">Agenda Whirlpool</h1>
+                <p className="truncate text-xs text-slate-500">Vox Grupo · {userEmail}</p>
               </div>
-              <div className="ml-3 flex items-center gap-2 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 px-3 py-2 text-white shadow-lg ring-2 ring-amber-300/40">
+              <div className="ml-3 hidden items-center gap-2 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 px-3 py-2 text-white shadow-lg ring-2 ring-amber-300/40 md:flex">
                 <button
                   onClick={() => shiftAgendaDate(-1)}
                   className="rounded-lg bg-white/15 p-1.5 hover:bg-white/25"
@@ -1041,20 +1041,26 @@ function Index() {
               <ChevronRight className="h-6 w-6" />
             </button>
             <div
-              className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+              className="grid touch-pan-y grid-cols-1 gap-6 lg:grid-cols-3"
               onTouchStart={(e) => {
-                (e.currentTarget as HTMLDivElement).dataset.tx = String(e.touches[0].clientX);
-                (e.currentTarget as HTMLDivElement).dataset.ty = String(e.touches[0].clientY);
+                const t = e.touches[0];
+                const el = e.currentTarget as HTMLDivElement;
+                el.dataset.tx = String(t.clientX);
+                el.dataset.ty = String(t.clientY);
+                el.dataset.tt = String(Date.now());
               }}
               onTouchEnd={(e) => {
                 const el = e.currentTarget as HTMLDivElement;
                 const startX = Number(el.dataset.tx || 0);
                 const startY = Number(el.dataset.ty || 0);
+                const startT = Number(el.dataset.tt || 0);
                 const endX = e.changedTouches[0].clientX;
                 const endY = e.changedTouches[0].clientY;
                 const dx = endX - startX;
                 const dy = endY - startY;
-                if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                const elapsed = Date.now() - startT;
+                // require a decisive horizontal swipe: >50px, mostly horizontal, under 800ms
+                if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3 && elapsed < 800) {
                   shiftAgendaDate(dx < 0 ? 1 : -1);
                 }
               }}
