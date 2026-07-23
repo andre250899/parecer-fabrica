@@ -56,7 +56,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
               <td colSpan={2} style={{ width: "30%" }}>
                 <div>DATA AGENDA: {data.dataAgenda}</div>
                 <div>DATA CHAMADO: {data.dataChamado}</div>
-                <div>PERÍODO: {data.periodo}</div>
+                <div>PÉRIODO: {data.periodo}</div>
                 <div>TIPO AGENDA: {data.tipoAgenda}</div>
               </td>
             </tr>
@@ -130,13 +130,13 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
             <tr>
               <td className="wp-lbl" style={{ width: "14%" }}>DEFEITO<br />RECLAMADO</td>
               <td style={{ width: "36%" }}>
-                <div><T>{data.defeitoReclamado}</T></div>
-                {data.defeitoReclamado2 ? <div>{data.defeitoReclamado2}</div> : null}
+                <div>1&nbsp;&nbsp;<T>{data.defeitoReclamado}</T></div>
+                <div>2&nbsp;&nbsp;<T>{data.defeitoReclamado2}</T></div>
               </td>
               <td className="wp-lbl" style={{ width: "14%" }}>DEFEITO<br />CONSTATADO</td>
               <td style={{ width: "36%" }}>
-                <div><T>{data.defeitoConstatado}</T></div>
-                {data.defeitoConstatado2 ? <div>{data.defeitoConstatado2}</div> : null}
+                <div>1&nbsp;&nbsp;<T>{data.defeitoConstatado}</T></div>
+                <div>2&nbsp;&nbsp;<T>{data.defeitoConstatado2}</T></div>
               </td>
             </tr>
             <tr>
@@ -163,7 +163,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
             </tr>
           </thead>
           <tbody>
-            {Array.from({ length: Math.max(6, data.pecas.length) }).map((_, i) => {
+            {Array.from({ length: Math.max(8, data.pecas.length) }).map((_, i) => {
               const p = data.pecas[i];
               return (
                 <tr key={i}>
@@ -205,7 +205,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
         <table className="wp-t">
           <tbody>
             <tr>
-              <td rowSpan={2} style={{ width: "40%", textAlign: "center" }}>
+              <td rowSpan={4} style={{ width: "40%", textAlign: "center" }}>
                 <div className="wp-title-inline">ORÇAMENTO</div>
                 <div style={{ fontSize: "8pt" }}>
                   {data.validadeOrcamento}
@@ -221,6 +221,12 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
               <td>{data.vencimento || "\u00A0"}</td>
               <td>{data.valorOrcamento || "\u00A0"}</td>
               <td>{data.condicaoPagamento || "\u00A0"}</td>
+            </tr>
+            <tr>
+              <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+            </tr>
+            <tr>
+              <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
             </tr>
           </tbody>
         </table>
@@ -259,10 +265,10 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
             CONFORME DESCRITO NO ORÇAMENTO JÁ APROVADO, FIRMAMOS A GARANTIA DO SERVIÇO (MÃO DE OBRA) DE ASSISTÊNCIA TÉCNICA POR UM PERÍODO DE _______(___) MESES E DAS PEÇAS APLICADAS POR UM PERÍODO DE _______(___) MESES, A PARTIR DE ________________ (DATA DE CONCLUSÃO), QUANDO O SERVIÇO FOI DEVIDAMENTE EXECUTADO, ESTANDO EM PERFEITAS CONDIÇÕES DE UTILIZAÇÃO, TENDO RECEBIDO AS ORIENTAÇÕES NECESSÁRIAS PARA A CORRETA UTILIZAÇÃO DO PRODUTO.
           </p>
           <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
-            EXCLUEM-SE DA GARANTIA OS DEFEITOS CAUSADOS POR USO IMPRÓPRIO OU INADEQUADO DO PRODUTO E PROBLEMAS DECORRENTES DE ACIDENTES NATURAIS, COMO POR EXEMPLO: RAIO, INCÊNDIO, INUNDAÇÕES E ETC.
+            EXCLUEM-SE DA GARANTIA OS DEFEITOS CAUSADOS POR USO IMPRÓPRIO OU INADEQUADO DO PRODUTO E PROBLEMAS DECORRENTES DE ACIDENTES NATURAIS, COMO POR EXEMPLO: RAIO, INCÊNCIO, INUMDAÇÕES E ETC.
           </p>
           <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
-            DENTRO DO PRAZO DE GARANTIA DO SERVIÇO E DAS PEÇAS SUBSTITUÍDAS, A TROCA DESSAS PEÇAS E COMPONENTES EVENTUALMENTE DEFEITUOSAS SERÁ GRATUITA, ASSIM COMO A MÃO DE OBRA APLICADA.
+            DENTRO DO PRAZO DE GARANTIA DO SERVIÇO E DAS PEÇAS SUBSTITUÍDAS, A TROCA DESSAS PEÇAS E COMPONENTES EVENTUALMENTE DEFEITUOSAS SERÁ GRATUIDA, ASSIM COMO A MÃO DE OBRA APLICADA.
           </p>
           <p style={{ margin: "4px 0", fontSize: "8.5pt" }}>DE ACORDO.</p>
         </div>
