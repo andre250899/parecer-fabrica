@@ -408,7 +408,10 @@ function Index() {
   const openAtendimento = (id: string) => {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     if (!row) return;
-    setWhirlpool((row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool);
+    if (!confirmLeaveIfDirty()) return;
+    const dados = (row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool;
+    setWhirlpool(dados);
+    setWhirlpoolBaseline(JSON.stringify(dados));
     setWhirlpoolAtendimentoId(row.id);
     setTipo("whirlpool");
     setModo("whirlpool");
@@ -435,6 +438,7 @@ function Index() {
       },
     });
     setWhirlpoolAtendimentoId(result.id);
+    setWhirlpoolBaseline(JSON.stringify(whirlpool));
     setSaveSituacaoOpen(false);
     queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
     toast.success(`Atendimento ${whirlpool.numeroOS} salvo como ${SITUACAO_LABEL[situacao]}.`);
