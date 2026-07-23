@@ -189,3 +189,169 @@
     margin: 12mm;
   }
 }
+
+/* ============================================================
+   Whirlpool Preview
+   ============================================================ */
+
+.whirlpool-preview {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+  color: black;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.3;
+}
+
+.whirlpool-a4 {
+  padding: 12mm;
+}
+
+.whirlpool-header {
+  border-bottom: 3px solid #0055a5;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.whirlpool-brand {
+  font-size: 18pt;
+  font-weight: 800;
+  color: #0055a5;
+  letter-spacing: 0.5px;
+}
+
+.whirlpool-sub {
+  font-size: 9pt;
+  color: #333;
+  text-transform: uppercase;
+}
+
+.whirlpool-section {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.whirlpool-title {
+  font-size: 13pt;
+  font-weight: 700;
+  color: #0055a5;
+  text-transform: uppercase;
+}
+
+.whirlpool-section-title {
+  background: #0055a5;
+  color: white;
+  font-size: 9pt;
+  font-weight: 700;
+  padding: 4px 6px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.whirlpool-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 4px;
+  table-layout: fixed;
+}
+
+.whirlpool-table th,
+.whirlpool-table td {
+  border: 1px solid #0055a5;
+  padding: 4px 6px;
+  vertical-align: top;
+}
+
+.whirlpool-table td:first-child {
+  background: #eef5fc;
+  font-weight: 600;
+  color: #003b6a;
+}
+
+.whirlpool-table th {
+  background: #0055a5;
+  color: white;
+  font-weight: 700;
+}
+
+.whirlpool-box {
+  border: 1px solid #0055a5;
+  padding: 6px;
+  margin-bottom: 4px;
+  min-height: 36px;
+}
+
+.whirlpool-box p {
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+}
+
+.whirlpool-parts td:nth-child(1),
+.whirlpool-parts td:nth-child(2),
+.whirlpool-parts td:nth-child(4),
+.whirlpool-parts td:nth-child(5),
+.whirlpool-parts td:nth-child(6) {
+  background: white;
+  text-align: center;
+}
+
+.whirlpool-parts td:nth-child(3) {
+  text-align: left;
+  background: white;
+}
+
+.whirlpool-totals {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin: 8px 0;
+  font-size: 10pt;
+}
+
+.whirlpool-obs {
+  border: 1px solid #0055a5;
+  padding: 6px;
+  min-height: 40px;
+  margin-bottom: 8px;
+}
+
+.whirlpool-terms {
+  font-size: 8pt;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.whirlpool-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 16px;
+  border-top: 1px solid #0055a5;
+  padding-top: 8px;
+}
+
+.whirlpool-signature {
+  width: 55%;
+  border-bottom: 1px solid #000;
+  min-height: 40px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.whirlpool-signature p {
+  font-size: 8pt;
+  color: #555;
+  margin: 0;
+}
+
+.whirlpool-meta {
+  text-align: right;
+  font-size: 8pt;
+  color: #555;
+}
+
+.whirlpool-meta p {
+  margin: 1px 0;
+}

@@ -1,4 +1,4 @@
-export type ParecerTipo = "vox" | "hisense" | "assurant";
+export type ParecerTipo = "vox" | "hisense" | "assurant" | "whirlpool";
 
 export interface FotoItem {
   legenda: string;
@@ -101,6 +101,152 @@ export const defaultAssurant: AssurantData = {
   ],
   cotacaoImgs: ["", ""],
   residenciaImg: "",
+};
+
+export interface WhirlpoolPeca {
+  quantidade: string;
+  codigo: string;
+  descricao: string;
+  fcta: string;
+  ocor: string;
+  valor: string;
+}
+
+export interface WhirlpoolData {
+  numeroOS: string;
+  tecnico: string;
+  dataAgenda: string;
+  dataChamado: string;
+  periodo: "MANHÃ" | "TARDE" | "";
+  tipoAgenda: string;
+  autorizada: string;
+  enderecoAutorizada: string;
+  cnpjAutorizada: string;
+  foneAutorizada: string;
+  inscEstadualAutorizada: string;
+  centralAtendimento: string;
+  foneCentral1: string;
+  foneCentral2: string;
+  consumidor: string;
+  cep: string;
+  regiao: string;
+  endereco: string;
+  bairro: string;
+  complemento: string;
+  cidade: string;
+  uf: string;
+  cnpjCpf: string;
+  enderecoEletronico: string;
+  foneResidencia: string;
+  foneComercial: string;
+  foneOutros: string;
+  localizacao: string;
+  produto: string;
+  marca: string;
+  produtoConsumidor: string;
+  linha: string;
+  serie: string;
+  nomeComercial: string;
+  tempoUso: string;
+  tipoOS: string;
+  nrNotaFiscal: string;
+  dataCompra: string;
+  cor: string;
+  voltagem: string;
+  capacidade: string;
+  defeitoReclamado: string;
+  defeitoConstatado: string;
+  reclamacaoAtendimento: string;
+  laudoTecnico: string;
+  pecas: WhirlpoolPeca[];
+  observacao: string;
+  totalPecas: string;
+  maoDeObra: string;
+  totalOrcamento: string;
+  validadeOrcamento: string;
+  parcelas: string;
+  vencimento: string;
+  valorOrcamento: string;
+  condicaoPagamento: string;
+  dataAprovacao: string;
+  garantiaServicoMeses: string;
+  garantiaPecasMeses: string;
+  dataConclusao: string;
+  responsavel: string;
+  dataParecer: string;
+}
+
+export const emptyWhirlpoolPeca = (): WhirlpoolPeca => ({
+  quantidade: "",
+  codigo: "",
+  descricao: "",
+  fcta: "",
+  ocor: "",
+  valor: "",
+});
+
+export const defaultWhirlpool: WhirlpoolData = {
+  numeroOS: "",
+  tecnico: "",
+  dataAgenda: "",
+  dataChamado: "",
+  periodo: "",
+  tipoAgenda: "",
+  autorizada: "VOX SERRA LTDA",
+  enderecoAutorizada: "AVENIDA DESEMBARGADOR MARIO DA SILVA NUNES",
+  cnpjAutorizada: "61.422.882/0001-78",
+  foneAutorizada: "(27) 3227-1288",
+  inscEstadualAutorizada: "084.574.550",
+  centralAtendimento: "CONSUL",
+  foneCentral1: "3003 0777",
+  foneCentral2: "0800 970 0777",
+  consumidor: "",
+  cep: "",
+  regiao: "",
+  endereco: "",
+  bairro: "",
+  complemento: "",
+  cidade: "",
+  uf: "",
+  cnpjCpf: "",
+  enderecoEletronico: "",
+  foneResidencia: "",
+  foneComercial: "",
+  foneOutros: "",
+  localizacao: "",
+  produto: "",
+  marca: "",
+  produtoConsumidor: "",
+  linha: "",
+  serie: "",
+  nomeComercial: "",
+  tempoUso: "",
+  tipoOS: "",
+  nrNotaFiscal: "",
+  dataCompra: "",
+  cor: "",
+  voltagem: "",
+  capacidade: "",
+  defeitoReclamado: "",
+  defeitoConstatado: "",
+  reclamacaoAtendimento: "",
+  laudoTecnico: "",
+  pecas: [emptyWhirlpoolPeca()],
+  observacao: "",
+  totalPecas: "",
+  maoDeObra: "",
+  totalOrcamento: "",
+  validadeOrcamento: "O ORÇAMENTO É VÁLIDO POR 10 DIAS, APÓS ESSE PRAZO O MESMO ESTARÁ SUJEITO A MODIFICAÇÕES.",
+  parcelas: "",
+  vencimento: "",
+  valorOrcamento: "",
+  condicaoPagamento: "",
+  dataAprovacao: "",
+  garantiaServicoMeses: "",
+  garantiaPecasMeses: "",
+  dataConclusao: "",
+  responsavel: "Jefferson Hoffmann",
+  dataParecer: "",
 };
 
 // Compress an image file to a JPEG data URL, max ~900px, quality 0.72
