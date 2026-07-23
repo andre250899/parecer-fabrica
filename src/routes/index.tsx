@@ -28,6 +28,7 @@ import HisensePreview from "@/components/HisensePreview";
 import AssurantPreview from "@/components/AssurantPreview";
 import WhirlpoolPreview from "@/components/WhirlpoolPreview";
 import SignaturePad from "@/components/SignaturePad";
+import AttachmentField from "@/components/AttachmentField";
 import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
@@ -1310,6 +1311,24 @@ function WhirlpoolForm({
         <textarea rows={3} disabled={!advanced} className={lockCls} value={data.reclamacaoAtendimento} onChange={(e) => upd("reclamacaoAtendimento", e.target.value)} />
         <label className={labelCls + " mt-3"}>Laudo Técnico</label>
         <textarea rows={3} className={inputCls} value={data.laudoTecnico} onChange={(e) => upd("laudoTecnico", e.target.value)} />
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Anexos do Atendimento</h2>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <AttachmentField
+            label="Nota Fiscal"
+            value={data.anexoNotaFiscal}
+            onChange={(v) => upd("anexoNotaFiscal", v)}
+            accent="emerald"
+          />
+          <AttachmentField
+            label="Etiqueta"
+            value={data.anexoEtiqueta}
+            onChange={(v) => upd("anexoEtiqueta", v)}
+            accent="blue"
+          />
+        </div>
       </section>
 
       <section>

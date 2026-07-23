@@ -177,6 +177,8 @@ export interface WhirlpoolData {
   responsavel: string;
   dataParecer: string;
   assinaturaConsumidor: string;
+  anexoNotaFiscal: string;
+  anexoEtiqueta: string;
 }
 
 export const emptyWhirlpoolPeca = (): WhirlpoolPeca => ({
@@ -253,6 +255,8 @@ export const defaultWhirlpool: WhirlpoolData = {
   responsavel: "Jefferson Hoffmann",
   dataParecer: "",
   assinaturaConsumidor: "",
+  anexoNotaFiscal: "",
+  anexoEtiqueta: "",
 };
 
 // Compress an image file to a JPEG data URL, max ~900px, quality 0.72
