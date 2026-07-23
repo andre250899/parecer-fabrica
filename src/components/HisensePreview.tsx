@@ -29,21 +29,8 @@ const photoCaptionStyle: React.CSSProperties = {
 };
 
 export default function HisensePreview({ data }: { data: HisenseData }) {
-  return (
-    <div
-      id="parecer-print"
-      style={{
-        background: "#fff",
-        color: "#000",
-        fontFamily: "'Calibri', 'Arial', sans-serif",
-        padding: "0 15mm 15mm",
-        width: "210mm",
-        minHeight: "297mm",
-        margin: "0 auto",
-        boxShadow: "0 2px 16px rgba(0,0,0,0.08)",
-      }}
-    >
-      {/* Hisense-style header */}
+  const Header = (
+    <div data-avoid-break>
       <div style={{ margin: "0 -15mm" }}>
         <div style={{ padding: "14px 24px 8px", background: "#fff" }}>
           <span
@@ -63,7 +50,6 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
         <div style={{ height: 3, background: "#fff" }} />
         <div style={{ height: 3, background: TEAL_DARK }} />
       </div>
-
       <h1
         style={{
           fontSize: 22,
@@ -75,6 +61,23 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
       >
         Relatório de Atendimento ao Cliente
       </h1>
+    </div>
+  );
+  return (
+    <div
+      id="parecer-print"
+      style={{
+        background: "#fff",
+        color: "#000",
+        fontFamily: "'Calibri', 'Arial', sans-serif",
+        padding: "0 15mm 15mm",
+        width: "210mm",
+        minHeight: "297mm",
+        margin: "0 auto",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.08)",
+      }}
+    >
+      {Header}
 
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <tbody>
@@ -146,17 +149,26 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
       </p>
 
       {[0, 4].map((start) => (
-        <div
-          key={start}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "10px 12px",
-            marginTop: start === 0 ? 0 : 10,
-            pageBreakBefore: start === 4 ? "always" : "auto",
-            breakBefore: start === 4 ? "page" : "auto",
-          }}
-        >
+        <div key={start}>
+          {start === 4 && (
+            <div
+              style={{
+                pageBreakBefore: "always",
+                breakBefore: "page",
+                marginTop: 0,
+              }}
+            >
+              {Header}
+            </div>
+          )}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "10px 12px",
+              marginTop: start === 0 ? 0 : 10,
+            }}
+          >
           {data.fotos.slice(start, start + 4).map((f, i) => (
             <div key={i} data-avoid-break>
               <div style={photoCaptionStyle}>{f.legenda}</div>
@@ -180,6 +192,7 @@ export default function HisensePreview({ data }: { data: HisenseData }) {
               </div>
             </div>
           ))}
+          </div>
         </div>
       ))}
 
