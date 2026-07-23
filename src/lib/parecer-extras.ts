@@ -80,8 +80,8 @@ export interface AssurantData {
 }
 
 export const defaultAssurant: AssurantData = {
-  assistencia: "VOX ELETRÔNICA",
-  cnpj: "23892561000148",
+  assistencia: "",
+  cnpj: "",
   serial: "",
   sinistro: "",
   produtoMarca: "",
@@ -92,8 +92,8 @@ export const defaultAssurant: AssurantData = {
   motivo2: "",
   formaAtendimento: "",
   produtoColetado: "",
-  responsavel: "Jose Tadeu",
-  cidade: "VITORIA",
+  responsavel: "",
+  cidade: "",
   dataParecer: "",
   fotos: [
     { legenda: "FOTO DO DEFEITO ENCONTRADO", dataUrl: "" },
