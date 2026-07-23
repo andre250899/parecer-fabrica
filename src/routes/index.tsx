@@ -384,6 +384,7 @@ function Index() {
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 p-6 lg:grid-cols-[420px_1fr] print:block print:p-0">
         {/* FORM */}
         <aside className="space-y-6 rounded-lg border border-border bg-white p-5 shadow-sm print:hidden">
+          {tipo === "vox" && (<>
           <section>
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Ordem de Serviço</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -505,13 +506,216 @@ function Index() {
             <label className={labelCls + " mt-3"}>Responsável Técnico</label>
             <input className={inputCls} value={data.responsavel} onChange={(e) => upd("responsavel", e.target.value)} />
           </section>
+          </>)}
+
+          {tipo === "hisense" && (
+            <HisenseForm data={hisense} setData={setHisense} inputCls={inputCls} labelCls={labelCls} formatDate={formatDate} />
+          )}
+          {tipo === "assurant" && (
+            <AssurantForm data={assurant} setData={setAssurant} inputCls={inputCls} labelCls={labelCls} formatDate={formatDate} />
+          )}
         </aside>
 
         {/* PREVIEW */}
         <main className="overflow-x-auto">
-          <ParecerPreview data={data} theme={theme} />
+          {tipo === "vox" && <ParecerPreview data={data} theme={theme} />}
+          {tipo === "hisense" && <HisensePreview data={hisense} />}
+          {tipo === "assurant" && <AssurantPreview data={assurant} />}
         </main>
       </div>
     </div>
+  );
+}
+
+// ============ HISENSE FORM ============
+function PhotoField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  const handleFile = async (f: File | null) => {
+    if (!f) return;
+    setBusy(true);
+    try {
+      const url = await fileToCompressedDataUrl(f);
+      onChange(url);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="rounded-md border border-slate-200 p-2">
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-[10px] font-semibold uppercase text-slate-600">{label}</span>
+        {value && (
+          <button onClick={() => onChange("")} className="text-red-600 hover:text-red-800" title="Remover">
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+      {value ? (
+        <img src={value} alt={label} className="h-24 w-full rounded object-cover" />
+      ) : (
+        <label className="flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100">
+          <Camera className="h-5 w-5" />
+          <span className="text-[10px]">{busy ? "Processando..." : "Tirar foto / anexar"}</span>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+      )}
+    </div>
+  );
+}
+
+function HisenseForm({
+  data, setData, inputCls, labelCls, formatDate,
+}: {
+  data: HisenseData;
+  setData: React.Dispatch<React.SetStateAction<HisenseData>>;
+  inputCls: string;
+  labelCls: string;
+  formatDate: (r: string) => string;
+}) {
+  const upd = <K extends keyof HisenseData>(k: K, v: HisenseData[K]) => setData((d) => ({ ...d, [k]: v }));
+  const updFoto = (i: number, v: string) =>
+    setData((d) => ({ ...d, fotos: d.fotos.map((f, idx) => (idx === i ? { ...f, dataUrl: v } : f)) }));
+  return (
+    <>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Identificação</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Nº OS</label><input className={inputCls} value={data.numeroOS} onChange={(e) => upd("numeroOS", e.target.value)} /></div>
+          <div><label className={labelCls}>Assistência Téc.</label><input className={inputCls} value={data.assistenciaTec} onChange={(e) => upd("assistenciaTec", e.target.value)} /></div>
+          <div className="col-span-2"><label className={labelCls}>Nome do Cliente</label><input className={inputCls} value={data.clienteNome} onChange={(e) => upd("clienteNome", e.target.value)} /></div>
+          <div><label className={labelCls}>Modelo do Prod.</label><input className={inputCls} value={data.modeloProduto} onChange={(e) => upd("modeloProduto", e.target.value)} /></div>
+          <div><label className={labelCls}>Nº de Série</label><input className={inputCls} value={data.numeroSerie} onChange={(e) => upd("numeroSerie", e.target.value)} /></div>
+          <div><label className={labelCls}>ART ou Batch</label><input className={inputCls} value={data.artBatch} onChange={(e) => upd("artBatch", e.target.value)} /></div>
+          <div><label className={labelCls}>Marca</label>
+            <select className={inputCls} value={data.marcaProduto} onChange={(e) => upd("marcaProduto", e.target.value as "gorenje" | "hisense")}>
+              <option value="hisense">Hisense</option>
+              <option value="gorenje">Gorenje</option>
+            </select>
+          </div>
+        </div>
+      </section>
+      <section>
+        <label className={labelCls}>Defeito Relatado pelo Cliente</label>
+        <textarea rows={3} className={inputCls} value={data.defeitoRelatado} onChange={(e) => upd("defeitoRelatado", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Diagnóstico Técnico</label>
+        <textarea rows={3} className={inputCls} value={data.diagnosticoTec} onChange={(e) => upd("diagnosticoTec", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Instalação Correta? (irregularidades)</label>
+        <textarea rows={2} className={inputCls} value={data.instalacaoCorreta} onChange={(e) => upd("instalacaoCorreta", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Peças Necessárias para Reparo</label>
+        <textarea rows={2} className={inputCls} value={data.pecasNecessarias} onChange={(e) => upd("pecasNecessarias", e.target.value)} />
+      </section>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Fotos (8)</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {data.fotos.map((f, i) => (
+            <PhotoField key={i} label={f.legenda} value={f.dataUrl} onChange={(v) => updFoto(i, v)} />
+          ))}
+        </div>
+      </section>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Tensão (Volts)</h2>
+        <div className="grid grid-cols-3 gap-2">
+          <div><label className={labelCls}>F1+F2</label><input className={inputCls} value={data.tensaoF1F2} onChange={(e) => upd("tensaoF1F2", e.target.value)} /></div>
+          <div><label className={labelCls}>F1+Terra</label><input className={inputCls} value={data.tensaoF1Terra} onChange={(e) => upd("tensaoF1Terra", e.target.value)} /></div>
+          <div><label className={labelCls}>F2+Terra</label><input className={inputCls} value={data.tensaoF2Terra} onChange={(e) => upd("tensaoF2Terra", e.target.value)} /></div>
+        </div>
+        <label className={labelCls + " mt-3"}>Anotações Técnicas</label>
+        <textarea rows={3} className={inputCls} value={data.anotacoes} onChange={(e) => upd("anotacoes", e.target.value)} />
+      </section>
+      <section>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Cidade</label><input className={inputCls} value={data.cidade} onChange={(e) => upd("cidade", e.target.value)} /></div>
+          <div><label className={labelCls}>Data</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataParecer} onChange={(e) => upd("dataParecer", formatDate(e.target.value))} /></div>
+        </div>
+        <label className={labelCls + " mt-3"}>Técnico Responsável</label>
+        <input className={inputCls} value={data.responsavel} onChange={(e) => upd("responsavel", e.target.value)} />
+      </section>
+    </>
+  );
+}
+
+// ============ ASSURANT FORM ============
+function AssurantForm({
+  data, setData, inputCls, labelCls, formatDate,
+}: {
+  data: AssurantData;
+  setData: React.Dispatch<React.SetStateAction<AssurantData>>;
+  inputCls: string;
+  labelCls: string;
+  formatDate: (r: string) => string;
+}) {
+  const upd = <K extends keyof AssurantData>(k: K, v: AssurantData[K]) => setData((d) => ({ ...d, [k]: v }));
+  const updFoto = (i: number, v: string) =>
+    setData((d) => ({ ...d, fotos: d.fotos.map((f, idx) => (idx === i ? { ...f, dataUrl: v } : f)) }));
+  return (
+    <>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Ordem de Serviço</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Nº OS</label><input className={inputCls} value={data.numeroOS} onChange={(e) => upd("numeroOS", e.target.value)} /></div>
+          <div><label className={labelCls}>Sinistro</label><input className={inputCls} value={data.sinistro} onChange={(e) => upd("sinistro", e.target.value)} /></div>
+          <div><label className={labelCls}>Assistência</label><input className={inputCls} value={data.assistencia} onChange={(e) => upd("assistencia", e.target.value)} /></div>
+          <div><label className={labelCls}>CNPJ</label><input className={inputCls} value={data.cnpj} onChange={(e) => upd("cnpj", e.target.value)} /></div>
+        </div>
+      </section>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Consumidor</h2>
+        <label className={labelCls}>Nome</label>
+        <input className={inputCls} value={data.consumidorNome} onChange={(e) => upd("consumidorNome", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Endereço</label>
+        <input className={inputCls} value={data.consumidorEndereco} onChange={(e) => upd("consumidorEndereco", e.target.value)} />
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Telefone</label><input className={inputCls} value={data.consumidorTelefone} onChange={(e) => upd("consumidorTelefone", e.target.value)} /></div>
+          <div><label className={labelCls}>Serial</label><input className={inputCls} value={data.serial} onChange={(e) => upd("serial", e.target.value)} /></div>
+        </div>
+      </section>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Produto</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Marca</label><input className={inputCls} value={data.produtoMarca} onChange={(e) => upd("produtoMarca", e.target.value)} /></div>
+          <div><label className={labelCls}>Modelo</label><input className={inputCls} value={data.produtoModelo} onChange={(e) => upd("produtoModelo", e.target.value)} /></div>
+        </div>
+      </section>
+      <section>
+        <label className={labelCls}>Parecer Técnico após Análise</label>
+        <textarea rows={4} className={inputCls} value={data.parecerTecnico} onChange={(e) => upd("parecerTecnico", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Peça que Necessita ser Trocada e Motivo</label>
+        <textarea rows={2} className={inputCls} value={data.pecaTrocar} onChange={(e) => upd("pecaTrocar", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Motivo</label>
+        <input className={inputCls} value={data.motivo1} onChange={(e) => upd("motivo1", e.target.value)} />
+        <label className={labelCls + " mt-3"}>Motivo (2)</label>
+        <input className={inputCls} value={data.motivo2} onChange={(e) => upd("motivo2", e.target.value)} />
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Forma de Atendimento</label><input className={inputCls} value={data.formaAtendimento} onChange={(e) => upd("formaAtendimento", e.target.value)} /></div>
+          <div><label className={labelCls}>Produto Coletado?</label><input className={inputCls} value={data.produtoColetado} onChange={(e) => upd("produtoColetado", e.target.value)} /></div>
+        </div>
+      </section>
+      <section>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Fotos do Defeito (4)</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {data.fotos.map((f, i) => (
+            <PhotoField key={i} label={f.legenda} value={f.dataUrl} onChange={(v) => updFoto(i, v)} />
+          ))}
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <PhotoField label="Cotação do Orçamento (até 30 dias)" value={data.cotacaoImg} onChange={(v) => upd("cotacaoImg", v)} />
+          <PhotoField label="Foto Residência do Segurado" value={data.residenciaImg} onChange={(v) => upd("residenciaImg", v)} />
+        </div>
+      </section>
+      <section>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelCls}>Cidade</label><input className={inputCls} value={data.cidade} onChange={(e) => upd("cidade", e.target.value)} /></div>
+          <div><label className={labelCls}>Data</label><input className={inputCls} placeholder="DD/MM/AAAA" inputMode="numeric" value={data.dataParecer} onChange={(e) => upd("dataParecer", formatDate(e.target.value))} /></div>
+        </div>
+        <label className={labelCls + " mt-3"}>Técnico Responsável</label>
+        <input className={inputCls} value={data.responsavel} onChange={(e) => upd("responsavel", e.target.value)} />
+      </section>
+    </>
   );
 }
