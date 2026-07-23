@@ -272,9 +272,10 @@ function Index() {
   };
 
   const signOut = async () => {
-    if (!confirmLeaveIfDirty("Você tem alterações não salvas. Sair da conta mesmo assim?")) return;
-    await supabase.auth.signOut();
-    navigate({ to: "/auth" });
+    requestLeave(async () => {
+      await supabase.auth.signOut();
+      navigate({ to: "/auth" });
+    }, "Você tem alterações não salvas neste atendimento. O que deseja fazer antes de sair da conta?");
   };
 
   useEffect(() => {
@@ -463,13 +464,14 @@ function Index() {
   const openAtendimento = (id: string) => {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     if (!row) return;
-    if (!confirmLeaveIfDirty()) return;
-    const dados = (row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool;
-    setWhirlpool(dados);
-    setWhirlpoolBaseline(JSON.stringify(dados));
-    setWhirlpoolAtendimentoId(row.id);
-    setTipo("whirlpool");
-    setModo("whirlpool");
+    requestLeave(() => {
+      const dados = (row.dados as unknown as WhirlpoolData) ?? defaultWhirlpool;
+      setWhirlpool(dados);
+      setWhirlpoolBaseline(JSON.stringify(dados));
+      setWhirlpoolAtendimentoId(row.id);
+      setTipo("whirlpool");
+      setModo("whirlpool");
+    }, "Abrir outro atendimento vai descartar as alterações não salvas do atual. O que deseja fazer?");
   };
 
   const saveWhirlpoolAtendimento = async (
