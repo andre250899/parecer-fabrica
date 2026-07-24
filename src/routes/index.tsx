@@ -2030,6 +2030,7 @@ function AgendaCard({
   onDelete,
   onUnschedule,
   onMoveToDate,
+  onUpdateTag,
   onDragStart,
 }: {
   row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown; situacao?: string | null };
@@ -2038,12 +2039,16 @@ function AgendaCard({
   onDelete: () => void;
   onUnschedule?: () => void;
   onMoveToDate?: (isoDate: string) => void;
+  onUpdateTag?: (tag: string) => void;
   onDragStart?: () => void;
 }) {
-  const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string }) ?? {};
+  const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string; tagAgenda?: string }) ?? {};
   const sit = (row.situacao || "em_aberto") as keyof typeof SITUACAO_STYLE;
   const st = SITUACAO_STYLE[sit] ?? SITUACAO_STYLE.em_aberto;
   const [dateOpen, setDateOpen] = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
+  const [tagDraft, setTagDraft] = useState(dados.tagAgenda ?? "");
+  const tagAtual = (dados.tagAgenda ?? "").trim();
   const currentDate = row.data_agenda
     ? (() => { const [y, m, d] = row.data_agenda!.split("-").map(Number); return new Date(y, (m || 1) - 1, d || 1); })()
     : undefined;
