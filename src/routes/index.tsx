@@ -1094,6 +1094,16 @@ function Index() {
                     <p className="mt-1 line-clamp-1 text-sm text-slate-600">
                       {row.cliente_nome ?? "Sem cliente informado"}
                     </p>
+                    {(() => {
+                      const sit = (row.situacao ?? "em_aberto") as keyof typeof SITUACAO_STYLE;
+                      const st = SITUACAO_STYLE[sit];
+                      return (
+                        <span className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${st.badge}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
+                          {st.label}
+                        </span>
+                      );
+                    })()}
                     <p className="mt-0.5 text-xs text-slate-400">
                       Atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
                     </p>
