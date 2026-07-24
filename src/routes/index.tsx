@@ -255,7 +255,16 @@ function Index() {
     const printRoot = document.createElement("div");
     printRoot.id = "parecer-print-root";
     printRoot.className = "parecer-print-root";
-    printRoot.appendChild(printable.cloneNode(true));
+    const printableClone = printable.cloneNode(true);
+    if (printableClone instanceof HTMLElement) {
+      if (printableClone.querySelector(".whirlpool-a4")) {
+        printRoot.classList.add("whirlpool-print-root");
+      }
+      if (printableClone.classList.contains("assurant-preview")) {
+        printRoot.classList.add("assurant-print-root");
+      }
+    }
+    printRoot.appendChild(printableClone);
     document.body.appendChild(printRoot);
     document.body.classList.add("parecer-printing");
 
