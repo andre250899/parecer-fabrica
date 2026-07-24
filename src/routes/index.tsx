@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Loader2,
   FileDown,
+  Tag,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -978,6 +979,30 @@ function Index() {
     toast.success(`Atendimento transferido para ${dataBR}.`);
   };
 
+  const updateTagAgenda = async (id: string, tag: string) => {
+    const row = atendimentosQuery.data?.find((a) => a.id === id);
+    if (!row) return;
+    const dadosAtuais = (row.dados as Record<string, unknown> | undefined) ?? {};
+    const novosDados = { ...dadosAtuais, tagAgenda: tag };
+    await saveAtendimento({
+      data: {
+        id,
+        numero_os: row.numero_os,
+        tipo: row.tipo,
+        cliente_nome: row.cliente_nome ?? null,
+        dados: novosDados,
+        status: (row.status as "nao_agendado" | "agendado" | "concluido") ?? "nao_agendado",
+        data_agenda: row.data_agenda ?? "",
+        periodo: (row.periodo as "manha" | "tarde" | "") ?? "",
+      },
+    });
+    if (whirlpoolAtendimentoId === id) {
+      setWhirlpool((data) => ({ ...data, tagAgenda: tag }));
+    }
+    queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+    toast.success(tag ? "Observação salva na agenda." : "Observação removida.");
+  };
+
   const deleteAtendimentoHandler = async (id: string) => {
     const pwd = window.prompt("Exclusão protegida — informe a senha de administrador:");
     if (pwd === null) return;
@@ -1612,6 +1637,7 @@ function Index() {
                   onEdit={() => openAtendimento(r.id)}
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onMoveToDate={(iso) => moveToDate(r.id, iso)}
+                  onUpdateTag={(tag) => updateTagAgenda(r.id, tag)}
                 />
               ))}
             </DropZone>
@@ -1636,6 +1662,7 @@ function Index() {
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onUnschedule={() => unschedule(r.id)}
                   onMoveToDate={(iso) => moveToDate(r.id, iso)}
+                  onUpdateTag={(tag) => updateTagAgenda(r.id, tag)}
                 />
               ))}
             </DropZone>
@@ -1660,6 +1687,7 @@ function Index() {
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onUnschedule={() => unschedule(r.id)}
                   onMoveToDate={(iso) => moveToDate(r.id, iso)}
+                  onUpdateTag={(tag) => updateTagAgenda(r.id, tag)}
                 />
               ))}
             </DropZone>
@@ -2006,6 +2034,7 @@ function AgendaCard({
   onDelete,
   onUnschedule,
   onMoveToDate,
+  onUpdateTag,
   onDragStart,
 }: {
   row: { id: string; numero_os: string; cliente_nome: string | null; status: string; data_agenda: string | null; periodo: string | null; dados: unknown; situacao?: string | null };
@@ -2014,12 +2043,16 @@ function AgendaCard({
   onDelete: () => void;
   onUnschedule?: () => void;
   onMoveToDate?: (isoDate: string) => void;
+  onUpdateTag?: (tag: string) => void;
   onDragStart?: () => void;
 }) {
-  const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string }) ?? {};
+  const dados = (row.dados as { consumidor?: string; endereco?: string; bairro?: string; cidade?: string; produto?: string; periodo?: string; tagAgenda?: string }) ?? {};
   const sit = (row.situacao || "em_aberto") as keyof typeof SITUACAO_STYLE;
   const st = SITUACAO_STYLE[sit] ?? SITUACAO_STYLE.em_aberto;
   const [dateOpen, setDateOpen] = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
+  const [tagDraft, setTagDraft] = useState(dados.tagAgenda ?? "");
+  const tagAtual = (dados.tagAgenda ?? "").trim();
   const currentDate = row.data_agenda
     ? (() => { const [y, m, d] = row.data_agenda!.split("-").map(Number); return new Date(y, (m || 1) - 1, d || 1); })()
     : undefined;
@@ -2058,6 +2091,53 @@ function AgendaCard({
           </span>
         </div>
         <div className="flex items-center gap-1">
+          {onUpdateTag && (
+            <Popover open={tagOpen} onOpenChange={(o) => { setTagOpen(o); if (o) setTagDraft(dados.tagAgenda ?? ""); }}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  draggable={false}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  title={tagAtual ? `Observação: ${tagAtual}` : "Adicionar observação"}
+                  className={`rounded p-1 ${tagAtual ? "text-amber-600 hover:bg-amber-50" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"}`}
+                >
+                  <Tag className="h-3.5 w-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-3 pointer-events-auto">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  Observação da agenda
+                </div>
+                <textarea
+                  value={tagDraft}
+                  onChange={(e) => setTagDraft(e.target.value)}
+                  placeholder="Ex.: Atendimento prioritário, até 11h..."
+                  rows={3}
+                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <div className="mt-2 flex justify-between gap-2">
+                  {tagAtual ? (
+                    <button
+                      type="button"
+                      onClick={() => { setTagOpen(false); onUpdateTag(""); }}
+                      className="rounded px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      Remover
+                    </button>
+                  ) : <span />}
+                  <button
+                    type="button"
+                    onClick={() => { setTagOpen(false); onUpdateTag(tagDraft.trim()); }}
+                    className="rounded bg-amber-500 px-3 py-1 text-[11px] font-bold text-white hover:bg-amber-600"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
           {onMoveToDate && (
             <Popover open={dateOpen} onOpenChange={setDateOpen}>
               <PopoverTrigger asChild>
@@ -2107,6 +2187,12 @@ function AgendaCard({
         </div>
       </div>
       <p className="text-sm font-semibold text-slate-900">{dados.consumidor || row.cliente_nome || "Sem consumidor"}</p>
+      {tagAtual && (
+        <div className="mt-1 flex items-start gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[10.5px] font-bold uppercase leading-tight tracking-wide text-amber-800">
+          <Tag className="mt-0.5 h-3 w-3 shrink-0" />
+          <span className="break-words">{tagAtual}</span>
+        </div>
+      )}
       <p className="text-xs text-slate-600 line-clamp-1">{dados.endereco}</p>
       <p className="text-xs text-slate-500 line-clamp-1">
         {dados.bairro} {dados.cidade && `· ${dados.cidade}`}
