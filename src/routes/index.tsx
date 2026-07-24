@@ -179,6 +179,7 @@ function Index() {
   const [showList, setShowList] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [situacaoFilter, setSituacaoFilter] = useState<"" | "concluido" | "em_aberto" | "realizar_pedido" | "cancelado">("");
   const [agendaSearch, setAgendaSearch] = useState("");
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
