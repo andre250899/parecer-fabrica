@@ -71,6 +71,22 @@ const SITUACAO_LABEL: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
+function formatBRLInput(raw: string): string {
+  if (!raw) return "";
+  const cleaned = String(raw).replace(/[^\d,.-]/g, "").trim();
+  if (!cleaned) return "";
+  // Normalize: if both , and . exist, assume pt-BR (.=thousand, ,=decimal)
+  let normalized = cleaned;
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  } else if (cleaned.includes(",")) {
+    normalized = cleaned.replace(",", ".");
+  }
+  const n = parseFloat(normalized);
+  if (isNaN(n)) return raw;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 const SITUACAO_STYLE: Record<string, { border: string; bg: string; badge: string; dot: string; label: string }> = {
   em_aberto: { border: "border-amber-400", bg: "bg-amber-50", badge: "bg-amber-100 text-amber-800", dot: "bg-amber-500", label: "Em aberto" },
   concluido: { border: "border-emerald-500", bg: "bg-emerald-50", badge: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-500", label: "Concluído" },
