@@ -1637,6 +1637,7 @@ function Index() {
                   onEdit={() => openAtendimento(r.id)}
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onMoveToDate={(iso) => moveToDate(r.id, iso)}
+                  onUpdateTag={(tag) => updateTagAgenda(r.id, tag)}
                 />
               ))}
             </DropZone>
@@ -1661,6 +1662,7 @@ function Index() {
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onUnschedule={() => unschedule(r.id)}
                   onMoveToDate={(iso) => moveToDate(r.id, iso)}
+                  onUpdateTag={(tag) => updateTagAgenda(r.id, tag)}
                 />
               ))}
             </DropZone>
@@ -1685,6 +1687,7 @@ function Index() {
                   onDelete={() => deleteAtendimentoHandler(r.id)}
                   onUnschedule={() => unschedule(r.id)}
                   onMoveToDate={(iso) => moveToDate(r.id, iso)}
+                  onUpdateTag={(tag) => updateTagAgenda(r.id, tag)}
                 />
               ))}
             </DropZone>
