@@ -942,7 +942,27 @@ function Index() {
     return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Carregando...</div>;
   }
 
-  const allSaved = [...savedList];
+  // Merge savedList (from loadList) with the live atendimentos query so that
+  // Whirlpool atendimentos always show up in the search modal, even if the
+  // browser-side loadList query returned partial data.
+  const atendimentosFallback: SavedListRow[] = (atendimentosQuery.data ?? []).map((row) => ({
+    id: row.id,
+    numero_os: row.numero_os,
+    cliente_nome: row.cliente_nome ?? null,
+    updated_at: row.updated_at,
+    tipo: row.tipo,
+    source: "atendimento" as const,
+    data_agenda: row.data_agenda,
+    periodo: row.periodo,
+    status: row.status,
+    dados: row.dados,
+  }));
+  const mergedById = new Map<string, SavedListRow>();
+  for (const r of atendimentosFallback) mergedById.set(r.id, r);
+  for (const r of savedList) mergedById.set(r.id, r);
+  const allSaved = Array.from(mergedById.values()).sort(
+    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+  );
   const filteredList = searchTerm.trim()
     ? allSaved.filter((r) =>
         [r.numero_os, r.cliente_nome ?? "", r.tipo]
@@ -994,7 +1014,7 @@ function Index() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          {savedList.length === 0 ? (
+          {allSaved.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="mb-4 rounded-full bg-slate-100 p-5">
                 <FolderOpen className="h-10 w-10 text-slate-400" />
