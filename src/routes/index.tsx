@@ -2278,7 +2278,6 @@ function WhirlpoolForm({
           ))}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Total Peças</label><input className={inputCls} value={data.totalPecas} onChange={(e) => upd("totalPecas", e.target.value)} /></div>
           <div><label className={labelCls}>Total Peças</label><input className={inputCls} inputMode="decimal" value={data.totalPecas} onChange={(e) => upd("totalPecas", e.target.value)} onBlur={(e) => upd("totalPecas", formatBRLInput(e.target.value))} /></div>
           <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} inputMode="decimal" value={data.maoDeObra} onChange={(e) => upd("maoDeObra", e.target.value)} onBlur={(e) => upd("maoDeObra", formatBRLInput(e.target.value))} /></div>
           <div><label className={labelCls}>Total Orçamento</label><input disabled={!advanced} className={lockCls} inputMode="decimal" value={data.totalOrcamento} onChange={(e) => upd("totalOrcamento", e.target.value)} onBlur={(e) => upd("totalOrcamento", formatBRLInput(e.target.value))} /></div>
