@@ -180,7 +180,7 @@
   }
 
   /* Whirlpool must fit one A4 — clip overflow. Other models flow multi-page. */
-  body.parecer-printing #parecer-print-root:has(.whirlpool-a4) {
+  body.parecer-printing #parecer-print-root.whirlpool-print-root {
     height: 297mm !important;
     overflow: hidden !important;
   }
@@ -216,7 +216,7 @@
     break-inside: avoid-page !important;
   }
 
-  body.parecer-printing #parecer-print-root #parecer-print:has(.whirlpool-a4) {
+  body.parecer-printing #parecer-print-root.whirlpool-print-root #parecer-print {
     height: 297mm !important;
     min-height: 297mm !important;
     max-height: 297mm !important;
