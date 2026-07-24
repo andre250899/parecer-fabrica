@@ -1,6 +1,6 @@
 {
-  "name": "Gerador de Parecer Técnico — Vox Grupo",
-  "short_name": "Parecer VG",
+  "name": "Vox Web",
+  "short_name": "Vox Web",
   "description": "Gere pareceres técnicos profissionais com múltiplos designs e exporte para PDF.",
   "start_url": "/",
   "scope": "/",
