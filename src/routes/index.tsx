@@ -408,7 +408,25 @@ function Index() {
       }
       const atendimentoRow = row ?? cachedRow;
       requestLeave(() => {
-        const raw = (atendimentoRow.dados as unknown as Partial<WhirlpoolData>) ?? {};
+        const atendimentoTipo = atendimentoRow.tipo as ParecerTipo;
+        const rawDados = (atendimentoRow.dados as unknown) ?? {};
+
+        if (atendimentoTipo !== "whirlpool") {
+          setTipo(atendimentoTipo);
+          setModo("parecer");
+          if (atendimentoTipo === "vox") {
+            setData({ ...defaultParecer, ...(rawDados as Partial<ParecerData>) } as ParecerData);
+          } else if (atendimentoTipo === "hisense") {
+            setHisense({ ...defaultHisense, ...(rawDados as Partial<HisenseData>) } as HisenseData);
+          } else if (atendimentoTipo === "assurant") {
+            setAssurant(normalizeAssurantData(rawDados));
+          }
+          setShowList(false);
+          setSearchTerm("");
+          return;
+        }
+
+        const raw = (rawDados as Partial<WhirlpoolData>) ?? {};
         const merged: WhirlpoolData = {
           ...defaultWhirlpool,
           ...raw,
