@@ -2087,6 +2087,53 @@ function AgendaCard({
           </span>
         </div>
         <div className="flex items-center gap-1">
+          {onUpdateTag && (
+            <Popover open={tagOpen} onOpenChange={(o) => { setTagOpen(o); if (o) setTagDraft(dados.tagAgenda ?? ""); }}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  draggable={false}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  title={tagAtual ? `Observação: ${tagAtual}` : "Adicionar observação"}
+                  className={`rounded p-1 ${tagAtual ? "text-amber-600 hover:bg-amber-50" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"}`}
+                >
+                  <Tag className="h-3.5 w-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-3 pointer-events-auto">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  Observação da agenda
+                </div>
+                <textarea
+                  value={tagDraft}
+                  onChange={(e) => setTagDraft(e.target.value)}
+                  placeholder="Ex.: Atendimento prioritário, até 11h..."
+                  rows={3}
+                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <div className="mt-2 flex justify-between gap-2">
+                  {tagAtual ? (
+                    <button
+                      type="button"
+                      onClick={() => { setTagOpen(false); onUpdateTag(""); }}
+                      className="rounded px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      Remover
+                    </button>
+                  ) : <span />}
+                  <button
+                    type="button"
+                    onClick={() => { setTagOpen(false); onUpdateTag(tagDraft.trim()); }}
+                    className="rounded bg-amber-500 px-3 py-1 text-[11px] font-bold text-white hover:bg-amber-600"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
           {onMoveToDate && (
             <Popover open={dateOpen} onOpenChange={setDateOpen}>
               <PopoverTrigger asChild>
