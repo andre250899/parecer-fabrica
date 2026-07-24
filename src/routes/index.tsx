@@ -87,12 +87,6 @@ function formatBRLInput(raw: string): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function formatBRLCentsInput(raw: string): string {
-  const digits = String(raw).replace(/\D/g, "");
-  if (!digits) return "";
-  return toBRL(Number(digits) / 100);
-}
-
 function parseBRLNumber(raw: string): number {
   if (!raw) return 0;
   const cleaned = String(raw).replace(/[^\d,.-]/g, "").trim();
@@ -2342,7 +2336,7 @@ function WhirlpoolForm({
               <div className="grid grid-cols-3 gap-2">
                 <input placeholder="Qtd" className={inputCls} inputMode="decimal" value={p.quantidade} onChange={(e) => updPeca(i, "quantidade", e.target.value)} />
                 <input placeholder="Código" className={inputCls} value={p.codigo} onChange={(e) => updPeca(i, "codigo", e.target.value)} />
-                <input placeholder="Valor em R$" className={inputCls} inputMode="numeric" value={p.valor} onChange={(e) => updPeca(i, "valor", formatBRLCentsInput(e.target.value))} />
+                <input placeholder="Valor em R$" className={inputCls} inputMode="decimal" value={p.valor} onChange={(e) => updPeca(i, "valor", e.target.value)} onBlur={(e) => updPeca(i, "valor", formatBRLInput(e.target.value))} />
                 <input placeholder="FCTA" className={inputCls} value={p.fcta} onChange={(e) => updPeca(i, "fcta", e.target.value)} />
                 <input placeholder="OCOR" className={inputCls} value={p.ocor} onChange={(e) => updPeca(i, "ocor", e.target.value)} />
               </div>
@@ -2352,7 +2346,7 @@ function WhirlpoolForm({
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div><label className={labelCls}>Total Peças <span className="text-[10px] font-normal text-slate-500">(auto)</span></label><input readOnly className={`${inputCls} bg-slate-100`} value={data.totalPecas} /></div>
-          <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} inputMode="numeric" value={data.maoDeObra} onChange={(e) => upd("maoDeObra", formatBRLCentsInput(e.target.value))} /></div>
+          <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} inputMode="decimal" value={data.maoDeObra} onChange={(e) => upd("maoDeObra", e.target.value)} onBlur={(e) => upd("maoDeObra", formatBRLInput(e.target.value))} /></div>
           <div><label className={labelCls}>Total Orçamento <span className="text-[10px] font-normal text-slate-500">(auto)</span></label><input readOnly className={`${inputCls} bg-slate-100 font-semibold`} value={data.totalOrcamento} /></div>
           <div><label className={labelCls}>Valor Orçamento <span className="text-[10px] font-normal text-slate-500">(auto)</span></label><input readOnly className={`${inputCls} bg-slate-100`} value={data.valorOrcamento} /></div>
         </div>
