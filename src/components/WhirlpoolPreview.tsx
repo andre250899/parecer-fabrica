@@ -154,9 +154,9 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
         <table className="wp-t wp-parts">
           <thead>
             <tr>
-              <th style={{ width: "9%" }}>QUANTIDADE</th>
-              <th style={{ width: "13%" }}>CÓDIGO</th>
-              <th style={{ width: "50%" }}>DESCRIÇÃO DA PEÇA</th>
+              <th style={{ width: "14%" }}>QUANTIDADE</th>
+              <th style={{ width: "12%" }}>CÓDIGO</th>
+              <th style={{ width: "46%" }}>DESCRIÇÃO DA PEÇA</th>
               <th style={{ width: "8%" }}>FCTA</th>
               <th style={{ width: "7%" }}>OCOR.</th>
               <th style={{ width: "13%" }}>VALOR EM R$</th>
