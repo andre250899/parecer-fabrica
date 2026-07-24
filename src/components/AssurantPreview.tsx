@@ -163,7 +163,27 @@ export default function AssurantPreview({ data }: { data: AssurantData }) {
 
       <div style={{ marginTop: 30, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30 }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ borderTop: "1px solid #000", paddingTop: 4, fontSize: 11, fontWeight: 700 }}>{data.responsavel}</div>
+          <div style={{ position: "relative", borderTop: "1px solid #000", paddingTop: 4, fontSize: 11, fontWeight: 700 }}>
+            {data.responsavel && (
+              <span
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  bottom: "100%",
+                  transform: "translate(-50%, 30%) rotate(-6deg)",
+                  fontFamily: '"Segoe Script", "Bradley Hand", "Lucida Handwriting", cursive',
+                  fontSize: 22,
+                  fontWeight: 400,
+                  color: "#1d4ed8",
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                }}
+              >
+                {data.responsavel}
+              </span>
+            )}
+            {data.responsavel}
+          </div>
           <div style={{ fontSize: 10 }}>Assinatura Técnico Responsàvel</div>
         </div>
         <div style={{ textAlign: "center" }}>
