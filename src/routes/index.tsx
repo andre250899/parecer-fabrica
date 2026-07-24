@@ -2167,6 +2167,33 @@ function WhirlpoolForm({
   const removePeca = (i: number) => setData((d) => ({ ...d, pecas: d.pecas.filter((_, idx) => idx !== i) }));
 
   const [advanced, setAdvanced] = useState(false);
+
+  // Auto-calcular Total Peças = Σ(qtd × valor), Total Orçamento = Total Peças + Mão de Obra, Valor Orçamento espelha o total.
+  useEffect(() => {
+    const totalPecasNum = data.pecas.reduce((sum, p) => {
+      const q = parseBRLNumber(p.quantidade) || 0;
+      const v = parseBRLNumber(p.valor) || 0;
+      return sum + q * v;
+    }, 0);
+    const maoNum = parseBRLNumber(data.maoDeObra);
+    const totalOrc = totalPecasNum + maoNum;
+    const novoTotalPecas = totalPecasNum > 0 ? toBRL(totalPecasNum) : "";
+    const novoTotalOrc = totalOrc > 0 ? toBRL(totalOrc) : "";
+    if (
+      data.totalPecas !== novoTotalPecas ||
+      data.totalOrcamento !== novoTotalOrc ||
+      data.valorOrcamento !== novoTotalOrc
+    ) {
+      setData((d) => ({
+        ...d,
+        totalPecas: novoTotalPecas,
+        totalOrcamento: novoTotalOrc,
+        valorOrcamento: novoTotalOrc,
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.pecas, data.maoDeObra]);
+
   const toggleAdvanced = () => {
     if (advanced) {
       setAdvanced(false);
