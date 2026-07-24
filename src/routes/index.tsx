@@ -105,6 +105,24 @@ function toBRL(n: number): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function calcularTotaisWhirlpool(data: WhirlpoolData): WhirlpoolData {
+  const pecas = Array.isArray(data.pecas) ? data.pecas : [];
+  const totalPecasNum = pecas.reduce((sum, p) => {
+    const q = parseBRLNumber(p.quantidade);
+    const v = parseBRLNumber(p.valor);
+    return sum + q * v;
+  }, 0);
+  const maoNum = parseBRLNumber(data.maoDeObra);
+  const totalOrc = totalPecasNum + maoNum;
+
+  return {
+    ...data,
+    totalPecas: totalPecasNum > 0 ? toBRL(totalPecasNum) : "",
+    totalOrcamento: totalOrc > 0 ? toBRL(totalOrc) : "",
+    valorOrcamento: totalOrc > 0 ? toBRL(totalOrc) : "",
+  };
+}
+
 const SITUACAO_STYLE: Record<string, { border: string; bg: string; badge: string; dot: string; label: string }> = {
   em_aberto: { border: "border-amber-400", bg: "bg-amber-50", badge: "bg-amber-100 text-amber-800", dot: "bg-amber-500", label: "Em aberto" },
   concluido: { border: "border-emerald-500", bg: "bg-emerald-50", badge: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-500", label: "Concluído" },
@@ -2156,43 +2174,31 @@ function WhirlpoolForm({
   labelCls: string;
   formatDate: (r: string) => string;
 }) {
-  const upd = <K extends keyof WhirlpoolData>(k: K, v: WhirlpoolData[K]) => setData((d) => ({ ...d, [k]: v }));
+  const upd = <K extends keyof WhirlpoolData>(k: K, v: WhirlpoolData[K]) =>
+    setData((d) => calcularTotaisWhirlpool({ ...d, [k]: v }));
   const updPeca = (i: number, k: keyof WhirlpoolPeca, v: string) =>
     setData((d) => {
       const pecas = [...d.pecas];
       pecas[i] = { ...pecas[i], [k]: v };
-      return { ...d, pecas };
+      return calcularTotaisWhirlpool({ ...d, pecas });
     });
-  const addPeca = () => setData((d) => ({ ...d, pecas: [...d.pecas, emptyWhirlpoolPeca()] }));
-  const removePeca = (i: number) => setData((d) => ({ ...d, pecas: d.pecas.filter((_, idx) => idx !== i) }));
+  const addPeca = () => setData((d) => calcularTotaisWhirlpool({ ...d, pecas: [...d.pecas, emptyWhirlpoolPeca()] }));
+  const removePeca = (i: number) => setData((d) => calcularTotaisWhirlpool({ ...d, pecas: d.pecas.filter((_, idx) => idx !== i) }));
 
   const [advanced, setAdvanced] = useState(false);
 
   // Auto-calcular Total Peças = Σ(qtd × valor), Total Orçamento = Total Peças + Mão de Obra, Valor Orçamento espelha o total.
   useEffect(() => {
-    const totalPecasNum = data.pecas.reduce((sum, p) => {
-      const q = parseBRLNumber(p.quantidade) || 0;
-      const v = parseBRLNumber(p.valor) || 0;
-      return sum + q * v;
-    }, 0);
-    const maoNum = parseBRLNumber(data.maoDeObra);
-    const totalOrc = totalPecasNum + maoNum;
-    const novoTotalPecas = totalPecasNum > 0 ? toBRL(totalPecasNum) : "";
-    const novoTotalOrc = totalOrc > 0 ? toBRL(totalOrc) : "";
+    const calculated = calcularTotaisWhirlpool(data);
     if (
-      data.totalPecas !== novoTotalPecas ||
-      data.totalOrcamento !== novoTotalOrc ||
-      data.valorOrcamento !== novoTotalOrc
+      data.totalPecas !== calculated.totalPecas ||
+      data.totalOrcamento !== calculated.totalOrcamento ||
+      data.valorOrcamento !== calculated.valorOrcamento
     ) {
-      setData((d) => ({
-        ...d,
-        totalPecas: novoTotalPecas,
-        totalOrcamento: novoTotalOrc,
-        valorOrcamento: novoTotalOrc,
-      }));
+      setData((d) => calcularTotaisWhirlpool(d));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.pecas, data.maoDeObra]);
+  }, [data.pecas, data.maoDeObra, data.totalPecas, data.totalOrcamento, data.valorOrcamento]);
 
   const toggleAdvanced = () => {
     if (advanced) {
@@ -2328,9 +2334,9 @@ function WhirlpoolForm({
                 )}
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <input placeholder="Qtd" className={inputCls} value={p.quantidade} onChange={(e) => updPeca(i, "quantidade", e.target.value)} />
+                <input placeholder="Qtd" className={inputCls} inputMode="decimal" value={p.quantidade} onChange={(e) => updPeca(i, "quantidade", e.target.value)} />
                 <input placeholder="Código" className={inputCls} value={p.codigo} onChange={(e) => updPeca(i, "codigo", e.target.value)} />
-                <input placeholder="Valor" className={inputCls} value={p.valor} onChange={(e) => updPeca(i, "valor", e.target.value)} />
+                <input placeholder="Valor em R$" className={inputCls} inputMode="decimal" value={p.valor} onChange={(e) => updPeca(i, "valor", e.target.value)} onBlur={(e) => updPeca(i, "valor", formatBRLInput(e.target.value))} />
                 <input placeholder="FCTA" className={inputCls} value={p.fcta} onChange={(e) => updPeca(i, "fcta", e.target.value)} />
                 <input placeholder="OCOR" className={inputCls} value={p.ocor} onChange={(e) => updPeca(i, "ocor", e.target.value)} />
               </div>
