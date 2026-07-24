@@ -59,7 +59,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
               <td style={{ width: "44%", textAlign: "center", fontFamily: "'Courier New', monospace", verticalAlign: "middle" }}>
                 COLE AQUI A ETIQUETA DO PRODUTO
               </td>
-              <td style={{ width: "30%" }}>
+              <td style={{ width: "30%", verticalAlign: "middle", lineHeight: 1.35 }}>
                 <div>DATA AGENDA: {data.dataAgenda}</div>
                 <div>DATA CHAMADO: {data.dataChamado}</div>
                 <div>PÉRIODO: {data.periodo}</div>
