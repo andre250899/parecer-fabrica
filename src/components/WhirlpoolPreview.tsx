@@ -72,7 +72,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
         </table>
 
         {/* Consumidor */}
-        <table className="wp-t">
+        <table className="wp-t wp-noinner">
           <tbody>
             <tr>
               <td colSpan={2}>CONSUMIDOR: {data.consumidor}</td>

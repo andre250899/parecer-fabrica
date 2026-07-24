@@ -391,6 +391,25 @@
   line-height: 1.35;
 }
 
+.wp-t.wp-noinner th,
+.wp-t.wp-noinner td {
+  border: none !important;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.wp-t.wp-noinner {
+  border: 1px solid #000 !important;
+}
+
+body.parecer-printing #parecer-print-root .wp-t.wp-noinner th,
+body.parecer-printing #parecer-print-root .wp-t.wp-noinner td {
+  border: none !important;
+}
+body.parecer-printing #parecer-print-root .wp-t.wp-noinner {
+  border: 1px solid #000 !important;
+}
+
 .wp-half {
   width: 50%;
 }
