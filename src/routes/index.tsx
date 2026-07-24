@@ -1024,6 +1024,36 @@ function Index() {
               className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm shadow-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
             />
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => setSituacaoFilter("")}
+              className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition ${
+                situacaoFilter === ""
+                  ? "bg-slate-900 text-white shadow"
+                  : "border border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+              }`}
+            >
+              Todos <span className="ml-1 opacity-70">({allSaved.length})</span>
+            </button>
+            {(["concluido", "em_aberto", "realizar_pedido", "cancelado"] as const).map((s) => {
+              const st = SITUACAO_STYLE[s];
+              const active = situacaoFilter === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setSituacaoFilter(active ? "" : s)}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition ${
+                    active
+                      ? `${st.badge} ring-2 ring-offset-1 ring-slate-400`
+                      : "border border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+                  }`}
+                >
+                  <span className={`h-2 w-2 rounded-full ${st.dot}`} />
+                  {st.label} <span className="opacity-70">({situacaoCounts[s]})</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {allSaved.length === 0 ? (
