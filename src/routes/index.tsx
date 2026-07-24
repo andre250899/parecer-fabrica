@@ -87,6 +87,14 @@ function formatBRLInput(raw: string): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+// Formatação ao vivo por dígitos (centavos) — evita "pular" caracteres enquanto digita.
+function formatBRLLive(raw: string): string {
+  const digits = String(raw || "").replace(/\D/g, "");
+  if (!digits) return "";
+  const n = parseInt(digits, 10) / 100;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 function parseBRLNumber(raw: string): number {
   if (!raw) return 0;
   const cleaned = String(raw).replace(/[^\d,.-]/g, "").trim();
