@@ -87,6 +87,12 @@ function formatBRLInput(raw: string): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function formatBRLCentsInput(raw: string): string {
+  const digits = String(raw).replace(/\D/g, "");
+  if (!digits) return "";
+  return toBRL(Number(digits) / 100);
+}
+
 function parseBRLNumber(raw: string): number {
   if (!raw) return 0;
   const cleaned = String(raw).replace(/[^\d,.-]/g, "").trim();
@@ -103,6 +109,24 @@ function parseBRLNumber(raw: string): number {
 
 function toBRL(n: number): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function calcularTotaisWhirlpool(data: WhirlpoolData): WhirlpoolData {
+  const pecas = Array.isArray(data.pecas) ? data.pecas : [];
+  const totalPecasNum = pecas.reduce((sum, p) => {
+    const q = parseBRLNumber(p.quantidade);
+    const v = parseBRLNumber(p.valor);
+    return sum + q * v;
+  }, 0);
+  const maoNum = parseBRLNumber(data.maoDeObra);
+  const totalOrc = totalPecasNum + maoNum;
+
+  return {
+    ...data,
+    totalPecas: totalPecasNum > 0 ? toBRL(totalPecasNum) : "",
+    totalOrcamento: totalOrc > 0 ? toBRL(totalOrc) : "",
+    valorOrcamento: totalOrc > 0 ? toBRL(totalOrc) : "",
+  };
 }
 
 const SITUACAO_STYLE: Record<string, { border: string; bg: string; badge: string; dot: string; label: string }> = {
