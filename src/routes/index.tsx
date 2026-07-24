@@ -87,6 +87,14 @@ function formatBRLInput(raw: string): string {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+// Formatação ao vivo por dígitos (centavos) — evita "pular" caracteres enquanto digita.
+function formatBRLLive(raw: string): string {
+  const digits = String(raw || "").replace(/\D/g, "");
+  if (!digits) return "";
+  const n = parseInt(digits, 10) / 100;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 function parseBRLNumber(raw: string): number {
   if (!raw) return 0;
   const cleaned = String(raw).replace(/[^\d,.-]/g, "").trim();
@@ -2345,7 +2353,7 @@ function WhirlpoolForm({
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div><label className={labelCls}>Total Peças <span className="text-[10px] font-normal text-slate-500">(auto)</span></label><input readOnly className={`${inputCls} bg-slate-100 font-semibold`} value={toBRL((data.pecas || []).reduce((s, p) => s + parseBRLNumber(p.valor), 0))} /></div>
-          <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} inputMode="decimal" value={data.maoDeObra} onChange={(e) => upd("maoDeObra", formatBRLInput(e.target.value))} onBlur={(e) => upd("maoDeObra", formatBRLInput(e.target.value))} /></div>
+          <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} inputMode="numeric" value={data.maoDeObra} onChange={(e) => upd("maoDeObra", formatBRLLive(e.target.value))} /></div>
           <div><label className={labelCls}>Total Orçamento <span className="text-[10px] font-normal text-slate-500">(auto)</span></label><input readOnly className={`${inputCls} bg-slate-100 font-semibold`} value={toBRL((data.pecas || []).reduce((s, p) => s + parseBRLNumber(p.valor), 0) + parseBRLNumber(data.maoDeObra))} /></div>
           <div><label className={labelCls}>Valor Orçamento <span className="text-[10px] font-normal text-slate-500">(auto)</span></label><input readOnly className={`${inputCls} bg-slate-100`} value={toBRL((data.pecas || []).reduce((s, p) => s + parseBRLNumber(p.valor), 0) + parseBRLNumber(data.maoDeObra))} /></div>
         </div>
