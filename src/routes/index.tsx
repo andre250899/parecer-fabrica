@@ -978,6 +978,30 @@ function Index() {
     toast.success(`Atendimento transferido para ${dataBR}.`);
   };
 
+  const updateTagAgenda = async (id: string, tag: string) => {
+    const row = atendimentosQuery.data?.find((a) => a.id === id);
+    if (!row) return;
+    const dadosAtuais = (row.dados as Record<string, unknown> | undefined) ?? {};
+    const novosDados = { ...dadosAtuais, tagAgenda: tag };
+    await saveAtendimento({
+      data: {
+        id,
+        numero_os: row.numero_os,
+        tipo: row.tipo,
+        cliente_nome: row.cliente_nome ?? null,
+        dados: novosDados,
+        status: (row.status as "nao_agendado" | "agendado" | "concluido") ?? "nao_agendado",
+        data_agenda: row.data_agenda ?? "",
+        periodo: (row.periodo as "manha" | "tarde" | "") ?? "",
+      },
+    });
+    if (whirlpoolAtendimentoId === id) {
+      setWhirlpool((data) => ({ ...data, tagAgenda: tag }));
+    }
+    queryClient.invalidateQueries({ queryKey: ["atendimentos"] });
+    toast.success(tag ? "Observação salva na agenda." : "Observação removida.");
+  };
+
   const deleteAtendimentoHandler = async (id: string) => {
     const pwd = window.prompt("Exclusão protegida — informe a senha de administrador:");
     if (pwd === null) return;
