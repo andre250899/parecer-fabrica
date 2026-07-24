@@ -966,14 +966,23 @@ function Index() {
   const allSaved = Array.from(mergedById.values()).sort(
     (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
   );
+  const situacaoFiltered = situacaoFilter
+    ? allSaved.filter((r) => (r.situacao ?? "em_aberto") === situacaoFilter)
+    : allSaved;
   const filteredList = searchTerm.trim()
-    ? allSaved.filter((r) =>
+    ? situacaoFiltered.filter((r) =>
         [r.numero_os, r.cliente_nome ?? "", r.tipo]
           .join(" ")
           .toLowerCase()
           .includes(searchTerm.trim().toLowerCase()),
       )
-    : allSaved;
+    : situacaoFiltered;
+  const situacaoCounts = {
+    concluido: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "concluido").length,
+    em_aberto: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "em_aberto").length,
+    realizar_pedido: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "realizar_pedido").length,
+    cancelado: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "cancelado").length,
+  };
 
   const listModal = showList && (
     <div
