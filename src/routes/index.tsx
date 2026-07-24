@@ -106,6 +106,41 @@ const normalizeAgendaDate = (value?: string | null) => {
   return day && month && year ? `${year}-${month}-${day}` : value;
 };
 
+const normalizeAssurantData = (raw: unknown): AssurantData => {
+  const source = (raw && typeof raw === "object" ? raw : {}) as Partial<AssurantData> & {
+    motivo1?: string;
+    motivo2?: string;
+    cotacaoImg?: string;
+    cotacaoOrcamento?: string;
+  };
+
+  const fotos = Array.isArray(source.fotos) && source.fotos.length > 0
+    ? defaultAssurant.fotos.map((fallback, index) => {
+        const current = source.fotos?.[index];
+        return {
+          legenda: current?.legenda || fallback.legenda,
+          dataUrl: current?.dataUrl || "",
+        };
+      })
+    : defaultAssurant.fotos;
+
+  const legacyCotacao = [source.cotacaoImg, source.cotacaoOrcamento].filter(
+    (item): item is string => typeof item === "string" && item.length > 0,
+  );
+  const cotacaoImgs = Array.isArray(source.cotacaoImgs)
+    ? [source.cotacaoImgs[0] ?? "", source.cotacaoImgs[1] ?? ""]
+    : [legacyCotacao[0] ?? "", legacyCotacao[1] ?? ""];
+
+  return {
+    ...defaultAssurant,
+    ...source,
+    motivo: source.motivo || [source.motivo1, source.motivo2].filter(Boolean).join("\n"),
+    fotos,
+    cotacaoImgs,
+    residenciaImg: source.residenciaImg || "",
+  };
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -373,7 +408,25 @@ function Index() {
       }
       const atendimentoRow = row ?? cachedRow;
       requestLeave(() => {
-        const raw = (atendimentoRow.dados as unknown as Partial<WhirlpoolData>) ?? {};
+        const atendimentoTipo = atendimentoRow.tipo as ParecerTipo;
+        const rawDados = (atendimentoRow.dados as unknown) ?? {};
+
+        if (atendimentoTipo !== "whirlpool") {
+          setTipo(atendimentoTipo);
+          setModo("parecer");
+          if (atendimentoTipo === "vox") {
+            setData({ ...defaultParecer, ...(rawDados as Partial<ParecerData>) } as ParecerData);
+          } else if (atendimentoTipo === "hisense") {
+            setHisense({ ...defaultHisense, ...(rawDados as Partial<HisenseData>) } as HisenseData);
+          } else if (atendimentoTipo === "assurant") {
+            setAssurant(normalizeAssurantData(rawDados));
+          }
+          setShowList(false);
+          setSearchTerm("");
+          return;
+        }
+
+        const raw = (rawDados as Partial<WhirlpoolData>) ?? {};
         const merged: WhirlpoolData = {
           ...defaultWhirlpool,
           ...raw,
@@ -412,7 +465,7 @@ function Index() {
         setModo("parecer");
         if (t === "vox") setData(row.data as unknown as ParecerData);
         else if (t === "hisense") setHisense(row.data as unknown as HisenseData);
-        else setAssurant(row.data as unknown as AssurantData);
+        else setAssurant(normalizeAssurantData(row.data));
       }
       setShowList(false);
     }
@@ -635,13 +688,7 @@ function Index() {
         } else if (tipoRow === "hisense") {
           setHisense({ ...defaultHisense, ...(rawAny as Partial<HisenseData>) } as HisenseData);
         } else if (tipoRow === "assurant") {
-          const rawA = rawAny as Partial<AssurantData>;
-          setAssurant({
-            ...defaultAssurant,
-            ...rawA,
-            fotos: Array.isArray(rawA.fotos) && rawA.fotos.length > 0 ? rawA.fotos : defaultAssurant.fotos,
-            cotacaoImgs: Array.isArray(rawA.cotacaoImgs) ? rawA.cotacaoImgs : defaultAssurant.cotacaoImgs,
-          });
+          setAssurant(normalizeAssurantData(rawAny));
         }
         setShowList(false);
         return;
