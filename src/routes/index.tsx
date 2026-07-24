@@ -93,6 +93,7 @@ type SavedListRow = {
   data_agenda?: string | null;
   periodo?: string | null;
   status?: string | null;
+  situacao?: string | null;
   dados?: unknown;
 };
 
@@ -178,6 +179,7 @@ function Index() {
   const [showList, setShowList] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [situacaoFilter, setSituacaoFilter] = useState<"" | "concluido" | "em_aberto" | "realizar_pedido" | "cancelado">("");
   const [agendaSearch, setAgendaSearch] = useState("");
   const [agendaDate, setAgendaDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [pdfUploading, setPdfUploading] = useState(false);
@@ -344,7 +346,7 @@ function Index() {
       .order("updated_at", { ascending: false });
     let atendimentoQuery = supabase
       .from("atendimentos")
-      .select("id, numero_os, cliente_nome, updated_at, tipo, data_agenda, periodo, status, dados")
+      .select("id, numero_os, cliente_nome, updated_at, tipo, data_agenda, periodo, status, situacao, dados")
       .order("updated_at", { ascending: false });
     if (tipo) {
       parecerQuery = parecerQuery.eq("tipo", tipo);
@@ -955,6 +957,7 @@ function Index() {
     data_agenda: row.data_agenda,
     periodo: row.periodo,
     status: row.status,
+    situacao: (row as { situacao?: string | null }).situacao ?? null,
     dados: row.dados,
   }));
   const mergedById = new Map<string, SavedListRow>();
@@ -963,14 +966,23 @@ function Index() {
   const allSaved = Array.from(mergedById.values()).sort(
     (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
   );
+  const situacaoFiltered = situacaoFilter
+    ? allSaved.filter((r) => (r.situacao ?? "em_aberto") === situacaoFilter)
+    : allSaved;
   const filteredList = searchTerm.trim()
-    ? allSaved.filter((r) =>
+    ? situacaoFiltered.filter((r) =>
         [r.numero_os, r.cliente_nome ?? "", r.tipo]
           .join(" ")
           .toLowerCase()
           .includes(searchTerm.trim().toLowerCase()),
       )
-    : allSaved;
+    : situacaoFiltered;
+  const situacaoCounts = {
+    concluido: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "concluido").length,
+    em_aberto: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "em_aberto").length,
+    realizar_pedido: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "realizar_pedido").length,
+    cancelado: allSaved.filter((r) => (r.situacao ?? "em_aberto") === "cancelado").length,
+  };
 
   const listModal = showList && (
     <div
@@ -1012,6 +1024,36 @@ function Index() {
               className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm shadow-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
             />
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => setSituacaoFilter("")}
+              className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition ${
+                situacaoFilter === ""
+                  ? "bg-slate-900 text-white shadow"
+                  : "border border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+              }`}
+            >
+              Todos <span className="ml-1 opacity-70">({allSaved.length})</span>
+            </button>
+            {(["concluido", "em_aberto", "realizar_pedido", "cancelado"] as const).map((s) => {
+              const st = SITUACAO_STYLE[s];
+              const active = situacaoFilter === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setSituacaoFilter(active ? "" : s)}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition ${
+                    active
+                      ? `${st.badge} ring-2 ring-offset-1 ring-slate-400`
+                      : "border border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+                  }`}
+                >
+                  <span className={`h-2 w-2 rounded-full ${st.dot}`} />
+                  {st.label} <span className="opacity-70">({situacaoCounts[s]})</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {allSaved.length === 0 ? (
@@ -1052,6 +1094,16 @@ function Index() {
                     <p className="mt-1 line-clamp-1 text-sm text-slate-600">
                       {row.cliente_nome ?? "Sem cliente informado"}
                     </p>
+                    {(() => {
+                      const sit = (row.situacao ?? "em_aberto") as keyof typeof SITUACAO_STYLE;
+                      const st = SITUACAO_STYLE[sit];
+                      return (
+                        <span className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${st.badge}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
+                          {st.label}
+                        </span>
+                      );
+                    })()}
                     <p className="mt-0.5 text-xs text-slate-400">
                       Atualizado {new Date(row.updated_at).toLocaleString("pt-BR")}
                     </p>
