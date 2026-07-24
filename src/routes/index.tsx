@@ -624,7 +624,30 @@ function Index() {
     const row = atendimentosQuery.data?.find((a) => a.id === id);
     if (!row) return;
     requestLeave(() => {
-      const raw = (row.dados as unknown as Partial<WhirlpoolData>) ?? {};
+      const tipoRow = row.tipo as ParecerTipo;
+      const rawAny = (row.dados as unknown) ?? {};
+
+      if (tipoRow !== "whirlpool") {
+        setTipo(tipoRow);
+        setModo("parecer");
+        if (tipoRow === "vox") {
+          setData(rawAny as ParecerData);
+        } else if (tipoRow === "hisense") {
+          setHisense({ ...defaultHisense, ...(rawAny as Partial<HisenseData>) } as HisenseData);
+        } else if (tipoRow === "assurant") {
+          const rawA = rawAny as Partial<AssurantData>;
+          setAssurant({
+            ...defaultAssurant,
+            ...rawA,
+            fotos: Array.isArray(rawA.fotos) && rawA.fotos.length > 0 ? rawA.fotos : defaultAssurant.fotos,
+            cotacaoImgs: Array.isArray(rawA.cotacaoImgs) ? rawA.cotacaoImgs : defaultAssurant.cotacaoImgs,
+          });
+        }
+        setShowList(false);
+        return;
+      }
+
+      const raw = (rawAny as Partial<WhirlpoolData>) ?? {};
       // Merge with defaults so older records missing new fields (pecas, anexos, etc.) don't crash the form/preview.
       const merged: WhirlpoolData = {
         ...defaultWhirlpool,
