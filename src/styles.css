@@ -200,9 +200,28 @@
   body.parecer-printing #parecer-print-root .assurant-preview {
     box-sizing: border-box !important;
     width: 210mm !important;
-    min-height: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     overflow: visible !important;
     padding: 12mm !important;
+    margin: 0 !important;
+  }
+
+  body.parecer-printing #parecer-print-root.assurant-print-root,
+  body.parecer-printing #parecer-print-root.assurant-print-root #parecer-print {
+    display: block !important;
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  body.parecer-printing #parecer-print-root.assurant-print-root .assurant-preview > * {
+    overflow: visible !important;
   }
 
   body.parecer-printing #parecer-print-root .assurant-photo-grid {
@@ -284,14 +303,14 @@
     line-height: 1.1 !important;
   }
 
-  body * {
+  body:not(.parecer-printing) * {
     visibility: hidden;
   }
-  #parecer-print,
-  #parecer-print * {
+  body:not(.parecer-printing) #parecer-print,
+  body:not(.parecer-printing) #parecer-print * {
     visibility: visible;
   }
-  #parecer-print {
+  body:not(.parecer-printing) #parecer-print {
     position: absolute;
     left: 0;
     top: 0;
