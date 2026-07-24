@@ -191,8 +191,8 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
                 <div className="wp-lbl-inline">OBSERVAÇÃO</div>
                 <div className="wp-obs"><T>{data.observacao}</T></div>
               </td>
-              <td style={{ width: "15%", borderRight: "none", whiteSpace: "nowrap" }}>TOTAL DE PEÇAS</td>
-              <td style={{ width: "13%", borderLeft: "none" }}>{data.totalPecas}</td>
+              <td style={{ width: "8%", borderRight: "none", whiteSpace: "nowrap" }}>TOTAL DE PEÇAS</td>
+              <td style={{ width: "20%", borderLeft: "none" }}>{data.totalPecas}</td>
             </tr>
             <tr>
               <td style={{ borderRight: "none", whiteSpace: "nowrap" }}>MÃO DE OBRA</td>
