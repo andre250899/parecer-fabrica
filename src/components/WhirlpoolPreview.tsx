@@ -20,7 +20,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
         <table className="wp-t wp-header">
           <tbody>
             <tr>
-              <td className="wp-half">
+              <td className="wp-half" style={{ width: "70%" }}>
                 <div>AUTORIZADA:</div>
                 <div>{data.autorizada}</div>
                 <div>
@@ -34,7 +34,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
                     : ""}
                 </div>
               </td>
-              <td className="wp-half">
+              <td className="wp-half" style={{ width: "30%" }}>
                 <div>Central de Atendimento</div>
                 <div>{data.centralAtendimento}</div>
                 <div>FONE: {data.foneCentral1}</div>
