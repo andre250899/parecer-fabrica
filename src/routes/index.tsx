@@ -963,9 +963,13 @@ function Index() {
   const mergedById = new Map<string, SavedListRow>();
   for (const r of atendimentosFallback) mergedById.set(r.id, r);
   for (const r of savedList) mergedById.set(r.id, r);
-  const allSaved = Array.from(mergedById.values()).sort(
+  const mergedAll = Array.from(mergedById.values()).sort(
     (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
   );
+  // Restringe a lista de atendimentos ao modelo (tipo) atualmente ativo,
+  // para que o botão "Atendimentos" de cada bloco mostre apenas os seus.
+  // Na home (tipo === null) mostra todos.
+  const allSaved = tipo ? mergedAll.filter((r) => r.tipo === tipo) : mergedAll;
   const situacaoFiltered = situacaoFilter
     ? allSaved.filter((r) => (r.situacao ?? "em_aberto") === situacaoFilter)
     : allSaved;
