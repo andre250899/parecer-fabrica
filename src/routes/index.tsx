@@ -71,6 +71,22 @@ const SITUACAO_LABEL: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
+function formatBRLInput(raw: string): string {
+  if (!raw) return "";
+  const cleaned = String(raw).replace(/[^\d,.-]/g, "").trim();
+  if (!cleaned) return "";
+  // Normalize: if both , and . exist, assume pt-BR (.=thousand, ,=decimal)
+  let normalized = cleaned;
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  } else if (cleaned.includes(",")) {
+    normalized = cleaned.replace(",", ".");
+  }
+  const n = parseFloat(normalized);
+  if (isNaN(n)) return raw;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 const SITUACAO_STYLE: Record<string, { border: string; bg: string; badge: string; dot: string; label: string }> = {
   em_aberto: { border: "border-amber-400", bg: "bg-amber-50", badge: "bg-amber-100 text-amber-800", dot: "bg-amber-500", label: "Em aberto" },
   concluido: { border: "border-emerald-500", bg: "bg-emerald-50", badge: "bg-emerald-100 text-emerald-800", dot: "bg-emerald-500", label: "Concluído" },
@@ -2278,10 +2294,10 @@ function WhirlpoolForm({
           ))}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Total Peças</label><input className={inputCls} value={data.totalPecas} onChange={(e) => upd("totalPecas", e.target.value)} /></div>
-          <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} value={data.maoDeObra} onChange={(e) => upd("maoDeObra", e.target.value)} /></div>
-          <div><label className={labelCls}>Total Orçamento</label><input disabled={!advanced} className={lockCls} value={data.totalOrcamento} onChange={(e) => upd("totalOrcamento", e.target.value)} /></div>
-          <div><label className={labelCls}>Valor Orçamento</label><input disabled={!advanced} className={lockCls} value={data.valorOrcamento} onChange={(e) => upd("valorOrcamento", e.target.value)} /></div>
+          <div><label className={labelCls}>Total Peças</label><input className={inputCls} inputMode="decimal" value={data.totalPecas} onChange={(e) => upd("totalPecas", e.target.value)} onBlur={(e) => upd("totalPecas", formatBRLInput(e.target.value))} /></div>
+          <div><label className={labelCls}>Mão de Obra</label><input className={inputCls} inputMode="decimal" value={data.maoDeObra} onChange={(e) => upd("maoDeObra", e.target.value)} onBlur={(e) => upd("maoDeObra", formatBRLInput(e.target.value))} /></div>
+          <div><label className={labelCls}>Total Orçamento</label><input disabled={!advanced} className={lockCls} inputMode="decimal" value={data.totalOrcamento} onChange={(e) => upd("totalOrcamento", e.target.value)} onBlur={(e) => upd("totalOrcamento", formatBRLInput(e.target.value))} /></div>
+          <div><label className={labelCls}>Valor Orçamento</label><input disabled={!advanced} className={lockCls} inputMode="decimal" value={data.valorOrcamento} onChange={(e) => upd("valorOrcamento", e.target.value)} onBlur={(e) => upd("valorOrcamento", formatBRLInput(e.target.value))} /></div>
         </div>
       </section>
 
