@@ -151,10 +151,10 @@
   html,
   body {
     width: 210mm !important;
-    height: 297mm !important;
+    min-height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     background: white !important;
   }
 
@@ -172,8 +172,10 @@
   body.parecer-printing #parecer-print-root {
     display: block !important;
     width: 210mm !important;
+    min-height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
+    overflow: visible !important;
     background: white !important;
   }
 
@@ -193,6 +195,25 @@
     width: 210mm !important;
     margin: 0 !important;
     box-shadow: none !important;
+  }
+
+  body.parecer-printing #parecer-print-root .assurant-preview {
+    box-sizing: border-box !important;
+    width: 210mm !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    padding: 12mm !important;
+  }
+
+  body.parecer-printing #parecer-print-root .assurant-photo-grid {
+    display: block !important;
+  }
+
+  body.parecer-printing #parecer-print-root .assurant-photo-box {
+    display: block !important;
+    margin-top: 8px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
   }
 
   body.parecer-printing #parecer-print-root #parecer-print:has(.whirlpool-a4) {
