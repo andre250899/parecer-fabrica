@@ -979,7 +979,7 @@ function Index() {
   };
 
   const deleteAtendimentoHandler = async (id: string) => {
-    void 0;
+    const pwdSkip = true; void pwdSkip;
     const pwd = window.prompt("Exclusão protegida — informe a senha de administrador:");
     if (pwd === null) return;
     if (pwd !== "V271088") {
