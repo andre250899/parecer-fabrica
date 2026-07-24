@@ -48,21 +48,23 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
         <table className="wp-t">
           <tbody>
             <tr>
-              <td className="wp-lbl" style={{ width: "14%" }}>NÚMERO DA OS</td>
-              <td className="wp-lbl" style={{ width: "12%" }}>TÉCNICO</td>
-              <td rowSpan={2} style={{ width: "44%", textAlign: "center", fontFamily: "'Courier New', monospace" }}>
+              <td style={{ width: "14%", textAlign: "center", verticalAlign: "middle" }}>
+                <div className="wp-lbl">NÚMERO DA OS</div>
+                <div className="wp-strong" style={{ border: "none", padding: "2px 0" }}><T>{data.numeroOS}</T></div>
+              </td>
+              <td style={{ width: "12%", textAlign: "center", verticalAlign: "middle" }}>
+                <div className="wp-lbl">TÉCNICO</div>
+                <div className="wp-strong" style={{ border: "none", padding: "2px 0" }}><T>{data.tecnico}</T></div>
+              </td>
+              <td style={{ width: "44%", textAlign: "center", fontFamily: "'Courier New', monospace", verticalAlign: "middle" }}>
                 COLE AQUI A ETIQUETA DO PRODUTO
               </td>
-              <td colSpan={2} style={{ width: "30%" }}>
+              <td style={{ width: "30%" }}>
                 <div>DATA AGENDA: {data.dataAgenda}</div>
                 <div>DATA CHAMADO: {data.dataChamado}</div>
                 <div>PÉRIODO: {data.periodo}</div>
                 <div>TIPO AGENDA: {data.tipoAgenda}</div>
               </td>
-            </tr>
-            <tr>
-              <td className="wp-strong"><T>{data.numeroOS}</T></td>
-              <td className="wp-strong"><T>{data.tecnico}</T></td>
             </tr>
           </tbody>
         </table>
