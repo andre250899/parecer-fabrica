@@ -956,6 +956,7 @@ function Index() {
     data_agenda: row.data_agenda,
     periodo: row.periodo,
     status: row.status,
+    situacao: (row as { situacao?: string | null }).situacao ?? null,
     dados: row.dados,
   }));
   const mergedById = new Map<string, SavedListRow>();
