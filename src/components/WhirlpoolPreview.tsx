@@ -242,7 +242,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
               {data.dataAprovacao || "____/____/__________"}<br />
               <strong>DATA DA APROVAÇÃO</strong>
             </div>
-            <div style={{ textAlign: "right" }}>
+            <div style={{ textAlign: "right", marginRight: "20mm" }}>
               {data.assinaturaConsumidor ? (
                 <img
                   src={data.assinaturaConsumidor}
