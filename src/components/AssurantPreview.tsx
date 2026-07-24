@@ -26,7 +26,11 @@ const headerBar: React.CSSProperties = {
 
 function PhotoBox({ src, label }: { src: string; label: string }) {
   return (
-    <div data-avoid-break style={{ border: "1px solid #333" }}>
+    <div
+      className="assurant-photo-box"
+      data-avoid-break
+      style={{ border: "1px solid #333", breakInside: "avoid", pageBreakInside: "avoid" }}
+    >
       <div style={headerBar}>{label}</div>
       <div style={{ height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", overflow: "hidden" }}>
         {src ? (
@@ -43,6 +47,7 @@ export default function AssurantPreview({ data }: { data: AssurantData }) {
   return (
     <div
       id="parecer-print"
+      className="assurant-preview"
       style={{
         background: "#fff",
         color: "#000",
@@ -141,13 +146,13 @@ export default function AssurantPreview({ data }: { data: AssurantData }) {
         </tbody>
       </table>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
+      <div className="assurant-photo-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
         {data.fotos.map((f, i) => (
           <PhotoBox key={i} src={f.dataUrl} label={f.legenda} />
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+      <div className="assurant-photo-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
         <PhotoBox src={data.cotacaoImgs[0] ?? ""} label="COTAÇÃO DO ORÇAMENTO DA PEÇA ATÉ 30 DIAS" />
         <PhotoBox src={data.cotacaoImgs[1] ?? ""} label="COTAÇÃO DO ORÇAMENTO DA PEÇA ATÉ 30 DIAS" />
       </div>
