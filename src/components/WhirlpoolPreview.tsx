@@ -149,7 +149,7 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
             </tr>
             <tr>
               <td className="wp-lbl">LAUDO<br />TÉCNICO</td>
-              <td colSpan={3} className="wp-multi" style={{ minHeight: "40px" }}><T>{data.laudoTecnico}</T></td>
+              <td colSpan={3} className="wp-multi" style={{ height: "60px", verticalAlign: "top" }}><T>{data.laudoTecnico}</T></td>
             </tr>
           </tbody>
         </table>
