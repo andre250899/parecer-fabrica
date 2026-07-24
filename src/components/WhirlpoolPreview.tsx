@@ -28,10 +28,12 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
                   {data.cnpjAutorizada ? `  CNPJ: ${data.cnpjAutorizada}` : ""}
                 </div>
                 <div>
-                  FONE: {data.foneAutorizada}
-                  {data.inscEstadualAutorizada
-                    ? `      Insc.Estadual: ${data.inscEstadualAutorizada}`
-                    : ""}
+                  FONE: <strong style={{ fontSize: "10pt" }}>{data.foneAutorizada}</strong>
+                  {data.inscEstadualAutorizada ? (
+                    <span style={{ marginLeft: "40mm" }}>
+                      Insc.Estadual: {data.inscEstadualAutorizada}
+                    </span>
+                  ) : null}
                 </div>
               </td>
               <td className="wp-half" style={{ width: "30%" }}>
