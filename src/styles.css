@@ -246,61 +246,61 @@
 
   body.parecer-printing #parecer-print-root .whirlpool-preview {
     box-sizing: border-box !important;
-    font-size: 7.45pt !important;
-    line-height: 1.12 !important;
+    font-size: 8.4pt !important;
+    line-height: 1.22 !important;
   }
 
   body.parecer-printing #parecer-print-root .whirlpool-a4 {
     box-sizing: border-box !important;
     width: 210mm !important;
     height: 297mm !important;
-    padding: 4mm 6mm !important;
+    padding: 5mm 7mm !important;
     overflow: hidden !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-t th,
   body.parecer-printing #parecer-print-root .wp-t td {
-    padding: 1.6px 3px !important;
+    padding: 2.6px 4px !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-header td {
-    padding: 2px 4px !important;
-    line-height: 1.16 !important;
+    padding: 3px 5px !important;
+    line-height: 1.24 !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-lbl,
   body.parecer-printing #parecer-print-root .wp-parts th {
-    font-size: 7pt !important;
+    font-size: 7.9pt !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-strong {
-    font-size: 9.5pt !important;
+    font-size: 10.5pt !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-title-inline {
-    font-size: 8.5pt !important;
+    font-size: 9.5pt !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-multi {
-    min-height: 18px !important;
+    min-height: 26px !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-parts td {
-    height: 11px !important;
+    height: 15px !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-obs {
-    min-height: 24px !important;
+    min-height: 34px !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-box {
-    padding: 3px 4px !important;
+    padding: 5px 6px !important;
   }
 
   body.parecer-printing #parecer-print-root .wp-box p {
-    margin: 2px 0 !important;
-    font-size: 7.2pt !important;
-    line-height: 1.1 !important;
+    margin: 3px 0 !important;
+    font-size: 8.1pt !important;
+    line-height: 1.2 !important;
   }
 
   body:not(.parecer-printing) * {
