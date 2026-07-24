@@ -93,6 +93,7 @@ type SavedListRow = {
   data_agenda?: string | null;
   periodo?: string | null;
   status?: string | null;
+  situacao?: string | null;
   dados?: unknown;
 };
 
