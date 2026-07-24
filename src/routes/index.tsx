@@ -345,7 +345,7 @@ function Index() {
       .order("updated_at", { ascending: false });
     let atendimentoQuery = supabase
       .from("atendimentos")
-      .select("id, numero_os, cliente_nome, updated_at, tipo, data_agenda, periodo, status, dados")
+      .select("id, numero_os, cliente_nome, updated_at, tipo, data_agenda, periodo, status, situacao, dados")
       .order("updated_at", { ascending: false });
     if (tipo) {
       parecerQuery = parecerQuery.eq("tipo", tipo);
