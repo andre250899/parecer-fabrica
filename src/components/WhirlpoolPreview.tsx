@@ -263,18 +263,18 @@ export default function WhirlpoolPreview({ data }: { data: WhirlpoolData }) {
         </div>
 
         {/* Termo de garantia */}
-        <div className="wp-box">
+        <div className="wp-box" style={{ fontWeight: "bold" }}>
           <div className="wp-title-inline" style={{ textAlign: "center" }}>TERMO DE GARANTIA DO SERVIÇO AUTORIZADO</div>
-          <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
+          <p style={{ margin: "4px 0", fontSize: "7.5pt", textAlign: "justify" }}>
             CONFORME DESCRITO NO ORÇAMENTO JÁ APROVADO, FIRMAMOS A GARANTIA DO SERVIÇO (MÃO DE OBRA) DE ASSISTÊNCIA TÉCNICA POR UM PERÍODO DE _______(___) MESES E DAS PEÇAS APLICADAS POR UM PERÍODO DE _______(___) MESES, A PARTIR DE ________________ (DATA DE CONCLUSÃO), QUANDO O SERVIÇO FOI DEVIDAMENTE EXECUTADO, ESTANDO EM PERFEITAS CONDIÇÕES DE UTILIZAÇÃO, TENDO RECEBIDO AS ORIENTAÇÕES NECESSÁRIAS PARA A CORRETA UTILIZAÇÃO DO PRODUTO.
           </p>
-          <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
+          <p style={{ margin: "4px 0", fontSize: "7.5pt", textAlign: "justify" }}>
             EXCLUEM-SE DA GARANTIA OS DEFEITOS CAUSADOS POR USO IMPRÓPRIO OU INADEQUADO DO PRODUTO E PROBLEMAS DECORRENTES DE ACIDENTES NATURAIS, COMO POR EXEMPLO: RAIO, INCÊNCIO, INUMDAÇÕES E ETC.
           </p>
-          <p style={{ margin: "4px 0", fontSize: "8.5pt", textAlign: "justify" }}>
+          <p style={{ margin: "4px 0", fontSize: "7.5pt", textAlign: "justify" }}>
             DENTRO DO PRAZO DE GARANTIA DO SERVIÇO E DAS PEÇAS SUBSTITUÍDAS, A TROCA DESSAS PEÇAS E COMPONENTES EVENTUALMENTE DEFEITUOSAS SERÁ GRATUIDA, ASSIM COMO A MÃO DE OBRA APLICADA.
           </p>
-          <p style={{ margin: "4px 0", fontSize: "8.5pt" }}>DE ACORDO.</p>
+          <p style={{ margin: "4px 0", fontSize: "7.5pt" }}>DE ACORDO.</p>
         </div>
       </div>
     </div>
