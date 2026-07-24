@@ -108,9 +108,8 @@ function toBRL(n: number): string {
 function calcularTotaisWhirlpool(data: WhirlpoolData): WhirlpoolData {
   const pecas = Array.isArray(data.pecas) ? data.pecas : [];
   const totalPecasNum = pecas.reduce((sum, p) => {
-    const q = parseBRLNumber(p.quantidade);
     const v = parseBRLNumber(p.valor);
-    return sum + q * v;
+    return sum + v;
   }, 0);
   const maoNum = parseBRLNumber(data.maoDeObra);
   const totalOrc = totalPecasNum + maoNum;
