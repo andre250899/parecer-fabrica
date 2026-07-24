@@ -447,7 +447,7 @@ function Index() {
         setModo("parecer");
         if (t === "vox") setData(row.data as unknown as ParecerData);
         else if (t === "hisense") setHisense(row.data as unknown as HisenseData);
-        else setAssurant(row.data as unknown as AssurantData);
+        else setAssurant(normalizeAssurantData(row.data));
       }
       setShowList(false);
     }
@@ -670,13 +670,7 @@ function Index() {
         } else if (tipoRow === "hisense") {
           setHisense({ ...defaultHisense, ...(rawAny as Partial<HisenseData>) } as HisenseData);
         } else if (tipoRow === "assurant") {
-          const rawA = rawAny as Partial<AssurantData>;
-          setAssurant({
-            ...defaultAssurant,
-            ...rawA,
-            fotos: Array.isArray(rawA.fotos) && rawA.fotos.length > 0 ? rawA.fotos : defaultAssurant.fotos,
-            cotacaoImgs: Array.isArray(rawA.cotacaoImgs) ? rawA.cotacaoImgs : defaultAssurant.cotacaoImgs,
-          });
+          setAssurant(normalizeAssurantData(rawAny));
         }
         setShowList(false);
         return;
