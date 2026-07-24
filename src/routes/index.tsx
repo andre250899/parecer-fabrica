@@ -2153,7 +2153,7 @@ function WhirlpoolForm({
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-900">Produto</h2>
         <div className="grid grid-cols-2 gap-3">
           <div><label className={labelCls}>Produto</label><input className={inputCls} value={data.produto} onChange={(e) => upd("produto", e.target.value)} /></div>
-          <div><label className={labelCls}>Marca</label><input className={inputCls} value={data.marca} onChange={(e) => upd("marca", e.target.value)} /></div>
+          <div><label className={labelCls}>Marca</label><input className={inputCls} value={data.marca} onChange={(e) => setData((d) => ({ ...d, marca: e.target.value, centralAtendimento: e.target.value }))} /></div>
           <div><label className={labelCls}>Linha</label><input className={inputCls} value={data.linha} onChange={(e) => upd("linha", e.target.value)} /></div>
           <div><label className={labelCls}>Série</label><input className={inputCls} value={data.serie} onChange={(e) => upd("serie", e.target.value)} /></div>
           <div><label className={labelCls}>Nº Nota Fiscal</label><input className={inputCls} value={data.nrNotaFiscal} onChange={(e) => upd("nrNotaFiscal", e.target.value)} /></div>
