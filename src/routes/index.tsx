@@ -2184,6 +2184,12 @@ function AgendaCard({
         </div>
       </div>
       <p className="text-sm font-semibold text-slate-900">{dados.consumidor || row.cliente_nome || "Sem consumidor"}</p>
+      {tagAtual && (
+        <div className="mt-1 flex items-start gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-[10.5px] font-bold uppercase leading-tight tracking-wide text-amber-800">
+          <Tag className="mt-0.5 h-3 w-3 shrink-0" />
+          <span className="break-words">{tagAtual}</span>
+        </div>
+      )}
       <p className="text-xs text-slate-600 line-clamp-1">{dados.endereco}</p>
       <p className="text-xs text-slate-500 line-clamp-1">
         {dados.bairro} {dados.cidade && `· ${dados.cidade}`}
