@@ -106,6 +106,41 @@ const normalizeAgendaDate = (value?: string | null) => {
   return day && month && year ? `${year}-${month}-${day}` : value;
 };
 
+const normalizeAssurantData = (raw: unknown): AssurantData => {
+  const source = (raw && typeof raw === "object" ? raw : {}) as Partial<AssurantData> & {
+    motivo1?: string;
+    motivo2?: string;
+    cotacaoImg?: string;
+    cotacaoOrcamento?: string;
+  };
+
+  const fotos = Array.isArray(source.fotos) && source.fotos.length > 0
+    ? defaultAssurant.fotos.map((fallback, index) => {
+        const current = source.fotos?.[index];
+        return {
+          legenda: current?.legenda || fallback.legenda,
+          dataUrl: current?.dataUrl || "",
+        };
+      })
+    : defaultAssurant.fotos;
+
+  const legacyCotacao = [source.cotacaoImg, source.cotacaoOrcamento].filter(
+    (item): item is string => typeof item === "string" && item.length > 0,
+  );
+  const cotacaoImgs = Array.isArray(source.cotacaoImgs)
+    ? [source.cotacaoImgs[0] ?? "", source.cotacaoImgs[1] ?? ""]
+    : [legacyCotacao[0] ?? "", legacyCotacao[1] ?? ""];
+
+  return {
+    ...defaultAssurant,
+    ...source,
+    motivo: source.motivo || [source.motivo1, source.motivo2].filter(Boolean).join("\n"),
+    fotos,
+    cotacaoImgs,
+    residenciaImg: source.residenciaImg || "",
+  };
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
