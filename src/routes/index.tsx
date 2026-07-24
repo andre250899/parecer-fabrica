@@ -1014,7 +1014,7 @@ function Index() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          {savedList.length === 0 ? (
+          {allSaved.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="mb-4 rounded-full bg-slate-100 p-5">
                 <FolderOpen className="h-10 w-10 text-slate-400" />
