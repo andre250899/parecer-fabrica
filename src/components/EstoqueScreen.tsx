@@ -297,6 +297,113 @@ function CadastroView({
   const [descricao, setDescricao] = useState("");
   const [quantidade, setQuantidade] = useState("");
   const [localizacao, setLocalizacao] = useState("");
+  const [codigoBarras, setCodigoBarras] = useState("");
+  const [marca, setMarca] = useState("");
+  const [precoSugerido, setPrecoSugerido] = useState("");
+  const [modelosAplicados, setModelosAplicados] = useState<string[]>([]);
+  const [categoria, setCategoria] = useState("");
+  const [fonte, setFonte] = useState("");
+  const [foto, setFoto] = useState<string>("");
+  const [analisando, setAnalisando] = useState(false);
+  const [enriquecendo, setEnriquecendo] = useState(false);
+
+  const identificar = useServerFn(identificarPecaFoto);
+  const enriquecer = useServerFn(enriquecerPecaEletrolux);
+
+  const limparCampos = () => {
+    setCodigo("");
+    setDescricao("");
+    setQuantidade("");
+    setLocalizacao("");
+    setCodigoBarras("");
+    setMarca("");
+    setPrecoSugerido("");
+    setModelosAplicados([]);
+    setCategoria("");
+    setFonte("");
+    setFoto("");
+  };
+
+  const handleFoto = async (file: File) => {
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx. 8 MB).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = String(reader.result || "");
+      setFoto(dataUrl);
+      const base64 = dataUrl.split(",")[1] || "";
+      const mimeType = file.type || "image/jpeg";
+      setAnalisando(true);
+      try {
+        const r = await identificar({ data: { base64, mimeType } });
+        if (r.codigo) setCodigo(r.codigo);
+        if (r.codigoBarras) setCodigoBarras(r.codigoBarras);
+        if (r.descricao) setDescricao(r.descricao);
+        if (r.marca) setMarca(r.marca);
+        if (r.modelosAplicados?.length) setModelosAplicados(r.modelosAplicados);
+        if (r.precoSugerido) setPrecoSugerido(r.precoSugerido);
+        toast.success("Peça identificada pela foto.");
+        // enriquecer automaticamente se houver código
+        if (r.codigo) {
+          setEnriquecendo(true);
+          try {
+            const e = await enriquecer({
+              data: { codigo: r.codigo, descricao: r.descricao || "" },
+            });
+            if (e.descricao && !r.descricao) setDescricao(e.descricao);
+            if (e.precoSugerido && !r.precoSugerido) setPrecoSugerido(e.precoSugerido);
+            if (e.modelosAplicados?.length)
+              setModelosAplicados((prev) =>
+                Array.from(new Set([...prev, ...e.modelosAplicados])),
+              );
+            if (e.categoria) setCategoria(e.categoria);
+            if (e.fonte) setFonte(e.fonte);
+          } catch (err) {
+            console.error(err);
+          } finally {
+            setEnriquecendo(false);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          err instanceof Error ? err.message : "Falha ao analisar a foto.",
+        );
+      } finally {
+        setAnalisando(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const buscarNoSiteParceiros = async () => {
+    if (!codigo.trim()) {
+      toast.error("Informe o código antes de buscar.");
+      return;
+    }
+    setEnriquecendo(true);
+    try {
+      const e = await enriquecer({
+        data: { codigo: codigo.trim(), descricao: descricao.trim() },
+      });
+      if (e.descricao) setDescricao(e.descricao);
+      if (e.precoSugerido) setPrecoSugerido(e.precoSugerido);
+      if (e.modelosAplicados?.length)
+        setModelosAplicados((prev) =>
+          Array.from(new Set([...prev, ...e.modelosAplicados])),
+        );
+      if (e.categoria) setCategoria(e.categoria);
+      if (e.fonte) setFonte(e.fonte);
+      toast.success("Informações complementares carregadas.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha na busca.");
+    } finally {
+      setEnriquecendo(false);
+    }
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -317,6 +424,15 @@ function CadastroView({
               descricao: descricao.trim() || it.descricao,
               localizacao: localizacao.trim() || it.localizacao,
               quantidade: it.quantidade + q,
+              codigoBarras: codigoBarras.trim() || it.codigoBarras,
+              marca: marca.trim() || it.marca,
+              modelosAplicados: modelosAplicados.length
+                ? modelosAplicados
+                : it.modelosAplicados,
+              precoSugerido: precoSugerido.trim() || it.precoSugerido,
+              categoria: categoria.trim() || it.categoria,
+              fonte: fonte.trim() || it.fonte,
+              foto: foto || it.foto,
             }
           : it,
       );
@@ -330,16 +446,20 @@ function CadastroView({
           quantidade: q,
           localizacao: localizacao.trim(),
           criadoEm: new Date().toISOString(),
+          codigoBarras: codigoBarras.trim() || undefined,
+          marca: marca.trim() || undefined,
+          modelosAplicados: modelosAplicados.length ? modelosAplicados : undefined,
+          precoSugerido: precoSugerido.trim() || undefined,
+          categoria: categoria.trim() || undefined,
+          fonte: fonte.trim() || undefined,
+          foto: foto || undefined,
         },
         ...itens,
       ];
       toast.success(`Item ${codigo} cadastrado.`);
     }
     onSave(next);
-    setCodigo("");
-    setDescricao("");
-    setQuantidade("");
-    setLocalizacao("");
+    limparCampos();
   };
 
   const remover = (id: string) => {
@@ -357,6 +477,68 @@ function CadastroView({
         <p className="text-xs text-slate-400">
           Se o código já existir, a quantidade será somada ao estoque atual.
         </p>
+
+        {/* Photo capture */}
+        <div className="rounded-xl border border-dashed border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/10 to-indigo-500/10 p-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-fuchsia-200">
+            <Sparkles className="h-4 w-4" /> Identificar por foto
+          </div>
+          <p className="mt-1 text-[11px] text-slate-300">
+            Tire uma foto da etiqueta, embalagem ou código de barras. Vamos
+            identificar o código e buscar preço sugerido e modelos aplicados.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-fuchsia-500/20 px-3 py-2 text-xs font-semibold text-fuchsia-100 hover:bg-fuchsia-500/30">
+              <Camera className="h-4 w-4" /> Câmera
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleFoto(f);
+                  e.currentTarget.value = "";
+                }}
+              />
+            </label>
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10">
+              <Package className="h-4 w-4" /> Galeria
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleFoto(f);
+                  e.currentTarget.value = "";
+                }}
+              />
+            </label>
+            {foto && (
+              <button
+                type="button"
+                onClick={() => setFoto("")}
+                className="rounded-lg bg-rose-500/20 px-2 py-2 text-xs text-rose-200 hover:bg-rose-500/30"
+                title="Remover foto"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+            {(analisando || enriquecendo) && (
+              <span className="inline-flex items-center gap-1 text-xs text-fuchsia-200">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {analisando ? "Analisando foto…" : "Buscando dados…"}
+              </span>
+            )}
+          </div>
+          {foto && (
+            <div className="mt-3 overflow-hidden rounded-lg border border-white/10">
+              <img src={foto} alt="Peça" className="max-h-40 w-full object-contain bg-black/40" />
+            </div>
+          )}
+        </div>
+
         <Field label="Código">
           <input
             value={codigo}
@@ -365,6 +547,24 @@ function CadastroView({
             placeholder="Ex.: W10820038"
           />
         </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Código de barras">
+            <input
+              value={codigoBarras}
+              onChange={(e) => setCodigoBarras(e.target.value)}
+              className={inputCls}
+              placeholder="EAN/GTIN"
+            />
+          </Field>
+          <Field label="Marca">
+            <input
+              value={marca}
+              onChange={(e) => setMarca(e.target.value)}
+              className={inputCls}
+              placeholder="Electrolux"
+            />
+          </Field>
+        </div>
         <Field label="Descrição">
           <input
             value={descricao}
@@ -393,6 +593,67 @@ function CadastroView({
             />
           </Field>
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Preço sugerido">
+            <input
+              value={precoSugerido}
+              onChange={(e) => setPrecoSugerido(e.target.value)}
+              className={inputCls}
+              placeholder="R$ 0,00"
+            />
+          </Field>
+          <Field label="Categoria">
+            <input
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              className={inputCls}
+              placeholder="Refrigeração…"
+            />
+          </Field>
+        </div>
+        <Field label="Modelos aplicados">
+          <textarea
+            value={modelosAplicados.join(", ")}
+            onChange={(e) =>
+              setModelosAplicados(
+                e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              )
+            }
+            className={`${inputCls} min-h-16`}
+            placeholder="Modelo A, Modelo B…"
+          />
+        </Field>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={buscarNoSiteParceiros}
+            disabled={enriquecendo || !codigo.trim()}
+            className="inline-flex items-center gap-2 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-xs font-semibold text-fuchsia-100 hover:bg-fuchsia-500/20 disabled:opacity-40"
+          >
+            {enriquecendo ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Wand2 className="h-3.5 w-3.5" />
+            )}
+            Buscar dados
+          </button>
+          <a
+            href={`https://compraparceiros.electrolux.com.br/${codigo ? `?q=${encodeURIComponent(codigo)}` : ""}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> Abrir Compra Parceiros
+          </a>
+        </div>
+        {fonte && (
+          <p className="text-[11px] text-slate-400">
+            Fonte consultada: <span className="text-slate-200">{fonte}</span>
+          </p>
+        )}
         <button
           type="submit"
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-lime-500 px-4 py-3 text-sm font-bold text-slate-900 shadow-lg transition hover:brightness-110"
