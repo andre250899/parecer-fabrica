@@ -1361,11 +1361,13 @@ function Index() {
               { id: "hisense" as const, name: "HISENSE / GORENJE", desc: "Relatório de atendimento com galeria de 8 fotos e medições de tensão.", color: "from-red-600 to-red-800" },
               { id: "assurant" as const, name: "ASSURANT", desc: "Análise técnica de sinistro com fotos do defeito, cotação e residência.", color: "from-slate-700 to-slate-900" },
               { id: "whirlpool" as const, name: "WHIRLPOOL", desc: "Agenda de atendimentos com importação de OS por PDF e laudo técnico.", color: "from-cyan-600 to-blue-700" },
+              { id: "electrolux" as const, name: "ELECTROLUX", desc: "Módulo Electrolux — em configuração. Descreva os requisitos para gerar o modelo.", color: "from-emerald-600 to-teal-700" },
             ].map((m) => (
               <button
                 key={m.id}
                 onClick={() => {
                   if (m.id === "whirlpool") setModo("whirlpool");
+                  else if (m.id === "electrolux") setModo("electrolux");
                   else {
                     setTipo(m.id);
                     setModo("parecer");
