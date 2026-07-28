@@ -294,7 +294,6 @@ function CadastroView({
 }) {
   const [codigo, setCodigo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [quantidade, setQuantidade] = useState("");
   const [localizacao, setLocalizacao] = useState("");
   const [codigoBarras, setCodigoBarras] = useState("");
   const [marca, setMarca] = useState("");
@@ -304,6 +303,8 @@ function CadastroView({
   const [foto, setFoto] = useState<string>("");
   const [analisando, setAnalisando] = useState(false);
   const [enriquecendo, setEnriquecendo] = useState(false);
+  const [quantidadeTemp, setQuantidadeTemp] = useState("0");
+  const [mostrarTeclado, setMostrarTeclado] = useState(false);
 
   const identificar = useServerFn(identificarPecaFoto);
   const enriquecer = useServerFn(enriquecerPecaEletrolux);
@@ -311,7 +312,6 @@ function CadastroView({
   const limparCampos = () => {
     setCodigo("");
     setDescricao("");
-    setQuantidade("");
     setLocalizacao("");
     setCodigoBarras("");
     setMarca("");
@@ -319,6 +319,7 @@ function CadastroView({
     setCategoria("");
     setFonte("");
     setFoto("");
+    setQuantidadeTemp("0");
   };
 
   const handleFoto = async (file: File) => {
@@ -399,13 +400,22 @@ function CadastroView({
     }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const abrirTecladoQuantidade = (e: React.FormEvent) => {
     e.preventDefault();
     if (!codigo.trim() || !descricao.trim()) {
       toast.error("Informe código e descrição.");
       return;
     }
-    const q = parseInt(quantidade, 10) || 0;
+    setQuantidadeTemp("0");
+    setMostrarTeclado(true);
+  };
+
+  const salvar = (qtdInformada: number) => {
+    const q = qtdInformada || 0;
+    if (q <= 0) {
+      toast.error("Informe uma quantidade maior que zero.");
+      return;
+    }
     const existing = itens.find(
       (it) => it.codigo.toLowerCase() === codigo.trim().toLowerCase(),
     );
@@ -452,12 +462,31 @@ function CadastroView({
     }
     onSave(next);
     limparCampos();
+    setMostrarTeclado(false);
   };
 
   const remover = (id: string) => {
     if (!confirm("Remover este item do estoque?")) return;
     onSave(itens.filter((it) => it.id !== id));
   };
+
+  const tecladoPressionar = (valor: string) => {
+    setQuantidadeTemp((prev) => {
+      const limpo = prev.replace(/^0+/, "").replace(/\D/g, "") || "0";
+      const novo = limpo === "0" ? valor : limpo + valor;
+      return novo.slice(0, 5);
+    });
+  };
+
+  const tecladoApagar = () => {
+    setQuantidadeTemp((prev) => {
+      const limpo = prev.replace(/\D/g, "");
+      const novo = limpo.slice(0, -1) || "0";
+      return novo;
+    });
+  };
+
+  const tecladoLimpar = () => setQuantidadeTemp("0");
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
