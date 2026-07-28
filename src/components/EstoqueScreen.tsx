@@ -298,7 +298,6 @@ function CadastroView({
   const [localizacao, setLocalizacao] = useState("");
   const [codigoBarras, setCodigoBarras] = useState("");
   const [marca, setMarca] = useState("");
-  const [precoSugerido, setPrecoSugerido] = useState("");
   const [modelosAplicados, setModelosAplicados] = useState<string[]>([]);
   const [categoria, setCategoria] = useState("");
   const [fonte, setFonte] = useState("");
@@ -316,7 +315,6 @@ function CadastroView({
     setLocalizacao("");
     setCodigoBarras("");
     setMarca("");
-    setPrecoSugerido("");
     setModelosAplicados([]);
     setCategoria("");
     setFonte("");
@@ -343,7 +341,6 @@ function CadastroView({
         if (r.descricao) setDescricao(r.descricao);
         if (r.marca) setMarca(r.marca);
         if (r.modelosAplicados?.length) setModelosAplicados(r.modelosAplicados);
-        if (r.precoSugerido) setPrecoSugerido(r.precoSugerido);
         toast.success("Peça identificada pela foto.");
         // enriquecer automaticamente se houver código
         if (r.codigo) {
@@ -353,7 +350,6 @@ function CadastroView({
               data: { codigo: r.codigo, descricao: r.descricao || "" },
             });
             if (e.descricao && !r.descricao) setDescricao(e.descricao);
-            if (e.precoSugerido && !r.precoSugerido) setPrecoSugerido(e.precoSugerido);
             if (e.modelosAplicados?.length)
               setModelosAplicados((prev) =>
                 Array.from(new Set([...prev, ...e.modelosAplicados])),
@@ -389,7 +385,6 @@ function CadastroView({
         data: { codigo: codigo.trim(), descricao: descricao.trim() },
       });
       if (e.descricao) setDescricao(e.descricao);
-      if (e.precoSugerido) setPrecoSugerido(e.precoSugerido);
       if (e.modelosAplicados?.length)
         setModelosAplicados((prev) =>
           Array.from(new Set([...prev, ...e.modelosAplicados])),
