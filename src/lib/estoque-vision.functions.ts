@@ -12,7 +12,6 @@ const Extracted = z.object({
   descricao: z.string().nullable().optional().default(""),
   marca: z.string().nullable().optional().default(""),
   modelosAplicados: z.array(z.string()).nullable().optional().default([]),
-  precoSugerido: z.string().nullable().optional().default(""),
   observacoes: z.string().nullable().optional().default(""),
 });
 
@@ -24,7 +23,6 @@ Analise a imagem e extraia TUDO que estiver visível:
 - descricao: descrição textual da peça (ex.: "PLACA DE POTÊNCIA LAVADORA").
 - marca: fabricante (Electrolux, Whirlpool, Consul, Brastemp, Bosch, etc.).
 - modelosAplicados: lista de modelos citados na etiqueta/embalagem.
-- precoSugerido: se aparecer preço, formate como "R$ 000,00".
 - observacoes: qualquer outro dado útil (voltagem, cor, série).
 
 Se um campo não estiver visível, retorne string vazia "" (ou array vazio []). NUNCA use null.

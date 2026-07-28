@@ -33,7 +33,6 @@ type Item = {
   codigoBarras?: string;
   marca?: string;
   modelosAplicados?: string[];
-  precoSugerido?: string;
   categoria?: string;
   fonte?: string;
   foto?: string; // data URL
