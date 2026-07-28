@@ -221,7 +221,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool" | "estoque">("home");
+  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool" | "estoque" | "electrolux">("home");
   const [tipo, setTipo] = useState<ParecerTipo | null>(null);
   const [data, setData] = useState<ParecerData>(defaultParecer);
   const [hisense, setHisense] = useState<HisenseData>(defaultHisense);
