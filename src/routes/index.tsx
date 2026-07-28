@@ -24,6 +24,7 @@ import {
   Loader2,
   FileDown,
   Tag,
+  Package,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -34,6 +35,7 @@ import AssurantPreview from "@/components/AssurantPreview";
 import WhirlpoolPreview from "@/components/WhirlpoolPreview";
 import SignaturePad from "@/components/SignaturePad";
 import AttachmentField from "@/components/AttachmentField";
+import EstoqueScreen from "@/components/EstoqueScreen";
 import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
@@ -219,7 +221,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool">("home");
+  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool" | "estoque">("home");
   const [tipo, setTipo] = useState<ParecerTipo | null>(null);
   const [data, setData] = useState<ParecerData>(defaultParecer);
   const [hisense, setHisense] = useState<HisenseData>(defaultHisense);
@@ -1313,6 +1315,10 @@ function Index() {
     </div>
   );
 
+  if (modo === "estoque") {
+    return <EstoqueScreen onBack={() => setModo("home")} />;
+  }
+
   // Home screen
   if (modo === "home") {
     return (
@@ -1331,6 +1337,12 @@ function Index() {
               className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
             >
               <Calendar className="h-4 w-4" /> Agenda
+            </button>
+            <button
+              onClick={() => setModo("estoque")}
+              className="inline-flex items-center gap-2 rounded-md border border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-2 text-sm font-semibold text-white shadow hover:brightness-110"
+            >
+              <Package className="h-4 w-4" /> Estoque
             </button>
             <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
               <FolderOpen className="h-4 w-4" /> Atendimentos
