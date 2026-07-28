@@ -97,101 +97,89 @@ export const enriquecerPecaEletrolux = createServerFn({ method: "POST" })
     if (!codigo) {
       return { descricao: "", precoSugerido: "", modelosAplicados: [], categoria: "", fonte: "", observacao: "" };
     }
-    const url = `https://compraparceiros.electrolux.com.br/${encodeURIComponent(codigo)}?map=ft&_q=${encodeURIComponent(codigo)}`;
-    const empty = { descricao: "", precoSugerido: "", modelosAplicados: [] as string[], categoria: "", fonte: url, observacao: "" };
+    const pageUrl = `https://compraparceiros.electrolux.com.br/${encodeURIComponent(codigo)}?map=ft&_q=${encodeURIComponent(codigo)}`;
+    const apiUrl = `https://compraparceiros.electrolux.com.br/api/catalog_system/pub/products/search/?ft=${encodeURIComponent(codigo)}`;
+    const empty = { descricao: "", precoSugerido: "", modelosAplicados: [] as string[], categoria: "", fonte: pageUrl, observacao: "" };
 
-    let html = "";
+    let list: Array<Record<string, unknown>> = [];
     try {
-      const res = await fetch(url, {
+      const res = await fetch(apiUrl, {
         headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-          "Accept": "text/html,application/xhtml+xml",
+          "User-Agent": "Mozilla/5.0 VoxWeb/1.0",
+          "Accept": "application/json",
           "Accept-Language": "pt-BR,pt;q=0.9",
         },
       });
-      if (!res.ok) {
-        return { ...empty, observacao: `HTTP ${res.status} ao consultar compraparceiros` };
-      }
-      html = await res.text();
+      if (!res.ok) return { ...empty, observacao: `HTTP ${res.status} ao consultar Electrolux` };
+      list = (await res.json()) as Array<Record<string, unknown>>;
     } catch (err) {
       return { ...empty, observacao: `Falha de rede: ${(err as Error).message}` };
     }
-
-    // Converte HTML em texto limpo (mantém quebras entre blocos)
-    const text = html
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<\/(div|li|ul|p|section|article|h[1-6]|button|span|a|label)>/gi, "\n")
-      .replace(/<br\s*\/?>(?=)/gi, "\n")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/[ \t]+/g, " ")
-      .replace(/\n{2,}/g, "\n")
-      .trim();
-
-    // Extrai o bloco após "Produtos Aplicados" até o próximo rótulo de filtro
-    const filterLabels = [
-      "Subcategoria",
-      "Categoria",
-      "Marca",
-      "Departamento",
-      "Produtos Aplicados",
-      "Faixa de preço",
-      "Faixa de Preço",
-      "Preço",
-      "Ordenar por",
-      "Produto encontrado",
-      "Produtos encontrados",
-    ];
-    const extractBlock = (label: string): string => {
-      const idx = text.indexOf(label);
-      if (idx < 0) return "";
-      const rest = text.slice(idx + label.length);
-      let end = rest.length;
-      for (const l of filterLabels) {
-        if (l === label) continue;
-        const i = rest.indexOf(l);
-        if (i > 0 && i < end) end = i;
-      }
-      return rest.slice(0, end).trim();
-    };
-
-    const modelosBlock = extractBlock("Produtos Aplicados");
-    const modelosAplicados = modelosBlock
-      .split(/\n+/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && s.length < 40 && !/^\d+$/.test(s))
-      .filter((s, i, arr) => arr.indexOf(s) === i);
-
-    const categoria = extractBlock("Categoria").split(/\n/)[0]?.trim() ?? "";
-    const subcategoria = extractBlock("Subcategoria").split(/\n/)[0]?.trim() ?? "";
-
-    // Descrição: primeiro nome de produto listado (ex.: "PLACA POTENCIA ERF2510")
-    let descricao = "";
-    const refMatch = text.match(/Ref\.?:\s*([A-Z0-9]+)\s*\n?\s*([^\n]{3,80})/i);
-    if (refMatch) descricao = refMatch[2].trim();
-    if (!descricao) {
-      const prodMatch = text.match(/([A-Z0-9][A-Z0-9 \-\/]{5,60})\n\s*Ref\.?:/);
-      if (prodMatch) descricao = prodMatch[1].trim();
+    if (!Array.isArray(list) || list.length === 0) {
+      return { ...empty, observacao: "Código não encontrado no catálogo público da Electrolux." };
     }
 
-    // Preço (best-effort)
+    const p = list[0];
+    const descricao = String(p.productName ?? "");
+    const categorias = Array.isArray(p.categories) ? (p.categories as string[]) : [];
+    // Ex.: "/Peças/Linha Branca/Placas de Potência/" → "Linha Branca / Placas de Potência"
+    const categoria = categorias
+      .map((c) => c.replace(/^\/|\/$/g, "").split("/").slice(1).join(" / "))
+      .find((c) => c.length > 0) ?? "";
+
+    // Especificações do produto ficam em campos com o próprio nome da spec
+    const specVal = (name: string): string[] => {
+      const v = (p as Record<string, unknown>)[name];
+      return Array.isArray(v) ? (v as unknown[]).map((x) => String(x)) : [];
+    };
+
+    // Produtos Aplicados (lista de códigos de produto final)
+    const produtosAplicados = specVal("Produtos Aplicados");
+
+    // Modelos Aplicados vem como JSON string: { models:[{ code, products:[...] }] }
+    const modelosSpec = specVal("Modelos Aplicados");
+    const modelosDetalhados: string[] = [];
+    for (const raw of modelosSpec) {
+      try {
+        const parsed = JSON.parse(raw) as { models?: Array<{ code?: string }> };
+        for (const m of parsed.models ?? []) {
+          if (m.code) modelosDetalhados.push(String(m.code));
+        }
+      } catch {
+        // texto solto — ignora
+      }
+    }
+
+    const modelosAplicados = Array.from(
+      new Set([...produtosAplicados, ...modelosDetalhados].map((s) => s.trim()).filter(Boolean)),
+    );
+
+    // Preço sugerido: preferir spec "Preço Sugerido"; senão usar melhor preço do SKU
     let precoSugerido = "";
-    const priceMatch = html.match(/R\$\s*([\d\.]+,\d{2})/);
-    if (priceMatch) precoSugerido = `R$ ${priceMatch[1]}`;
+    const precoSpec = specVal("Preço Sugerido")[0];
+    if (precoSpec) {
+      const num = Number(String(precoSpec).replace(/\./g, "").replace(",", "."));
+      if (isFinite(num) && num > 0) {
+        precoSugerido = num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      } else {
+        precoSugerido = `R$ ${precoSpec}`;
+      }
+    } else {
+      const items = (p.items as Array<Record<string, unknown>> | undefined) ?? [];
+      const sellers = items[0]?.sellers as Array<Record<string, unknown>> | undefined;
+      const offer = sellers?.[0]?.commertialOffer as Record<string, unknown> | undefined;
+      const price = offer && (offer.Price as number | undefined);
+      if (typeof price === "number" && price > 0) {
+        precoSugerido = price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      }
+    }
 
     return {
       descricao,
       precoSugerido,
       modelosAplicados,
-      categoria: [categoria, subcategoria].filter(Boolean).join(" / "),
-      fonte: url,
-      observacao: modelosAplicados.length ? "" : "Sem 'Produtos Aplicados' publicados para este código.",
+      categoria,
+      fonte: pageUrl,
+      observacao: modelosAplicados.length ? "" : "Sem 'Produtos Aplicados' cadastrados para este código.",
     };
   });
