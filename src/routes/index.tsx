@@ -1315,6 +1315,10 @@ function Index() {
     </div>
   );
 
+  if (modo === "estoque") {
+    return <EstoqueScreen onBack={() => setModo("home")} />;
+  }
+
   // Home screen
   if (modo === "home") {
     return (
