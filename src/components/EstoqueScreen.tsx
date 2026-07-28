@@ -677,12 +677,23 @@ function CadastroView({
                 key={it.id}
                 className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2"
               >
+                {it.foto && (
+                  <img
+                    src={it.foto}
+                    alt=""
+                    className="h-12 w-12 flex-shrink-0 rounded-md object-cover"
+                  />
+                )}
                 <div className="min-w-0">
                   <div className="text-xs font-mono text-cyan-300">{it.codigo}</div>
                   <div className="truncate text-sm text-white">{it.descricao}</div>
-                  {it.localizacao && (
-                    <div className="text-[11px] text-slate-500">📍 {it.localizacao}</div>
-                  )}
+                  <div className="mt-0.5 flex flex-wrap gap-x-2 text-[11px] text-slate-400">
+                    {it.localizacao && <span>📍 {it.localizacao}</span>}
+                    {it.marca && <span>🏷️ {it.marca}</span>}
+                    {it.precoSugerido && (
+                      <span className="text-emerald-300">💰 {it.precoSugerido}</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold">
