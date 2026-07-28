@@ -640,7 +640,12 @@ function CadastroView({
             Buscar dados
           </button>
           <a
-            href={`https://compraparceiros.electrolux.com.br/${codigo ? `?q=${encodeURIComponent(codigo)}` : ""}`}
+            href={
+              fonte.trim() ||
+              (codigo
+                ? `https://compraparceiros.electrolux.com.br/?q=${encodeURIComponent(codigo)}`
+                : "https://compraparceiros.electrolux.com.br/")
+            }
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10"
