@@ -1333,6 +1333,12 @@ function Index() {
             >
               <Calendar className="h-4 w-4" /> Agenda
             </button>
+            <button
+              onClick={() => setModo("estoque")}
+              className="inline-flex items-center gap-2 rounded-md border border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-2 text-sm font-semibold text-white shadow hover:brightness-110"
+            >
+              <Package className="h-4 w-4" /> Estoque
+            </button>
             <button onClick={openList} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
               <FolderOpen className="h-4 w-4" /> Atendimentos
             </button>
