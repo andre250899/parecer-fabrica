@@ -491,12 +491,12 @@ function CadastroView({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
       <form
-        onSubmit={submit}
+        onSubmit={abrirTecladoQuantidade}
         className="lg:col-span-2 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6"
       >
         <h3 className="text-lg font-bold">Novo item</h3>
         <p className="text-xs text-slate-400">
-          Se o código já existir, a quantidade será somada ao estoque atual.
+          Informe os dados do item. A quantidade será digitada ao clicar em Salvar item.
         </p>
 
         {/* Photo capture */}
