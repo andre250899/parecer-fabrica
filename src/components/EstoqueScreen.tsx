@@ -594,26 +594,14 @@ function CadastroView({
             placeholder="Ex.: Placa de potência"
           />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Quantidade">
-            <input
-              type="number"
-              min={0}
-              value={quantidade}
-              onChange={(e) => setQuantidade(e.target.value)}
-              className={inputCls}
-              placeholder="0"
-            />
-          </Field>
-          <Field label="Localização">
-            <input
-              value={localizacao}
-              onChange={(e) => setLocalizacao(e.target.value)}
-              className={inputCls}
-              placeholder="Ex.: Prateleira A3"
-            />
-          </Field>
-        </div>
+        <Field label="Localização">
+          <input
+            value={localizacao}
+            onChange={(e) => setLocalizacao(e.target.value)}
+            className={inputCls}
+            placeholder="Ex.: Prateleira A3"
+          />
+        </Field>
         <Field label="Categoria">
           <input
             value={categoria}
