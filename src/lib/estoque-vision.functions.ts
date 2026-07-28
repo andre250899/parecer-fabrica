@@ -75,7 +75,6 @@ export const identificarPecaFoto = createServerFn({ method: "POST" })
       descricao: clean(parsed.descricao),
       marca: clean(parsed.marca),
       modelosAplicados: (parsed.modelosAplicados ?? []).map((m) => clean(m)).filter(Boolean),
-      precoSugerido: clean(parsed.precoSugerido),
       observacoes: clean(parsed.observacoes),
     };
   });
@@ -93,12 +92,12 @@ export const enriquecerPecaEletrolux = createServerFn({ method: "POST" })
     // expõe os "Produtos Aplicados" desta peça no bloco de filtros.
     const codigo = data.codigo.trim();
     if (!codigo) {
-      return { descricao: "", precoSugerido: "", modelosAplicados: [], categoria: "", fonte: "", observacao: "" };
+      return { descricao: "", modelosAplicados: [], categoria: "", fonte: "", observacao: "" };
     }
     const pageUrl = `https://compraparceiros.electrolux.com.br/${encodeURIComponent(codigo)}?map=ft&_q=${encodeURIComponent(codigo)}`;
     const searchUrl = `https://compraparceiros.electrolux.com.br/${encodeURIComponent(codigo)}?_q=${encodeURIComponent(codigo)}&map=ft`;
     const apiUrl = `https://compraparceiros.electrolux.com.br/api/catalog_system/pub/products/search/?ft=${encodeURIComponent(codigo)}`;
-    const empty = { descricao: "", precoSugerido: "", modelosAplicados: [] as string[], categoria: "", fonte: pageUrl, observacao: "" };
+    const empty = { descricao: "", modelosAplicados: [] as string[], categoria: "", fonte: pageUrl, observacao: "" };
 
     let list: Array<Record<string, unknown>> = [];
     try {
@@ -156,29 +155,8 @@ export const enriquecerPecaEletrolux = createServerFn({ method: "POST" })
       new Set([...produtosAplicados, ...modelosDetalhados].map((s) => s.trim()).filter(Boolean)),
     );
 
-    // Preço sugerido: preferir spec "Preço Sugerido"; senão usar melhor preço do SKU
-    let precoSugerido = "";
-    const precoSpec = specVal("Preço Sugerido")[0];
-    if (precoSpec) {
-      const num = Number(String(precoSpec).replace(/\./g, "").replace(",", "."));
-      if (isFinite(num) && num > 0) {
-        precoSugerido = num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-      } else {
-        precoSugerido = `R$ ${precoSpec}`;
-      }
-    } else {
-      const items = (p.items as Array<Record<string, unknown>> | undefined) ?? [];
-      const sellers = items[0]?.sellers as Array<Record<string, unknown>> | undefined;
-      const offer = sellers?.[0]?.commertialOffer as Record<string, unknown> | undefined;
-      const price = offer && (offer.Price as number | undefined);
-      if (typeof price === "number" && price > 0) {
-        precoSugerido = price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-      }
-    }
-
     return {
       descricao,
-      precoSugerido,
       modelosAplicados,
       categoria,
       fonte: produtoUrl,
