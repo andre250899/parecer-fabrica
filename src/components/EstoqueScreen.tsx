@@ -907,8 +907,78 @@ function RetiradaView({
   const [qtd, setQtd] = useState("");
   const [tecnico, setTecnico] = useState("");
   const [os, setOs] = useState("");
+  const [modo, setModo] = useState<"dados" | "foto">("dados");
+  const [busca, setBusca] = useState("");
+  const [analisandoFoto, setAnalisandoFoto] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState("");
+  const [ultimaIdent, setUltimaIdent] = useState<string>("");
+  const identificar = useServerFn(identificarPecaFoto);
 
   const item = itens.find((i) => i.id === itemId);
+
+  const resultados = useMemo(() => {
+    const t = busca.trim().toLowerCase();
+    if (!t) return itens;
+    return itens.filter(
+      (it) =>
+        it.codigo.toLowerCase().includes(t) ||
+        it.descricao.toLowerCase().includes(t) ||
+        it.localizacao.toLowerCase().includes(t) ||
+        (it.codigoBarras || "").toLowerCase().includes(t) ||
+        (it.marca || "").toLowerCase().includes(t),
+    );
+  }, [busca, itens]);
+
+  const handleFotoRetirada = async (file: File) => {
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx. 8 MB).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = String(reader.result || "");
+      setFotoPreview(dataUrl);
+      const base64 = dataUrl.split(",")[1] || "";
+      const mimeType = file.type || "image/jpeg";
+      setAnalisandoFoto(true);
+      try {
+        const r = await identificar({ data: { base64, mimeType } });
+        const codigoRef = (r.codigo || "").toUpperCase().trim();
+        const barrasRef = (r.codigoBarras || "").trim();
+        setUltimaIdent(
+          [codigoRef, barrasRef, r.descricao].filter(Boolean).join(" · "),
+        );
+        const match = itens.find((it) => {
+          const c = it.codigo.toUpperCase();
+          const b = (it.codigoBarras || "").trim();
+          return (
+            (codigoRef && c === codigoRef) ||
+            (barrasRef && b && b === barrasRef)
+          );
+        });
+        if (match) {
+          setItemId(match.id);
+          toast.success(`Peça localizada: ${match.codigo}`);
+        } else {
+          setItemId("");
+          const q = codigoRef || barrasRef || r.descricao || "";
+          setBusca(q);
+          toast.warning(
+            "Peça não encontrada no estoque. Confira a busca por dados.",
+          );
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          err instanceof Error ? err.message : "Falha ao analisar a foto.",
+        );
+      } finally {
+        setAnalisandoFoto(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -948,6 +1018,9 @@ function RetiradaView({
     setItemId("");
     setQtd("");
     setOs("");
+    setBusca("");
+    setFotoPreview("");
+    setUltimaIdent("");
   };
 
   return (
@@ -957,24 +1030,136 @@ function RetiradaView({
         className="lg:col-span-2 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6"
       >
         <h3 className="text-lg font-bold">Registrar retirada</h3>
-        <Field label="Item">
-          <select
-            value={itemId}
-            onChange={(e) => setItemId(e.target.value)}
-            className={inputCls}
+
+        <div className="flex gap-2 rounded-lg border border-white/10 bg-slate-950/40 p-1">
+          <button
+            type="button"
+            onClick={() => setModo("dados")}
+            className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+              modo === "dados"
+                ? "bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white shadow"
+                : "text-slate-300 hover:bg-white/5"
+            }`}
           >
-            <option value="">Selecione…</option>
-            {itens.map((it) => (
-              <option key={it.id} value={it.id} disabled={it.quantidade <= 0}>
-                {it.codigo} — {it.descricao} ({it.quantidade})
-              </option>
-            ))}
-          </select>
-        </Field>
+            <Search className="mr-1 inline h-3.5 w-3.5" /> Por dados
+          </button>
+          <button
+            type="button"
+            onClick={() => setModo("foto")}
+            className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+              modo === "foto"
+                ? "bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white shadow"
+                : "text-slate-300 hover:bg-white/5"
+            }`}
+          >
+            <Camera className="mr-1 inline h-3.5 w-3.5" /> Por foto
+          </button>
+        </div>
+
+        {modo === "dados" ? (
+          <Field label="Buscar peça">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                value={busca}
+                onChange={(e) => {
+                  setBusca(e.target.value);
+                  setItemId("");
+                }}
+                placeholder="Código, descrição, barras, marca…"
+                className={`${inputCls} pl-9`}
+              />
+            </div>
+            {busca && !item && (
+              <div className="mt-2 max-h-56 space-y-1 overflow-auto rounded-lg border border-white/10 bg-slate-950/60 p-1">
+                {resultados.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-slate-400">
+                    Nenhuma peça encontrada.
+                  </div>
+                ) : (
+                  resultados.slice(0, 20).map((it) => (
+                    <button
+                      key={it.id}
+                      type="button"
+                      onClick={() => {
+                        setItemId(it.id);
+                        setBusca("");
+                      }}
+                      disabled={it.quantidade <= 0}
+                      className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-white/5 disabled:opacity-40"
+                    >
+                      <span className="min-w-0 flex-1 truncate">
+                        <span className="font-mono text-cyan-300">{it.codigo}</span>{" "}
+                        <span className="text-white">— {it.descricao}</span>
+                      </span>
+                      <span className="rounded-full bg-white/10 px-2 py-0.5 font-bold">
+                        {it.quantidade}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </Field>
+        ) : (
+          <Field label="Localizar por foto">
+            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-fuchsia-400/40 bg-fuchsia-500/5 px-4 py-6 text-center text-xs text-slate-300 hover:bg-fuchsia-500/10">
+              {analisandoFoto ? (
+                <>
+                  <Loader2 className="h-6 w-6 animate-spin text-fuchsia-300" />
+                  Analisando…
+                </>
+              ) : (
+                <>
+                  <Camera className="h-6 w-6 text-fuchsia-300" />
+                  Tirar foto ou selecionar imagem
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleFotoRetirada(f);
+                  e.target.value = "";
+                }}
+                className="hidden"
+              />
+            </label>
+            {fotoPreview && (
+              <img
+                src={fotoPreview}
+                alt=""
+                className="mt-2 max-h-32 w-full rounded-md border border-white/10 object-contain bg-black/40"
+              />
+            )}
+            {ultimaIdent && (
+              <p className="mt-2 text-[11px] text-slate-400">
+                Identificado: <span className="text-slate-200">{ultimaIdent}</span>
+              </p>
+            )}
+          </Field>
+        )}
+
         {item && (
-          <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
-            Disponível: <span className="font-bold text-emerald-300">{item.quantidade}</span>
-            {item.localizacao && <> · 📍 {item.localizacao}</>}
+          <div className="rounded-lg border border-emerald-400/30 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-cyan-300">{item.codigo}</span>
+              <button
+                type="button"
+                onClick={() => setItemId("")}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="mt-0.5 text-white">{item.descricao}</div>
+            <div className="mt-1 text-[11px] text-slate-300">
+              Disponível:{" "}
+              <span className="font-bold text-emerald-300">{item.quantidade}</span>
+              {item.localizacao && <> · 📍 {item.localizacao}</>}
+            </div>
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">
