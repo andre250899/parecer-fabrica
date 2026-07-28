@@ -34,6 +34,7 @@ import AssurantPreview from "@/components/AssurantPreview";
 import WhirlpoolPreview from "@/components/WhirlpoolPreview";
 import SignaturePad from "@/components/SignaturePad";
 import AttachmentField from "@/components/AttachmentField";
+import EstoqueScreen from "@/components/EstoqueScreen";
 import { supabase } from "@/integrations/supabase/client";
 import {
   THEMES,
@@ -219,7 +220,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool">("home");
+  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool" | "estoque">("home");
   const [tipo, setTipo] = useState<ParecerTipo | null>(null);
   const [data, setData] = useState<ParecerData>(defaultParecer);
   const [hisense, setHisense] = useState<HisenseData>(defaultHisense);
