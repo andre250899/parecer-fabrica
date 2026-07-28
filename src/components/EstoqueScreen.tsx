@@ -220,6 +220,8 @@ function MenuGrid({
 
 function ConsultaView({ itens }: { itens: Item[] }) {
   const [q, setQ] = useState("");
+  const [selected, setSelected] = useState<Item | null>(null);
+
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return itens;
@@ -255,9 +257,10 @@ function ConsultaView({ itens }: { itens: Item[] }) {
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((it) => (
-            <div
+            <button
               key={it.id}
-              className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 to-white/[0.02] p-4 transition hover:border-cyan-400/40"
+              onClick={() => setSelected(it)}
+              className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 to-white/[0.02] p-4 text-left transition hover:border-cyan-400/40 hover:from-white/15 hover:to-white/[0.04] focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="text-xs font-mono uppercase text-cyan-300">{it.codigo}</div>
@@ -277,11 +280,118 @@ function ConsultaView({ itens }: { itens: Item[] }) {
               {it.localizacao && (
                 <div className="mt-2 text-xs text-slate-400">📍 {it.localizacao}</div>
               )}
-            </div>
+            </button>
           ))}
         </div>
       )}
+      {selected && <ItemDetailModal item={selected} onClose={() => setSelected(null)} />}
     </div>
+  );
+}
+
+function ItemDetailModal({ item, onClose }: { item: Item; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/15 bg-slate-900 p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
+          <div>
+            <div className="text-xs font-mono uppercase text-cyan-300">{item.codigo}</div>
+            <h3 className="text-lg font-bold text-white">Ficha do item</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {item.foto && (
+          <div className="mb-5 overflow-hidden rounded-xl border border-white/10">
+            <img
+              src={item.foto}
+              alt={`Foto de ${item.descricao}`}
+              className="max-h-52 w-full object-contain bg-black/40"
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <ReadOnlyField label="Código" value={item.codigo} />
+          <ReadOnlyField label="Código de barras" value={item.codigoBarras || "—"} />
+          <ReadOnlyField label="Descrição" value={item.descricao} />
+          <ReadOnlyField label="Marca" value={item.marca || "—"} />
+          <ReadOnlyField label="Categoria" value={item.categoria || "—"} />
+          <ReadOnlyField label="Localização" value={item.localizacao || "—"} />
+          <ReadOnlyField label="Quantidade em estoque" value={String(item.quantidade)} />
+          <ReadOnlyField
+            label="Cadastrado em"
+            value={new Date(item.criadoEm).toLocaleString("pt-BR")}
+          />
+        </div>
+
+        <div className="mt-4">
+          <ReadOnlyField
+            label="Modelos aplicados"
+            value={
+              item.modelosAplicados && item.modelosAplicados.length > 0
+                ? item.modelosAplicados.join(", ")
+                : "—"
+            }
+            fullWidth
+          />
+        </div>
+
+        {item.fonte && (
+          <div className="mt-4">
+            <a
+              href={item.fonte}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-xs font-semibold text-fuchsia-100 hover:bg-fuchsia-500/20"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Abrir Compra Parceiros
+            </a>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={onClose}
+            className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReadOnlyField({
+  label,
+  value,
+  fullWidth,
+}: {
+  label: string;
+  value: string;
+  fullWidth?: boolean;
+}) {
+  return (
+    <label className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+        {label}
+      </span>
+      <div className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-200">
+        {value}
+      </div>
+    </label>
   );
 }
 
