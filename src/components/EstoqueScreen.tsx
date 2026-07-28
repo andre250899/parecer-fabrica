@@ -660,6 +660,70 @@ function CadastroView({
           <Plus className="h-4 w-4" /> Salvar item
         </button>
       </form>
+
+      {mostrarTeclado && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center">
+          <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-slate-900 p-4 shadow-2xl">
+            <div className="mb-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Quantidade a cadastrar
+              </p>
+              <div className="mt-2 rounded-xl bg-slate-950 py-4 text-4xl font-bold text-emerald-300">
+                {quantidadeTemp}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => tecladoPressionar(n)}
+                  className="rounded-xl bg-white/10 py-4 text-xl font-bold text-white hover:bg-white/20 active:scale-95"
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={tecladoLimpar}
+                className="rounded-xl bg-amber-500/20 py-4 text-sm font-bold text-amber-200 hover:bg-amber-500/30 active:scale-95"
+              >
+                C
+              </button>
+              <button
+                type="button"
+                onClick={() => tecladoPressionar("0")}
+                className="rounded-xl bg-white/10 py-4 text-xl font-bold text-white hover:bg-white/20 active:scale-95"
+              >
+                0
+              </button>
+              <button
+                type="button"
+                onClick={tecladoApagar}
+                className="rounded-xl bg-rose-500/20 py-4 text-sm font-bold text-rose-200 hover:bg-rose-500/30 active:scale-95"
+              >
+                ⌫
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setMostrarTeclado(false)}
+                className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white hover:bg-white/10"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => salvar(parseInt(quantidadeTemp, 10))}
+                className="rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 px-4 py-3 text-sm font-bold text-slate-900 hover:brightness-110"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-bold">Itens cadastrados</h3>
