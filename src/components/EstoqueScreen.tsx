@@ -294,7 +294,6 @@ function CadastroView({
 }) {
   const [codigo, setCodigo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [quantidade, setQuantidade] = useState("");
   const [localizacao, setLocalizacao] = useState("");
   const [codigoBarras, setCodigoBarras] = useState("");
   const [marca, setMarca] = useState("");
@@ -304,6 +303,8 @@ function CadastroView({
   const [foto, setFoto] = useState<string>("");
   const [analisando, setAnalisando] = useState(false);
   const [enriquecendo, setEnriquecendo] = useState(false);
+  const [quantidadeTemp, setQuantidadeTemp] = useState("0");
+  const [mostrarTeclado, setMostrarTeclado] = useState(false);
 
   const identificar = useServerFn(identificarPecaFoto);
   const enriquecer = useServerFn(enriquecerPecaEletrolux);
@@ -311,7 +312,6 @@ function CadastroView({
   const limparCampos = () => {
     setCodigo("");
     setDescricao("");
-    setQuantidade("");
     setLocalizacao("");
     setCodigoBarras("");
     setMarca("");
@@ -319,6 +319,7 @@ function CadastroView({
     setCategoria("");
     setFonte("");
     setFoto("");
+    setQuantidadeTemp("0");
   };
 
   const handleFoto = async (file: File) => {
@@ -399,13 +400,22 @@ function CadastroView({
     }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const abrirTecladoQuantidade = (e: React.FormEvent) => {
     e.preventDefault();
     if (!codigo.trim() || !descricao.trim()) {
       toast.error("Informe código e descrição.");
       return;
     }
-    const q = parseInt(quantidade, 10) || 0;
+    setQuantidadeTemp("0");
+    setMostrarTeclado(true);
+  };
+
+  const salvar = (qtdInformada: number) => {
+    const q = qtdInformada || 0;
+    if (q <= 0) {
+      toast.error("Informe uma quantidade maior que zero.");
+      return;
+    }
     const existing = itens.find(
       (it) => it.codigo.toLowerCase() === codigo.trim().toLowerCase(),
     );
@@ -452,6 +462,7 @@ function CadastroView({
     }
     onSave(next);
     limparCampos();
+    setMostrarTeclado(false);
   };
 
   const remover = (id: string) => {
@@ -459,15 +470,33 @@ function CadastroView({
     onSave(itens.filter((it) => it.id !== id));
   };
 
+  const tecladoPressionar = (valor: string) => {
+    setQuantidadeTemp((prev) => {
+      const limpo = prev.replace(/^0+/, "").replace(/\D/g, "") || "0";
+      const novo = limpo === "0" ? valor : limpo + valor;
+      return novo.slice(0, 5);
+    });
+  };
+
+  const tecladoApagar = () => {
+    setQuantidadeTemp((prev) => {
+      const limpo = prev.replace(/\D/g, "");
+      const novo = limpo.slice(0, -1) || "0";
+      return novo;
+    });
+  };
+
+  const tecladoLimpar = () => setQuantidadeTemp("0");
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
       <form
-        onSubmit={submit}
+        onSubmit={abrirTecladoQuantidade}
         className="lg:col-span-2 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6"
       >
         <h3 className="text-lg font-bold">Novo item</h3>
         <p className="text-xs text-slate-400">
-          Se o código já existir, a quantidade será somada ao estoque atual.
+          Informe os dados do item. A quantidade será digitada ao clicar em Salvar item.
         </p>
 
         {/* Photo capture */}
@@ -565,26 +594,14 @@ function CadastroView({
             placeholder="Ex.: Placa de potência"
           />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Quantidade">
-            <input
-              type="number"
-              min={0}
-              value={quantidade}
-              onChange={(e) => setQuantidade(e.target.value)}
-              className={inputCls}
-              placeholder="0"
-            />
-          </Field>
-          <Field label="Localização">
-            <input
-              value={localizacao}
-              onChange={(e) => setLocalizacao(e.target.value)}
-              className={inputCls}
-              placeholder="Ex.: Prateleira A3"
-            />
-          </Field>
-        </div>
+        <Field label="Localização">
+          <input
+            value={localizacao}
+            onChange={(e) => setLocalizacao(e.target.value)}
+            className={inputCls}
+            placeholder="Ex.: Prateleira A3"
+          />
+        </Field>
         <Field label="Categoria">
           <input
             value={categoria}
@@ -643,6 +660,70 @@ function CadastroView({
           <Plus className="h-4 w-4" /> Salvar item
         </button>
       </form>
+
+      {mostrarTeclado && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center">
+          <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-slate-900 p-4 shadow-2xl">
+            <div className="mb-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Quantidade a cadastrar
+              </p>
+              <div className="mt-2 rounded-xl bg-slate-950 py-4 text-4xl font-bold text-emerald-300">
+                {quantidadeTemp}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => tecladoPressionar(n)}
+                  className="rounded-xl bg-white/10 py-4 text-xl font-bold text-white hover:bg-white/20 active:scale-95"
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={tecladoLimpar}
+                className="rounded-xl bg-amber-500/20 py-4 text-sm font-bold text-amber-200 hover:bg-amber-500/30 active:scale-95"
+              >
+                C
+              </button>
+              <button
+                type="button"
+                onClick={() => tecladoPressionar("0")}
+                className="rounded-xl bg-white/10 py-4 text-xl font-bold text-white hover:bg-white/20 active:scale-95"
+              >
+                0
+              </button>
+              <button
+                type="button"
+                onClick={tecladoApagar}
+                className="rounded-xl bg-rose-500/20 py-4 text-sm font-bold text-rose-200 hover:bg-rose-500/30 active:scale-95"
+              >
+                ⌫
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setMostrarTeclado(false)}
+                className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white hover:bg-white/10"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => salvar(parseInt(quantidadeTemp, 10))}
+                className="rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 px-4 py-3 text-sm font-bold text-slate-900 hover:brightness-110"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-bold">Itens cadastrados</h3>
