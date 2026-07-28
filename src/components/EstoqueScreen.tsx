@@ -10,8 +10,18 @@ import {
   Plus,
   History,
   X,
+  Camera,
+  Sparkles,
+  Loader2,
+  ExternalLink,
+  Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  identificarPecaFoto,
+  enriquecerPecaEletrolux,
+} from "@/lib/estoque-vision.functions";
 
 type Item = {
   id: string;
@@ -20,6 +30,13 @@ type Item = {
   quantidade: number;
   localizacao: string;
   criadoEm: string;
+  codigoBarras?: string;
+  marca?: string;
+  modelosAplicados?: string[];
+  precoSugerido?: string;
+  categoria?: string;
+  fonte?: string;
+  foto?: string; // data URL
 };
 
 type Movimento = {
