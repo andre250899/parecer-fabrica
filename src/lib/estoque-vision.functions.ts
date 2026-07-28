@@ -98,6 +98,7 @@ export const enriquecerPecaEletrolux = createServerFn({ method: "POST" })
       return { descricao: "", precoSugerido: "", modelosAplicados: [], categoria: "", fonte: "", observacao: "" };
     }
     const pageUrl = `https://compraparceiros.electrolux.com.br/${encodeURIComponent(codigo)}?map=ft&_q=${encodeURIComponent(codigo)}`;
+    const searchUrl = `https://compraparceiros.electrolux.com.br/${encodeURIComponent(codigo)}?_q=${encodeURIComponent(codigo)}&map=ft`;
     const apiUrl = `https://compraparceiros.electrolux.com.br/api/catalog_system/pub/products/search/?ft=${encodeURIComponent(codigo)}`;
     const empty = { descricao: "", precoSugerido: "", modelosAplicados: [] as string[], categoria: "", fonte: pageUrl, observacao: "" };
 
@@ -121,6 +122,9 @@ export const enriquecerPecaEletrolux = createServerFn({ method: "POST" })
 
     const p = list[0];
     const descricao = String(p.productName ?? "");
+    // Link canônico do produto (ex.: .../placa-de-interface-41046753/p)
+    const produtoUrl = String(p.link ?? "") ||
+      (p.linkText ? `https://compraparceiros.electrolux.com.br/${String(p.linkText)}/p` : searchUrl);
     const categorias = Array.isArray(p.categories) ? (p.categories as string[]) : [];
     // Ex.: "/Peças/Linha Branca/Placas de Potência/" → "Linha Branca / Placas de Potência"
     const categoria = categorias
@@ -179,7 +183,7 @@ export const enriquecerPecaEletrolux = createServerFn({ method: "POST" })
       precoSugerido,
       modelosAplicados,
       categoria,
-      fonte: pageUrl,
+      fonte: produtoUrl,
       observacao: modelosAplicados.length ? "" : "Sem 'Produtos Aplicados' cadastrados para este código.",
     };
   });
