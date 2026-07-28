@@ -423,7 +423,6 @@ function CadastroView({
               modelosAplicados: modelosAplicados.length
                 ? modelosAplicados
                 : it.modelosAplicados,
-              precoSugerido: precoSugerido.trim() || it.precoSugerido,
               categoria: categoria.trim() || it.categoria,
               fonte: fonte.trim() || it.fonte,
               foto: foto || it.foto,
@@ -443,7 +442,6 @@ function CadastroView({
           codigoBarras: codigoBarras.trim() || undefined,
           marca: marca.trim() || undefined,
           modelosAplicados: modelosAplicados.length ? modelosAplicados : undefined,
-          precoSugerido: precoSugerido.trim() || undefined,
           categoria: categoria.trim() || undefined,
           fonte: fonte.trim() || undefined,
           foto: foto || undefined,
@@ -479,7 +477,7 @@ function CadastroView({
           </div>
           <p className="mt-1 text-[11px] text-slate-300">
             Tire uma foto da etiqueta, embalagem ou código de barras. Vamos
-            identificar o código e buscar preço sugerido e modelos aplicados.
+            identificar o código e buscar modelos aplicados.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-fuchsia-500/20 px-3 py-2 text-xs font-semibold text-fuchsia-100 hover:bg-fuchsia-500/30">
@@ -587,24 +585,14 @@ function CadastroView({
             />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Preço sugerido">
-            <input
-              value={precoSugerido}
-              onChange={(e) => setPrecoSugerido(e.target.value)}
-              className={inputCls}
-              placeholder="R$ 0,00"
-            />
-          </Field>
-          <Field label="Categoria">
-            <input
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className={inputCls}
-              placeholder="Refrigeração…"
-            />
-          </Field>
-        </div>
+        <Field label="Categoria">
+          <input
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+            className={inputCls}
+            placeholder="Refrigeração…"
+          />
+        </Field>
         <Field label="Modelos aplicados">
           <textarea
             value={modelosAplicados.join(", ")}
@@ -684,9 +672,7 @@ function CadastroView({
                   <div className="mt-0.5 flex flex-wrap gap-x-2 text-[11px] text-slate-400">
                     {it.localizacao && <span>📍 {it.localizacao}</span>}
                     {it.marca && <span>🏷️ {it.marca}</span>}
-                    {it.precoSugerido && (
-                      <span className="text-emerald-300">💰 {it.precoSugerido}</span>
-                    )}
+                    {it.categoria && <span>📂 {it.categoria}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
