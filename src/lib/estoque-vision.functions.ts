@@ -119,9 +119,26 @@ export const enriquecerPecaEletrolux = createServerFn({ method: "POST" })
 
     const p = list[0];
     const descricao = String(p.productName ?? "");
-    // Link canônico do produto (ex.: .../placa-de-interface-41046753/p)
-    const produtoUrl = String(p.link ?? "") ||
-      (p.linkText ? `https://compraparceiros.electrolux.com.br/${String(p.linkText)}/p` : searchUrl);
+    // Link canônico do produto (ex.: .../placa-de-interface-41046753/p).
+    // Preferimos SEMPRE construir a partir de linkText porque o campo `link`
+    // pode vir como caminho relativo, com domínio interno da VTEX
+    // (portal.vtexcommercestable.com.br) ou vazio dependendo do tenant.
+    const linkText = String(p.linkText ?? "").trim();
+    const rawLink = String(p.link ?? "").trim();
+    const host = "https://compraparceiros.electrolux.com.br";
+    let produtoUrl = "";
+    if (linkText) {
+      produtoUrl = `${host}/${linkText}/p`;
+    } else if (rawLink) {
+      if (/^https?:\/\//i.test(rawLink)) {
+        // Reescreve domínios internos da VTEX para o host público
+        produtoUrl = rawLink.replace(/^https?:\/\/[^/]+/i, host);
+      } else {
+        produtoUrl = `${host}/${rawLink.replace(/^\//, "")}`;
+      }
+    } else {
+      produtoUrl = searchUrl;
+    }
     const categorias = Array.isArray(p.categories) ? (p.categories as string[]) : [];
     // Ex.: "/Peças/Linha Branca/Placas de Potência/" → "Linha Branca / Placas de Potência"
     const categoria = categorias
