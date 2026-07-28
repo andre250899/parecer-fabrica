@@ -221,7 +221,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool" | "estoque">("home");
+  const [modo, setModo] = useState<"home" | "parecer" | "whirlpool" | "estoque" | "electrolux">("home");
   const [tipo, setTipo] = useState<ParecerTipo | null>(null);
   const [data, setData] = useState<ParecerData>(defaultParecer);
   const [hisense, setHisense] = useState<HisenseData>(defaultHisense);
@@ -1319,6 +1319,42 @@ function Index() {
     return <EstoqueScreen onBack={() => setModo("home")} />;
   }
 
+  if (modo === "electrolux") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 text-white">
+        <header className="border-b border-white/10 bg-white/5 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setModo("home")} className="rounded-md border border-white/15 bg-white/5 px-3 py-2 text-sm hover:bg-white/10">← Voltar</button>
+            <div>
+              <h1 className="text-lg font-bold">Electrolux</h1>
+              <p className="text-xs text-white/60">Módulo em configuração</p>
+            </div>
+          </div>
+        </header>
+        <main className="mx-auto max-w-3xl px-6 py-16 text-center">
+          <div className="mx-auto mb-6 inline-flex rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 p-4 shadow-2xl shadow-emerald-500/30">
+            <Package className="h-10 w-10 text-white" />
+          </div>
+          <h2 className="text-3xl font-extrabold">Menu Electrolux</h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm text-white/70">
+            Envie os requisitos do parecer/atendimento Electrolux (campos, layout,
+            fotos, orçamento, agenda, importação de OS por PDF) e eu monto o
+            módulo completo — do formulário à impressão em A4.
+          </p>
+          <div className="mx-auto mt-8 max-w-md rounded-xl border border-white/10 bg-white/5 p-5 text-left text-sm text-white/80">
+            <div className="font-semibold text-emerald-300">Sugestões do que enviar:</div>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>Modelo em PDF/Word do relatório final</li>
+              <li>Campos obrigatórios (consumidor, produto, defeito, laudo…)</li>
+              <li>Se precisa de agenda, fotos, assinatura e/ou orçamento</li>
+              <li>Marca visual (logos, cores)</li>
+            </ul>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // Home screen
   if (modo === "home") {
     return (
@@ -1361,11 +1397,13 @@ function Index() {
               { id: "hisense" as const, name: "HISENSE / GORENJE", desc: "Relatório de atendimento com galeria de 8 fotos e medições de tensão.", color: "from-red-600 to-red-800" },
               { id: "assurant" as const, name: "ASSURANT", desc: "Análise técnica de sinistro com fotos do defeito, cotação e residência.", color: "from-slate-700 to-slate-900" },
               { id: "whirlpool" as const, name: "WHIRLPOOL", desc: "Agenda de atendimentos com importação de OS por PDF e laudo técnico.", color: "from-cyan-600 to-blue-700" },
+              { id: "electrolux" as const, name: "ELECTROLUX", desc: "Módulo Electrolux — em configuração. Descreva os requisitos para gerar o modelo.", color: "from-emerald-600 to-teal-700" },
             ].map((m) => (
               <button
                 key={m.id}
                 onClick={() => {
                   if (m.id === "whirlpool") setModo("whirlpool");
+                  else if (m.id === "electrolux") setModo("electrolux");
                   else {
                     setTipo(m.id);
                     setModo("parecer");
