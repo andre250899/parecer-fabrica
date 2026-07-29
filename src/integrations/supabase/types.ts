@@ -59,6 +59,104 @@ export type Database = {
         }
         Relationships: []
       }
+      estoque_itens: {
+        Row: {
+          categoria: string | null
+          codigo: string
+          codigo_barras: string | null
+          created_at: string
+          criado_por: string | null
+          descricao: string
+          fonte: string | null
+          foto: string | null
+          id: string
+          localizacao: string
+          marca: string | null
+          modelos_aplicados: string[]
+          quantidade: number
+          updated_at: string
+        }
+        Insert: {
+          categoria?: string | null
+          codigo: string
+          codigo_barras?: string | null
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string
+          fonte?: string | null
+          foto?: string | null
+          id?: string
+          localizacao?: string
+          marca?: string | null
+          modelos_aplicados?: string[]
+          quantidade?: number
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string | null
+          codigo?: string
+          codigo_barras?: string | null
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string
+          fonte?: string | null
+          foto?: string | null
+          id?: string
+          localizacao?: string
+          marca?: string | null
+          modelos_aplicados?: string[]
+          quantidade?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      estoque_movimentos: {
+        Row: {
+          codigo: string
+          created_at: string
+          criado_por: string | null
+          data: string
+          descricao: string
+          id: string
+          item_id: string | null
+          os: string
+          quantidade: number
+          tecnico: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          descricao?: string
+          id?: string
+          item_id?: string | null
+          os?: string
+          quantidade: number
+          tecnico?: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          descricao?: string
+          id?: string
+          item_id?: string | null
+          os?: string
+          quantidade?: number
+          tecnico?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_movimentos_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pareceres: {
         Row: {
           cliente_nome: string | null
