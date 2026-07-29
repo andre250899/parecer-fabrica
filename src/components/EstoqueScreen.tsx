@@ -221,6 +221,11 @@ function MenuGrid({
 function ConsultaView({ itens }: { itens: Item[] }) {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<Item | null>(null);
+  const [modo, setModo] = useState<"dados" | "foto">("dados");
+  const [analisandoFoto, setAnalisandoFoto] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState("");
+  const [ultimaIdent, setUltimaIdent] = useState("");
+  const identificar = useServerFn(identificarPecaFoto);
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -229,26 +234,143 @@ function ConsultaView({ itens }: { itens: Item[] }) {
       (it) =>
         it.codigo.toLowerCase().includes(t) ||
         it.descricao.toLowerCase().includes(t) ||
-        it.localizacao.toLowerCase().includes(t),
+        it.localizacao.toLowerCase().includes(t) ||
+        (it.codigoBarras || "").toLowerCase().includes(t) ||
+        (it.marca || "").toLowerCase().includes(t),
     );
   }, [q, itens]);
 
+  const handleFotoConsulta = async (file: File) => {
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx. 8 MB).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = String(reader.result || "");
+      setFotoPreview(dataUrl);
+      const base64 = dataUrl.split(",")[1] || "";
+      const mimeType = file.type || "image/jpeg";
+      setAnalisandoFoto(true);
+      try {
+        const r = await identificar({ data: { base64, mimeType } });
+        const codigoRef = (r.codigo || "").toUpperCase().trim();
+        const barrasRef = (r.codigoBarras || "").trim();
+        setUltimaIdent(
+          [codigoRef, barrasRef, r.descricao].filter(Boolean).join(" · "),
+        );
+        const match = itens.find((it) => {
+          const c = it.codigo.toUpperCase();
+          const b = (it.codigoBarras || "").trim();
+          return (
+            (codigoRef && c === codigoRef) ||
+            (barrasRef && b && b === barrasRef)
+          );
+        });
+        if (match) {
+          setSelected(match);
+          toast.success(`Peça localizada: ${match.codigo}`);
+        } else {
+          const query = codigoRef || barrasRef || r.descricao || "";
+          setQ(query);
+          setModo("dados");
+          toast.warning("Peça não encontrada no estoque. Confira os resultados.");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          err instanceof Error ? err.message : "Falha ao analisar a foto.",
+        );
+      } finally {
+        setAnalisandoFoto(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div>
-      <div className="mb-6 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-        <Search className="h-5 w-5 text-slate-400" />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por código, descrição ou localização…"
-          className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
-        />
-        {q && (
-          <button onClick={() => setQ("")} className="text-slate-400 hover:text-white">
-            <X className="h-4 w-4" />
-          </button>
-        )}
+      <div className="mb-4 flex gap-2 rounded-lg border border-white/10 bg-slate-950/40 p-1">
+        <button
+          type="button"
+          onClick={() => setModo("dados")}
+          className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+            modo === "dados"
+              ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow"
+              : "text-slate-300 hover:bg-white/5"
+          }`}
+        >
+          <Search className="mr-1 inline h-3.5 w-3.5" /> Por dados
+        </button>
+        <button
+          type="button"
+          onClick={() => setModo("foto")}
+          className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+            modo === "foto"
+              ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow"
+              : "text-slate-300 hover:bg-white/5"
+          }`}
+        >
+          <Camera className="mr-1 inline h-3.5 w-3.5" /> Por foto
+        </button>
       </div>
+
+      {modo === "dados" ? (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+          <Search className="h-5 w-5 text-slate-400" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buscar por código, descrição, barras, marca ou localização…"
+            className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
+          />
+          {q && (
+            <button onClick={() => setQ("")} className="text-slate-400 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
+          <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-cyan-400/40 bg-cyan-500/5 px-4 py-6 text-center text-xs text-slate-300 hover:bg-cyan-500/10">
+            {analisandoFoto ? (
+              <>
+                <Loader2 className="h-6 w-6 animate-spin text-cyan-300" />
+                Analisando…
+              </>
+            ) : (
+              <>
+                <Camera className="h-6 w-6 text-cyan-300" />
+                Tirar foto ou selecionar imagem da peça
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFotoConsulta(f);
+                e.target.value = "";
+              }}
+              className="hidden"
+            />
+          </label>
+          {fotoPreview && (
+            <img
+              src={fotoPreview}
+              alt=""
+              className="mt-3 max-h-40 w-full rounded-md border border-white/10 object-contain bg-black/40"
+            />
+          )}
+          {ultimaIdent && (
+            <p className="mt-2 text-[11px] text-slate-400">
+              Identificado: <span className="text-slate-200">{ultimaIdent}</span>
+            </p>
+          )}
+        </div>
+      )}
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-white/10 bg-white/5 p-10 text-center text-slate-400">
           <Package className="mx-auto mb-3 h-10 w-10 opacity-50" />
@@ -995,7 +1117,7 @@ function RetiradaView({
       toast.error(`Estoque insuficiente. Disponível: ${item.quantidade}.`);
       return;
     }
-    if (!tecnico.trim()) {
+    if (modo === "dados" && !tecnico.trim()) {
       toast.error("Informe o técnico responsável.");
       return;
     }
@@ -1008,7 +1130,7 @@ function RetiradaView({
       codigo: item.codigo,
       descricao: item.descricao,
       quantidade: q,
-      tecnico: tecnico.trim(),
+      tecnico: tecnico.trim() || (modo === "foto" ? "Retirada por foto" : ""),
       os: os.trim(),
       data: new Date().toISOString(),
     };
@@ -1162,32 +1284,47 @@ function RetiradaView({
             </div>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Quantidade">
+        {modo === "foto" ? (
+          <Field label="Quantidade retirada">
             <input
               type="number"
               min={1}
               value={qtd}
               onChange={(e) => setQtd(e.target.value)}
-              className={inputCls}
+              className={`${inputCls} text-lg font-bold`}
+              autoFocus
             />
           </Field>
-          <Field label="Nº OS">
-            <input
-              value={os}
-              onChange={(e) => setOs(e.target.value)}
-              className={inputCls}
-              placeholder="opcional"
-            />
-          </Field>
-        </div>
-        <Field label="Técnico responsável">
-          <input
-            value={tecnico}
-            onChange={(e) => setTecnico(e.target.value)}
-            className={inputCls}
-          />
-        </Field>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Quantidade">
+                <input
+                  type="number"
+                  min={1}
+                  value={qtd}
+                  onChange={(e) => setQtd(e.target.value)}
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Nº OS">
+                <input
+                  value={os}
+                  onChange={(e) => setOs(e.target.value)}
+                  className={inputCls}
+                  placeholder="opcional"
+                />
+              </Field>
+            </div>
+            <Field label="Técnico responsável">
+              <input
+                value={tecnico}
+                onChange={(e) => setTecnico(e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+          </>
+        )}
         <button
           type="submit"
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-fuchsia-500 to-rose-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
