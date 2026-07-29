@@ -1075,13 +1075,11 @@ function CadastroView({
 function RetiradaView({
   itens,
   movs,
-  onUpdateItens,
-  onUpdateMovs,
+  onReload,
 }: {
   itens: Item[];
   movs: Movimento[];
-  onUpdateItens: (next: Item[]) => void;
-  onUpdateMovs: (next: Movimento[]) => void;
+  onReload: () => Promise<void>;
 }) {
   const [itemId, setItemId] = useState("");
   const [qtd, setQtd] = useState("");
@@ -1160,7 +1158,7 @@ function RetiradaView({
     reader.readAsDataURL(file);
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!item) {
       toast.error("Selecione um item.");
@@ -1179,34 +1177,39 @@ function RetiradaView({
       toast.error("Informe o técnico responsável.");
       return;
     }
-    const nextItens = itens.map((it) =>
-      it.id === item.id ? { ...it, quantidade: it.quantidade - q } : it,
-    );
-    const nextMov: Movimento = {
-      id: crypto.randomUUID(),
-      itemId: item.id,
-      codigo: item.codigo,
-      descricao: item.descricao,
-      quantidade: q,
-      tecnico: tecnico.trim() || (modo === "foto" ? "Retirada por foto" : ""),
-      os: os.trim(),
-      data: new Date().toISOString(),
-    };
-    onUpdateItens(nextItens);
-    onUpdateMovs([nextMov, ...movs]);
-    toast.success(`Retirada registrada: ${q} × ${item.codigo}.`);
-    setItemId("");
-    setQtd("");
-    setOs("");
-    setBusca("");
-    setFotoPreview("");
-    setUltimaIdent("");
+    try {
+      const { error: upErr } = await supabase
+        .from("estoque_itens")
+        .update({ quantidade: item.quantidade - q })
+        .eq("id", item.id);
+      if (upErr) throw upErr;
+      const { error: movErr } = await supabase.from("estoque_movimentos").insert({
+        item_id: item.id,
+        codigo: item.codigo,
+        descricao: item.descricao,
+        quantidade: q,
+        tecnico: tecnico.trim() || (modo === "foto" ? "Retirada por foto" : ""),
+        os: os.trim(),
+      });
+      if (movErr) throw movErr;
+      await onReload();
+      toast.success(`Retirada registrada: ${q} × ${item.codigo}.`);
+      setItemId("");
+      setQtd("");
+      setOs("");
+      setBusca("");
+      setFotoPreview("");
+      setUltimaIdent("");
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Falha ao registrar retirada.");
+    }
   };
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
       <form
-        onSubmit={submit}
+        onSubmit={(e) => void submit(e)}
         className="lg:col-span-2 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6"
       >
         <h3 className="text-lg font-bold">Registrar retirada</h3>
