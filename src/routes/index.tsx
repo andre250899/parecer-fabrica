@@ -2516,7 +2516,6 @@ function PhotoField({ label, value, onChange }: { label: string; value: string; 
           <input
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
           />
