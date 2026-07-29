@@ -402,7 +402,6 @@ function ConsultaView({ itens }: { itens: Item[] }) {
             <input
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) handleFotoConsulta(f);
@@ -1301,7 +1300,6 @@ function RetiradaView({
               <input
                 type="file"
                 accept="image/*"
-                capture="environment"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) handleFotoRetirada(f);
