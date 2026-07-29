@@ -234,7 +234,7 @@ function MenuGrid({
       <div className="mb-8">
         <h2 className="text-3xl font-extrabold tracking-tight">Controle de Estoque</h2>
         <p className="mt-2 text-sm text-slate-400">
-          Escolha uma operação. Os dados são armazenados localmente no seu dispositivo.
+          Escolha uma operação. Os dados são compartilhados entre todos os usuários da equipe.
         </p>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
