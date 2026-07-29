@@ -22,6 +22,7 @@ import {
   identificarPecaFoto,
   enriquecerPecaEletrolux,
 } from "@/lib/estoque-vision.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 type Item = {
   id: string;
@@ -49,25 +50,57 @@ type Movimento = {
   data: string;
 };
 
-const ITEMS_KEY = "voxweb.estoque.itens.v1";
-const MOV_KEY = "voxweb.estoque.movimentos.v1";
-
-const readLS = <T,>(key: string): T[] => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T[]) : [];
-  } catch {
-    return [];
-  }
+type ItemRow = {
+  id: string;
+  codigo: string;
+  descricao: string | null;
+  quantidade: number;
+  localizacao: string | null;
+  codigo_barras: string | null;
+  marca: string | null;
+  modelos_aplicados: string[] | null;
+  categoria: string | null;
+  fonte: string | null;
+  foto: string | null;
+  created_at: string;
 };
 
-const writeLS = <T,>(key: string, value: T[]) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    /* ignore */
-  }
+type MovRow = {
+  id: string;
+  item_id: string | null;
+  codigo: string;
+  descricao: string | null;
+  quantidade: number;
+  tecnico: string | null;
+  os: string | null;
+  data: string;
 };
+
+const rowToItem = (r: ItemRow): Item => ({
+  id: r.id,
+  codigo: r.codigo,
+  descricao: r.descricao ?? "",
+  quantidade: r.quantidade,
+  localizacao: r.localizacao ?? "",
+  criadoEm: r.created_at,
+  codigoBarras: r.codigo_barras ?? undefined,
+  marca: r.marca ?? undefined,
+  modelosAplicados: r.modelos_aplicados ?? undefined,
+  categoria: r.categoria ?? undefined,
+  fonte: r.fonte ?? undefined,
+  foto: r.foto ?? undefined,
+});
+
+const rowToMov = (r: MovRow): Movimento => ({
+  id: r.id,
+  itemId: r.item_id ?? "",
+  codigo: r.codigo,
+  descricao: r.descricao ?? "",
+  quantidade: r.quantidade,
+  tecnico: r.tecnico ?? "",
+  os: r.os ?? "",
+  data: r.data,
+});
 
 type View = "menu" | "consulta" | "cadastro" | "retirada";
 
@@ -75,20 +108,38 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
   const [view, setView] = useState<View>("menu");
   const [itens, setItens] = useState<Item[]>([]);
   const [movs, setMovs] = useState<Movimento[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = async () => {
+    try {
+      const [i, m] = await Promise.all([
+        supabase
+          .from("estoque_itens")
+          .select("*")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("estoque_movimentos")
+          .select("*")
+          .order("data", { ascending: false })
+          .limit(200),
+      ]);
+      if (i.error) throw i.error;
+      if (m.error) throw m.error;
+      setItens(((i.data ?? []) as ItemRow[]).map(rowToItem));
+      setMovs(((m.data ?? []) as MovRow[]).map(rowToMov));
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error ? err.message : "Falha ao carregar estoque.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setItens(readLS<Item>(ITEMS_KEY));
-    setMovs(readLS<Movimento>(MOV_KEY));
+    void reload();
   }, []);
-
-  const persistItens = (next: Item[]) => {
-    setItens(next);
-    writeLS(ITEMS_KEY, next);
-  };
-  const persistMovs = (next: Movimento[]) => {
-    setMovs(next);
-    writeLS(MOV_KEY, next);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
@@ -107,7 +158,7 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
             <div>
               <h1 className="text-lg font-bold">Estoque</h1>
               <p className="text-xs text-slate-400">
-                {itens.length} item(s) cadastrado(s) · {movs.length} retirada(s)
+                {loading ? "carregando…" : `${itens.length} item(s) cadastrado(s) · ${movs.length} retirada(s)`}
               </p>
             </div>
           </div>
@@ -120,18 +171,21 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        {view === "menu" && <MenuGrid setView={setView} itens={itens} movs={movs} />}
-        {view === "consulta" && <ConsultaView itens={itens} />}
-        {view === "cadastro" && (
-          <CadastroView itens={itens} onSave={persistItens} />
-        )}
-        {view === "retirada" && (
-          <RetiradaView
-            itens={itens}
-            movs={movs}
-            onUpdateItens={persistItens}
-            onUpdateMovs={persistMovs}
-          />
+        {loading ? (
+          <div className="flex items-center justify-center py-20 text-slate-400">
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Carregando estoque…
+          </div>
+        ) : (
+          <>
+            {view === "menu" && <MenuGrid setView={setView} itens={itens} movs={movs} />}
+            {view === "consulta" && <ConsultaView itens={itens} />}
+            {view === "cadastro" && (
+              <CadastroView itens={itens} onReload={reload} />
+            )}
+            {view === "retirada" && (
+              <RetiradaView itens={itens} movs={movs} onReload={reload} />
+            )}
+          </>
         )}
       </main>
     </div>
