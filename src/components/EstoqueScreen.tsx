@@ -573,10 +573,10 @@ function ReadOnlyField({
 
 function CadastroView({
   itens,
-  onSave,
+  onReload,
 }: {
   itens: Item[];
-  onSave: (next: Item[]) => void;
+  onReload: () => Promise<void>;
 }) {
   const [codigo, setCodigo] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -696,7 +696,7 @@ function CadastroView({
     setMostrarTeclado(true);
   };
 
-  const salvar = (qtdInformada: number) => {
+  const salvar = async (qtdInformada: number) => {
     const q = qtdInformada || 0;
     if (q <= 0) {
       toast.error("Informe uma quantidade maior que zero.");
@@ -705,55 +705,59 @@ function CadastroView({
     const existing = itens.find(
       (it) => it.codigo.toLowerCase() === codigo.trim().toLowerCase(),
     );
-    let next: Item[];
-    if (existing) {
-      next = itens.map((it) =>
-        it.id === existing.id
-          ? {
-              ...it,
-              descricao: descricao.trim() || it.descricao,
-              localizacao: localizacao.trim() || it.localizacao,
-              quantidade: it.quantidade + q,
-              codigoBarras: codigoBarras.trim() || it.codigoBarras,
-              marca: marca.trim() || it.marca,
-              modelosAplicados: modelosAplicados.length
-                ? modelosAplicados
-                : it.modelosAplicados,
-              categoria: categoria.trim() || it.categoria,
-              fonte: fonte.trim() || it.fonte,
-              foto: foto || it.foto,
-            }
-          : it,
-      );
-      toast.success(`+${q} un. adicionadas ao item ${codigo}.`);
-    } else {
-      next = [
-        {
-          id: crypto.randomUUID(),
+    try {
+      if (existing) {
+        const { error } = await supabase
+          .from("estoque_itens")
+          .update({
+            descricao: descricao.trim() || existing.descricao,
+            localizacao: localizacao.trim() || existing.localizacao,
+            quantidade: existing.quantidade + q,
+            codigo_barras: codigoBarras.trim() || existing.codigoBarras || null,
+            marca: marca.trim() || existing.marca || null,
+            modelos_aplicados: modelosAplicados.length
+              ? modelosAplicados
+              : existing.modelosAplicados ?? [],
+            categoria: categoria.trim() || existing.categoria || null,
+            fonte: fonte.trim() || existing.fonte || null,
+            foto: foto || existing.foto || null,
+          })
+          .eq("id", existing.id);
+        if (error) throw error;
+        toast.success(`+${q} un. adicionadas ao item ${codigo}.`);
+      } else {
+        const { error } = await supabase.from("estoque_itens").insert({
           codigo: codigo.trim(),
           descricao: descricao.trim(),
           quantidade: q,
           localizacao: localizacao.trim(),
-          criadoEm: new Date().toISOString(),
-          codigoBarras: codigoBarras.trim() || undefined,
-          marca: marca.trim() || undefined,
-          modelosAplicados: modelosAplicados.length ? modelosAplicados : undefined,
-          categoria: categoria.trim() || undefined,
-          fonte: fonte.trim() || undefined,
-          foto: foto || undefined,
-        },
-        ...itens,
-      ];
-      toast.success(`Item ${codigo} cadastrado.`);
+          codigo_barras: codigoBarras.trim() || null,
+          marca: marca.trim() || null,
+          modelos_aplicados: modelosAplicados,
+          categoria: categoria.trim() || null,
+          fonte: fonte.trim() || null,
+          foto: foto || null,
+        });
+        if (error) throw error;
+        toast.success(`Item ${codigo} cadastrado.`);
+      }
+      await onReload();
+      limparCampos();
+      setMostrarTeclado(false);
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Falha ao salvar item.");
     }
-    onSave(next);
-    limparCampos();
-    setMostrarTeclado(false);
   };
 
-  const remover = (id: string) => {
+  const remover = async (id: string) => {
     if (!confirm("Remover este item do estoque?")) return;
-    onSave(itens.filter((it) => it.id !== id));
+    const { error } = await supabase.from("estoque_itens").delete().eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await onReload();
   };
 
   const tecladoPressionar = (valor: string) => {
@@ -1006,7 +1010,7 @@ function CadastroView({
               </button>
               <button
                 type="button"
-                onClick={() => salvar(parseInt(quantidadeTemp, 10))}
+                onClick={() => void salvar(parseInt(quantidadeTemp, 10))}
                 className="rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 px-4 py-3 text-sm font-bold text-slate-900 hover:brightness-110"
               >
                 Confirmar
