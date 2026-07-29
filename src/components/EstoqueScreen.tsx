@@ -1117,7 +1117,7 @@ function RetiradaView({
       toast.error(`Estoque insuficiente. Disponível: ${item.quantidade}.`);
       return;
     }
-    if (!tecnico.trim()) {
+    if (modo === "dados" && !tecnico.trim()) {
       toast.error("Informe o técnico responsável.");
       return;
     }
@@ -1130,7 +1130,7 @@ function RetiradaView({
       codigo: item.codigo,
       descricao: item.descricao,
       quantidade: q,
-      tecnico: tecnico.trim(),
+      tecnico: tecnico.trim() || (modo === "foto" ? "Retirada por foto" : ""),
       os: os.trim(),
       data: new Date().toISOString(),
     };
@@ -1284,32 +1284,47 @@ function RetiradaView({
             </div>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Quantidade">
+        {modo === "foto" ? (
+          <Field label="Quantidade retirada">
             <input
               type="number"
               min={1}
               value={qtd}
               onChange={(e) => setQtd(e.target.value)}
-              className={inputCls}
+              className={`${inputCls} text-lg font-bold`}
+              autoFocus
             />
           </Field>
-          <Field label="Nº OS">
-            <input
-              value={os}
-              onChange={(e) => setOs(e.target.value)}
-              className={inputCls}
-              placeholder="opcional"
-            />
-          </Field>
-        </div>
-        <Field label="Técnico responsável">
-          <input
-            value={tecnico}
-            onChange={(e) => setTecnico(e.target.value)}
-            className={inputCls}
-          />
-        </Field>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Quantidade">
+                <input
+                  type="number"
+                  min={1}
+                  value={qtd}
+                  onChange={(e) => setQtd(e.target.value)}
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Nº OS">
+                <input
+                  value={os}
+                  onChange={(e) => setOs(e.target.value)}
+                  className={inputCls}
+                  placeholder="opcional"
+                />
+              </Field>
+            </div>
+            <Field label="Técnico responsável">
+              <input
+                value={tecnico}
+                onChange={(e) => setTecnico(e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+          </>
+        )}
         <button
           type="submit"
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-fuchsia-500 to-rose-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
