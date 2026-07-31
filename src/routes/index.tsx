@@ -2502,9 +2502,19 @@ function PhotoField({ label, value, onChange }: { label: string; value: string; 
       <div className="mb-1 flex items-center justify-between">
         <span className="text-[10px] font-semibold uppercase text-slate-600">{label}</span>
         {value && (
-          <button onClick={() => onChange("")} className="text-red-600 hover:text-red-800" title="Remover">
-            <X className="h-3 w-3" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => downloadDataUrl(value, label)}
+              className="text-blue-700 hover:text-blue-900 text-[10px] font-bold"
+              title="Baixar foto"
+            >
+              ⬇
+            </button>
+            <button onClick={() => onChange("")} className="text-red-600 hover:text-red-800" title="Remover">
+              <X className="h-3 w-3" />
+            </button>
+          </div>
         )}
       </div>
       {value ? (
