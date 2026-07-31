@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { downloadDataUrl } from "@/lib/parecer-extras";
 import {
   ArrowLeft,
   Boxes,
