@@ -50,6 +50,7 @@ import {
   defaultWhirlpool,
   emptyWhirlpoolPeca,
   fileToCompressedDataUrl,
+  downloadDataUrl,
   type HisenseData,
   type AssurantData,
   type WhirlpoolData,
