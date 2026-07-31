@@ -260,6 +260,23 @@ export const defaultWhirlpool: WhirlpoolData = {
 };
 
 // Compress an image file to a JPEG data URL, max ~900px, quality 0.72
+export function downloadDataUrl(dataUrl: string, filename: string) {
+  if (!dataUrl) return;
+  let ext = "jpg";
+  const m = /^data:([^;,]+)/.exec(dataUrl);
+  const mime = m?.[1] ?? "";
+  if (mime.includes("pdf")) ext = "pdf";
+  else if (mime.includes("png")) ext = "png";
+  else if (mime.includes("webp")) ext = "webp";
+  const safe = filename.replace(/[^\p{L}\p{N}\-_ ]/gu, "").trim().replace(/\s+/g, "-") || "anexo";
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = `${safe}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 export async function fileToCompressedDataUrl(file: File, maxDim = 900, quality = 0.72): Promise<string> {
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const r = new FileReader();

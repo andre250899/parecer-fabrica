@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { downloadDataUrl } from "@/lib/parecer-extras";
 import {
   ArrowLeft,
   Boxes,
@@ -494,6 +495,13 @@ function ItemDetailModal({ item, onClose }: { item: Item; onClose: () => void })
               alt={`Foto de ${item.descricao}`}
               className="max-h-52 w-full object-contain bg-black/40"
             />
+            <button
+              type="button"
+              onClick={() => downloadDataUrl(item.foto!, `${item.codigo}-${item.descricao}`)}
+              className="w-full bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20"
+            >
+              ⬇ Baixar foto
+            </button>
           </div>
         )}
 

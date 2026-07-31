@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { fileToCompressedDataUrl } from "@/lib/parecer-extras";
+import { downloadDataUrl, fileToCompressedDataUrl } from "@/lib/parecer-extras";
 
 export default function AttachmentField({
   label,
@@ -61,13 +61,22 @@ export default function AttachmentField({
       <div className="mb-2 flex items-center justify-between">
         <span className={`text-xs font-bold uppercase tracking-wide ${accentText}`}>{label}</span>
         {value && (
-          <button
-            type="button"
-            onClick={() => onChange("")}
-            className="text-xs font-semibold text-red-600 hover:underline"
-          >
-            Remover
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => downloadDataUrl(value, label)}
+              className="text-xs font-semibold text-blue-700 hover:underline"
+            >
+              ⬇ Baixar
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="text-xs font-semibold text-red-600 hover:underline"
+            >
+              Remover
+            </button>
+          </div>
         )}
       </div>
 
