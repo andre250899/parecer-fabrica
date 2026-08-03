@@ -16,6 +16,7 @@ import {
   Loader2,
   ExternalLink,
   Wand2,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -179,7 +180,7 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
         ) : (
           <>
             {view === "menu" && <MenuGrid setView={setView} itens={itens} movs={movs} />}
-            {view === "consulta" && <ConsultaView itens={itens} />}
+            {view === "consulta" && <ConsultaView itens={itens} onReload={reload} />}
             {view === "cadastro" && (
               <CadastroView itens={itens} onReload={reload} />
             )}
@@ -273,7 +274,7 @@ function MenuGrid({
   );
 }
 
-function ConsultaView({ itens }: { itens: Item[] }) {
+function ConsultaView({ itens, onReload }: { itens: Item[]; onReload: () => Promise<void> }) {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<Item | null>(null);
   const [modo, setModo] = useState<"dados" | "foto">("dados");
@@ -460,12 +461,54 @@ function ConsultaView({ itens }: { itens: Item[] }) {
           ))}
         </div>
       )}
-      {selected && <ItemDetailModal item={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <ItemDetailModal
+          item={selected}
+          onClose={() => setSelected(null)}
+          onReload={onReload}
+        />
+      )}
     </div>
   );
 }
 
-function ItemDetailModal({ item, onClose }: { item: Item; onClose: () => void }) {
+function ItemDetailModal({
+  item,
+  onClose,
+  onReload,
+}: {
+  item: Item;
+  onClose: () => void;
+  onReload: () => Promise<void>;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [descricao, setDescricao] = useState(item.descricao);
+  const [localizacao, setLocalizacao] = useState(item.localizacao);
+  const [salvando, setSalvando] = useState(false);
+
+  const salvar = async () => {
+    if (!descricao.trim()) {
+      toast.error("Informe a descrição.");
+      return;
+    }
+    setSalvando(true);
+    try {
+      const { error } = await supabase
+        .from("estoque_itens")
+        .update({ descricao: descricao.trim(), localizacao: localizacao.trim() })
+        .eq("id", item.id);
+      if (error) throw error;
+      toast.success("Dados atualizados.");
+      setEditando(false);
+      await onReload();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao salvar.");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
@@ -508,10 +551,18 @@ function ItemDetailModal({ item, onClose }: { item: Item; onClose: () => void })
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <ReadOnlyField label="Código" value={item.codigo} />
           <ReadOnlyField label="Código de barras" value={item.codigoBarras || "—"} />
-          <ReadOnlyField label="Descrição" value={item.descricao} />
+          {editando ? (
+            <EditableField label="Descrição" value={descricao} onChange={setDescricao} />
+          ) : (
+            <ReadOnlyField label="Descrição" value={item.descricao} />
+          )}
           <ReadOnlyField label="Marca" value={item.marca || "—"} />
           <ReadOnlyField label="Categoria" value={item.categoria || "—"} />
-          <ReadOnlyField label="Localização" value={item.localizacao || "—"} />
+          {editando ? (
+            <EditableField label="Localização" value={localizacao} onChange={setLocalizacao} />
+          ) : (
+            <ReadOnlyField label="Localização" value={item.localizacao || "—"} />
+          )}
           <ReadOnlyField label="Quantidade em estoque" value={String(item.quantidade)} />
           <ReadOnlyField
             label="Cadastrado em"
@@ -544,16 +595,69 @@ function ItemDetailModal({ item, onClose }: { item: Item; onClose: () => void })
           </div>
         )}
 
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
-          >
-            Fechar
-          </button>
+        <div className="mt-6 flex justify-end gap-2">
+          {editando ? (
+            <>
+              <button
+                onClick={() => {
+                  setDescricao(item.descricao);
+                  setLocalizacao(item.localizacao);
+                  setEditando(false);
+                }}
+                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => void salvar()}
+                disabled={salvando}
+                className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400 disabled:opacity-60"
+              >
+                {salvando && <Loader2 className="h-4 w-4 animate-spin" />} Salvar alterações
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setEditando(true)}
+                className="inline-flex items-center gap-2 rounded-lg border border-cyan-400/40 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-500/20"
+              >
+                <Pencil className="h-4 w-4" /> Editar dados
+              </button>
+              <button
+                onClick={onClose}
+                className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
+              >
+                Fechar
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function EditableField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-cyan-300">
+        {label}
+      </span>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-cyan-400/40 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
+      />
+    </label>
   );
 }
 
