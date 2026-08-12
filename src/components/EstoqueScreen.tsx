@@ -17,6 +17,8 @@ import {
   ExternalLink,
   Wand2,
   Pencil,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -25,6 +27,7 @@ import {
   enriquecerPecaEletrolux,
 } from "@/lib/estoque-vision.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "@/hooks/useTheme";
 
 type Item = {
   id: string;
@@ -107,6 +110,7 @@ const rowToMov = (r: MovRow): Movimento => ({
 type View = "menu" | "consulta" | "cadastro" | "retirada";
 
 export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
+  const { isDark, toggle: toggleTheme } = useTheme();
   const [view, setView] = useState<View>("menu");
   const [itens, setItens] = useState<Item[]>([]);
   const [movs, setMovs] = useState<Movimento[]>([]);
@@ -157,18 +161,43 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const changeView = (v: View) => {
+    if (v !== view) {
+      if (v !== "menu") {
+        window.history.pushState({ estoqueView: v }, "");
+      }
+      setView(v);
+    }
+  };
+
   useEffect(() => {
+    window.scrollTo(0, 0);
     void reload();
   }, []);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const handlePop = (e: PopStateEvent) => {
+      const state = e.state as { estoqueView?: View } | null;
+      if (state && state.estoqueView) {
+        setView(state.estoqueView);
+      } else if (view !== "menu") {
+        setView("menu");
+      }
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, [view]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-900/90 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-4">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
+      <header className="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => (view === "menu" ? onBack() : setView("menu"))}
-              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-2.5 sm:px-3 text-xs font-semibold text-white hover:bg-white/10 active:scale-95 transition shrink-0"
+              onClick={() => (view === "menu" ? onBack() : changeView("menu"))}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2.5 sm:px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition shrink-0"
               title="Voltar"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -179,18 +208,27 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
                 <Boxes className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm font-black sm:text-lg truncate">Estoque</h1>
-                <p className="text-[11px] text-slate-400 truncate">
+                <h1 className="text-sm font-black sm:text-lg truncate text-slate-900 dark:text-slate-100">Estoque</h1>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                   {loading ? "carregando…" : `${itens.length} item(s) · ${movs.length} saída(s)`}
                 </p>
               </div>
             </div>
           </div>
-          {view !== "menu" && (
-            <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/80 shrink-0">
-              {view === "consulta" ? "Consulta" : view === "cadastro" ? "Cadastro" : "Retirada"}
-            </span>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={toggleTheme}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+              title="Alternar tema"
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" strokeWidth={2.5} />}
+            </button>
+            {view !== "menu" && (
+              <span className="rounded-full bg-slate-200 dark:bg-white/10 px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-white/80">
+                {view === "consulta" ? "Consulta" : view === "cadastro" ? "Cadastro" : "Retirada"}
+              </span>
+            )}
+          </div>
         </div>
       </header>
 
@@ -201,7 +239,7 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
           </div>
         ) : (
           <>
-            {view === "menu" && <MenuGrid setView={setView} itens={itens} movs={movs} />}
+            {view === "menu" && <MenuGrid setView={changeView} itens={itens} movs={movs} />}
             {view === "consulta" && <ConsultaView itens={itens} onReload={reload} />}
             {view === "cadastro" && (
               <CadastroView itens={itens} onReload={reload} />
@@ -256,8 +294,8 @@ function MenuGrid({
   return (
     <>
       <div className="mb-8">
-        <h2 className="text-3xl font-extrabold tracking-tight">Controle de Estoque</h2>
-        <p className="mt-2 text-sm text-slate-400">
+        <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Controle de Estoque</h2>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           Escolha uma operação. Os dados são compartilhados entre todos os usuários da equipe.
         </p>
       </div>
@@ -268,23 +306,23 @@ function MenuGrid({
             <button
               key={c.id}
               onClick={() => setView(c.id)}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-white/25 hover:shadow-2xl"
+              className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-6 text-left shadow-2xs transition hover:-translate-y-1 hover:shadow-lg"
             >
               <div
-                className={`absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br ${c.gradient} opacity-30 blur-3xl transition group-hover:opacity-60`}
+                className={`absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br ${c.gradient} opacity-20 dark:opacity-30 blur-3xl transition group-hover:opacity-50`}
               />
               <div
                 className={`relative inline-flex rounded-xl bg-gradient-to-br ${c.gradient} p-3 shadow-lg`}
               >
                 <Icon className="h-6 w-6 text-white" />
               </div>
-              <h3 className="relative mt-5 text-xl font-bold">{c.title}</h3>
-              <p className="relative mt-2 text-sm text-slate-300">{c.desc}</p>
+              <h3 className="relative mt-5 text-xl font-bold text-slate-900 dark:text-slate-100">{c.title}</h3>
+              <p className="relative mt-2 text-sm text-slate-600 dark:text-slate-300">{c.desc}</p>
               <div className="relative mt-6 flex items-center justify-between">
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">
+                <span className="rounded-full bg-slate-100 dark:bg-white/10 px-3 py-1 text-xs font-bold text-slate-700 dark:text-white/90">
                   {c.stat}
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-widest text-white/60 group-hover:text-white">
+                <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 group-hover:underline">
                   Abrir →
                 </span>
               </div>
@@ -369,14 +407,14 @@ function ConsultaView({ itens, onReload }: { itens: Item[]; onReload: () => Prom
 
   return (
     <div>
-      <div className="mb-4 flex gap-2 rounded-lg border border-white/10 bg-slate-950/40 p-1">
+      <div className="mb-4 flex gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-200/60 dark:bg-slate-950/40 p-1">
         <button
           type="button"
           onClick={() => setModo("dados")}
-          className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+          className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
             modo === "dados"
-              ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow"
-              : "text-slate-300 hover:bg-white/5"
+              ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-xs"
+              : "text-slate-600 dark:text-slate-300 hover:bg-white/40 dark:hover:bg-white/5"
           }`}
         >
           <Search className="mr-1 inline h-3.5 w-3.5" /> Por dados
@@ -384,10 +422,10 @@ function ConsultaView({ itens, onReload }: { itens: Item[]; onReload: () => Prom
         <button
           type="button"
           onClick={() => setModo("foto")}
-          className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+          className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
             modo === "foto"
-              ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow"
-              : "text-slate-300 hover:bg-white/5"
+              ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-xs"
+              : "text-slate-600 dark:text-slate-300 hover:bg-white/40 dark:hover:bg-white/5"
           }`}
         >
           <Camera className="mr-1 inline h-3.5 w-3.5" /> Por foto
@@ -395,31 +433,31 @@ function ConsultaView({ itens, onReload }: { itens: Item[]; onReload: () => Prom
       </div>
 
       {modo === "dados" ? (
-        <div className="mb-6 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 px-4 py-3 shadow-2xs">
           <Search className="h-5 w-5 text-slate-400" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar por código, descrição, barras, marca ou localização…"
-            className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
+            className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
           />
           {q && (
-            <button onClick={() => setQ("")} className="text-slate-400 hover:text-white">
+            <button onClick={() => setQ("")} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
               <X className="h-4 w-4" />
             </button>
           )}
         </div>
       ) : (
-        <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
-          <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-cyan-400/40 bg-cyan-500/5 px-4 py-6 text-center text-xs text-slate-300 hover:bg-cyan-500/10">
+        <div className="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 shadow-2xs">
+          <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-cyan-500/40 bg-cyan-500/5 px-4 py-6 text-center text-xs text-slate-700 dark:text-slate-300 hover:bg-cyan-500/10">
             {analisandoFoto ? (
               <>
-                <Loader2 className="h-6 w-6 animate-spin text-cyan-300" />
+                <Loader2 className="h-6 w-6 animate-spin text-cyan-600 dark:text-cyan-300" />
                 Analisando…
               </>
             ) : (
               <>
-                <Camera className="h-6 w-6 text-cyan-300" />
+                <Camera className="h-6 w-6 text-cyan-600 dark:text-cyan-300" />
                 Tirar foto ou selecionar imagem da peça
               </>
             )}
@@ -438,18 +476,18 @@ function ConsultaView({ itens, onReload }: { itens: Item[]; onReload: () => Prom
             <img
               src={fotoPreview}
               alt=""
-              className="mt-3 max-h-40 w-full rounded-md border border-white/10 object-contain bg-black/40"
+              className="mt-3 max-h-40 w-full rounded-md border border-slate-200 dark:border-slate-800 object-contain bg-slate-100 dark:bg-black/40"
             />
           )}
           {ultimaIdent && (
-            <p className="mt-2 text-[11px] text-slate-400">
-              Identificado: <span className="text-slate-200">{ultimaIdent}</span>
+            <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+              Identificado: <span className="font-bold text-slate-800 dark:text-slate-200">{ultimaIdent}</span>
             </p>
           )}
         </div>
       )}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/10 bg-white/5 p-10 text-center text-slate-400">
+        <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-10 text-center text-slate-500 dark:text-slate-400 shadow-2xs">
           <Package className="mx-auto mb-3 h-10 w-10 opacity-50" />
           Nenhum item encontrado.
         </div>
@@ -459,25 +497,25 @@ function ConsultaView({ itens, onReload }: { itens: Item[]; onReload: () => Prom
             <button
               key={it.id}
               onClick={() => setSelected(it)}
-              className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 to-white/[0.02] p-4 text-left transition hover:border-cyan-400/40 hover:from-white/15 hover:to-white/[0.04] focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 text-left shadow-2xs transition hover:border-cyan-500/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="text-xs font-mono uppercase text-cyan-300">{it.codigo}</div>
+                <div className="text-xs font-mono font-bold uppercase text-indigo-600 dark:text-cyan-300">{it.codigo}</div>
                 <span
                   className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                     it.quantidade > 5
-                      ? "bg-emerald-500/20 text-emerald-300"
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
                       : it.quantidade > 0
-                        ? "bg-amber-500/20 text-amber-300"
-                        : "bg-rose-500/20 text-rose-300"
+                        ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
+                        : "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
                   }`}
                 >
                   {it.quantidade} un.
                 </span>
               </div>
-              <div className="mt-1 font-semibold text-white">{it.descricao}</div>
+              <div className="mt-1 font-semibold text-slate-900 dark:text-white">{it.descricao}</div>
               {it.localizacao && (
-                <div className="mt-2 text-xs text-slate-400">📍 {it.localizacao}</div>
+                <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">📍 {it.localizacao}</div>
               )}
             </button>
           ))}
@@ -550,17 +588,17 @@ function ItemDetailModal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-white/15 bg-slate-900 p-4 sm:p-6 shadow-2xl animate-slide-up"
+        className="w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xl animate-slide-up text-slate-900 dark:text-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="mb-5 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <div className="text-xs font-mono uppercase text-cyan-300">{item.codigo}</div>
-            <h3 className="text-lg font-bold text-white">Ficha do item</h3>
+            <div className="text-xs font-mono font-bold uppercase text-indigo-600 dark:text-cyan-300">{item.codigo}</div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Ficha do item</h3>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
@@ -684,13 +722,13 @@ function EditableField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-cyan-300">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:text-cyan-300">
         {label}
       </span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-cyan-400/40 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-cyan-300"
+        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500"
       />
     </label>
   );
@@ -707,10 +745,10 @@ function ReadOnlyField({
 }) {
   return (
     <label className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
         {label}
       </span>
-      <div className="w-full rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-200">
+      <div className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 px-3 py-2 text-sm text-slate-900 dark:text-slate-200 font-medium">
         {value}
       </div>
     </label>
@@ -775,7 +813,6 @@ function CadastroView({
         if (r.marca) setMarca(r.marca);
         if (r.modelosAplicados?.length) setModelosAplicados(r.modelosAplicados);
         toast.success("Peça identificada pela foto.");
-        // enriquecer automaticamente se houver código
         if (r.codigo) {
           setEnriquecendo(true);
           try {
@@ -863,104 +900,69 @@ function CadastroView({
             marca: marca.trim() || existing.marca || null,
             modelos_aplicados: modelosAplicados.length
               ? modelosAplicados
-              : existing.modelosAplicados ?? [],
+              : existing.modelosAplicados || null,
             categoria: categoria.trim() || existing.categoria || null,
             fonte: fonte.trim() || existing.fonte || null,
             foto: foto || existing.foto || null,
           })
           .eq("id", existing.id);
         if (error) throw error;
-        toast.success(`+${q} un. adicionadas ao item ${codigo}.`);
+        toast.success(
+          `Quantidade somada! Novo total: ${existing.quantidade + q} un.`,
+        );
       } else {
         const { error } = await supabase.from("estoque_itens").insert({
-          codigo: codigo.trim(),
+          codigo: codigo.trim().toUpperCase(),
           descricao: descricao.trim(),
-          quantidade: q,
           localizacao: localizacao.trim(),
+          quantidade: q,
           codigo_barras: codigoBarras.trim() || null,
           marca: marca.trim() || null,
-          modelos_aplicados: modelosAplicados,
+          modelos_aplicados: modelosAplicados.length ? modelosAplicados : null,
           categoria: categoria.trim() || null,
           fonte: fonte.trim() || null,
           foto: foto || null,
         });
         if (error) throw error;
-        toast.success(`Item ${codigo} cadastrado.`);
+        toast.success(`Peça ${codigo.toUpperCase()} cadastrada com ${q} un.`);
       }
-      await onReload();
       limparCampos();
       setMostrarTeclado(false);
+      await onReload();
     } catch (err) {
       console.error(err);
-      toast.error(err instanceof Error ? err.message : "Falha ao salvar item.");
+      toast.error(err instanceof Error ? err.message : "Falha ao salvar peça.");
     }
   };
-
-  const remover = async (id: string) => {
-    if (!confirm("Remover este item do estoque?")) return;
-    const { error } = await supabase.from("estoque_itens").delete().eq("id", id);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    await onReload();
-  };
-
-  const tecladoPressionar = (valor: string) => {
-    setQuantidadeTemp((prev) => {
-      const limpo = prev.replace(/^0+/, "").replace(/\D/g, "") || "0";
-      const novo = limpo === "0" ? valor : limpo + valor;
-      return novo.slice(0, 5);
-    });
-  };
-
-  const tecladoApagar = () => {
-    setQuantidadeTemp((prev) => {
-      const limpo = prev.replace(/\D/g, "");
-      const novo = limpo.slice(0, -1) || "0";
-      return novo;
-    });
-  };
-
-  const tecladoLimpar = () => setQuantidadeTemp("0");
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
       <form
         onSubmit={abrirTecladoQuantidade}
-        className="lg:col-span-2 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6"
+        className="lg:col-span-3 space-y-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 sm:p-6 shadow-2xs text-slate-900 dark:text-slate-100"
       >
-        <h3 className="text-lg font-bold">Novo item</h3>
-        <p className="text-xs text-slate-400">
-          Informe os dados do item. A quantidade será digitada ao clicar em Salvar item.
-        </p>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Novo cadastro de peça</h3>
+          <button
+            type="button"
+            onClick={limparCampos}
+            className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+          >
+            Limpar formulário
+          </button>
+        </div>
 
-        {/* Photo capture */}
-        <div className="rounded-xl border border-dashed border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/10 to-indigo-500/10 p-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-fuchsia-200">
-            <Sparkles className="h-4 w-4" /> Identificar por foto
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-4 shadow-2xs">
+          <div className="flex items-center gap-2 font-bold text-fuchsia-600 dark:text-fuchsia-300">
+            <Sparkles className="h-4 w-4" /> Leitura Inteligente por Foto (IA)
           </div>
-          <p className="mt-1 text-[11px] text-slate-300">
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
             Tire uma foto da etiqueta, embalagem ou código de barras. Vamos
             identificar o código e buscar modelos aplicados.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-fuchsia-500/20 px-3 py-2 text-xs font-semibold text-fuchsia-100 hover:bg-fuchsia-500/30">
-              <Camera className="h-4 w-4" /> Câmera
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void handleFoto(f);
-                  e.currentTarget.value = "";
-                }}
-              />
-            </label>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10">
-              <Package className="h-4 w-4" /> Galeria
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-fuchsia-600 dark:bg-fuchsia-500/20 px-3 py-2 text-xs font-semibold text-white dark:text-fuchsia-100 hover:opacity-90">
+              <Camera className="h-4 w-4" /> Tirar foto ou galeria
               <input
                 type="file"
                 accept="image/*"
@@ -976,22 +978,22 @@ function CadastroView({
               <button
                 type="button"
                 onClick={() => setFoto("")}
-                className="rounded-lg bg-rose-500/20 px-2 py-2 text-xs text-rose-200 hover:bg-rose-500/30"
+                className="rounded-lg bg-rose-100 dark:bg-rose-500/20 px-2 py-2 text-xs font-semibold text-rose-700 dark:text-rose-200 hover:bg-rose-200 dark:hover:bg-rose-500/30"
                 title="Remover foto"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
             {(analisando || enriquecendo) && (
-              <span className="inline-flex items-center gap-1 text-xs text-fuchsia-200">
+              <span className="inline-flex items-center gap-1 text-xs text-fuchsia-600 dark:text-fuchsia-200 font-medium">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 {analisando ? "Analisando foto…" : "Buscando dados…"}
               </span>
             )}
           </div>
           {foto && (
-            <div className="mt-3 overflow-hidden rounded-lg border border-white/10">
-              <img src={foto} alt="Peça" className="max-h-40 w-full object-contain bg-black/40" />
+            <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
+              <img src={foto} alt="Peça" className="max-h-40 w-full object-contain bg-slate-100 dark:bg-black/40" />
             </div>
           )}
         </div>
@@ -1061,103 +1063,131 @@ function CadastroView({
             placeholder="Modelo A, Modelo B…"
           />
         </Field>
-        <div className="flex flex-wrap gap-2">
+
+        <div className="flex flex-wrap gap-2 pt-2">
           <button
             type="button"
-            onClick={buscarNoSiteParceiros}
+            onClick={() => void buscarNoSiteParceiros()}
             disabled={enriquecendo || !codigo.trim()}
-            className="inline-flex items-center gap-2 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 py-2 text-xs font-semibold text-fuchsia-100 hover:bg-fuchsia-500/20 disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition"
           >
             {enriquecendo ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Wand2 className="h-3.5 w-3.5" />
+              <Wand2 className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
             )}
-            Buscar dados
+            Buscar informações online
           </button>
-          <a
-            href={
-              fonte.trim() ||
-              (codigo
-                ? `https://compraparceiros.electrolux.com.br/?q=${encodeURIComponent(codigo)}`
-                : "https://compraparceiros.electrolux.com.br/")
-            }
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10"
-          >
-            <ExternalLink className="h-3.5 w-3.5" /> Abrir Compra Parceiros
-          </a>
         </div>
-        {fonte && (
-          <p className="text-[11px] text-slate-400">
-            Fonte consultada: <span className="text-slate-200">{fonte}</span>
-          </p>
-        )}
+
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-lime-500 px-4 py-3 text-sm font-bold text-slate-900 shadow-lg transition hover:brightness-110"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3.5 text-sm font-bold text-white shadow-md hover:brightness-110 active:scale-[0.99] transition"
         >
-          <Plus className="h-4 w-4" /> Salvar item
+          <Plus className="h-4 w-4" /> Continuar para informar quantidade →
         </button>
       </form>
 
-      {mostrarTeclado && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center">
-          <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-slate-900 p-4 shadow-2xl">
-            <div className="mb-4 text-center">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Quantidade a cadastrar
-              </p>
-              <div className="mt-2 rounded-xl bg-slate-950 py-4 text-4xl font-bold text-emerald-300">
-                {quantidadeTemp}
-              </div>
+      <div className="lg:col-span-2 space-y-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 sm:p-6 shadow-2xs text-slate-900 dark:text-slate-100">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Resumo e visualização</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Verifique os dados antes de definir a quantidade que entrará no estoque.
+        </p>
+
+        <div className="space-y-3 pt-2">
+          <ReadOnlyField label="Código" value={codigo || "—"} />
+          <ReadOnlyField label="Descrição" value={descricao || "—"} />
+          <ReadOnlyField label="Localização" value={localizacao || "—"} />
+          {marca && <ReadOnlyField label="Marca" value={marca} />}
+          {categoria && <ReadOnlyField label="Categoria" value={categoria} />}
+          {modelosAplicados.length > 0 && (
+            <ReadOnlyField
+              label="Modelos aplicados"
+              value={modelosAplicados.join(", ")}
+              fullWidth
+            />
+          )}
+          {fonte && (
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Fonte dos dados: <span className="font-semibold text-slate-700 dark:text-slate-300">{fonte}</span>
             </div>
+          )}
+        </div>
+      </div>
+
+      {mostrarTeclado && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs animate-fade-in"
+          onClick={() => setMostrarTeclado(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl animate-slide-up text-slate-900 dark:text-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 text-center">
+              <div className="text-xs font-mono font-bold uppercase text-indigo-600 dark:text-cyan-300">{codigo}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-white">{descricao}</div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Digite a quantidade de entrada:</div>
+            </div>
+
+            <div className="mb-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3 text-center text-3xl font-black tracking-wider text-indigo-600 dark:text-cyan-300">
+              {quantidadeTemp || "0"} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">un</span>
+            </div>
+
             <div className="grid grid-cols-3 gap-2">
-              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n) => (
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
                 <button
-                  key={n}
+                  key={num}
                   type="button"
-                  onClick={() => tecladoPressionar(n)}
-                  className="rounded-xl bg-white/10 py-4 text-xl font-bold text-white hover:bg-white/20 active:scale-95"
+                  onClick={() =>
+                    setQuantidadeTemp((prev) => (prev === "0" ? num : prev + num))
+                  }
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 py-3 text-lg font-bold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition"
                 >
-                  {n}
+                  {num}
                 </button>
               ))}
               <button
                 type="button"
-                onClick={tecladoLimpar}
-                className="rounded-xl bg-amber-500/20 py-4 text-sm font-bold text-amber-200 hover:bg-amber-500/30 active:scale-95"
+                onClick={() => setQuantidadeTemp("0")}
+                className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 py-3 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 active:scale-95 transition"
               >
-                C
+                Limpar
               </button>
               <button
                 type="button"
-                onClick={() => tecladoPressionar("0")}
-                className="rounded-xl bg-white/10 py-4 text-xl font-bold text-white hover:bg-white/20 active:scale-95"
+                onClick={() =>
+                  setQuantidadeTemp((prev) => (prev === "0" ? "0" : prev + "0"))
+                }
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 py-3 text-lg font-bold text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition"
               >
                 0
               </button>
               <button
                 type="button"
-                onClick={tecladoApagar}
-                className="rounded-xl bg-rose-500/20 py-4 text-sm font-bold text-rose-200 hover:bg-rose-500/30 active:scale-95"
+                onClick={() =>
+                  setQuantidadeTemp((prev) =>
+                    prev.length > 1 ? prev.slice(0, -1) : "0",
+                  )
+                }
+                className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 py-3 text-xs font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 active:scale-95 transition"
               >
-                ⌫
+                ⌫ Apagar
               </button>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
+
+            <div className="mt-4 flex gap-2">
               <button
                 type="button"
                 onClick={() => setMostrarTeclado(false)}
-                className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white hover:bg-white/10"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                onClick={() => void salvar(parseInt(quantidadeTemp, 10))}
-                className="rounded-xl bg-gradient-to-r from-emerald-500 to-lime-500 px-4 py-3 text-sm font-bold text-slate-900 hover:brightness-110"
+                onClick={() => void salvar(parseInt(quantidadeTemp, 10) || 0)}
+                className="flex-1 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 py-2.5 text-xs font-bold text-white shadow-md hover:brightness-110"
               >
                 Confirmar
               </button>
@@ -1165,55 +1195,6 @@ function CadastroView({
           </div>
         </div>
       )}
-      <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-white/5 p-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-lg font-bold">Itens cadastrados</h3>
-          <span className="text-xs text-slate-400">{itens.length} registro(s)</span>
-        </div>
-        {itens.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-white/10 p-8 text-center text-slate-400">
-            Nenhum item cadastrado ainda.
-          </div>
-        ) : (
-          <div className="max-h-[60vh] space-y-2 overflow-auto pr-1">
-            {itens.map((it) => (
-              <div
-                key={it.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2"
-              >
-                {it.foto && (
-                  <img
-                    src={it.foto}
-                    alt=""
-                    className="h-12 w-12 flex-shrink-0 rounded-md object-cover"
-                  />
-                )}
-                <div className="min-w-0">
-                  <div className="text-xs font-mono text-cyan-300">{it.codigo}</div>
-                  <div className="truncate text-sm text-white">{it.descricao}</div>
-                  <div className="mt-0.5 flex flex-wrap gap-x-2 text-[11px] text-slate-400">
-                    {it.localizacao && <span>📍 {it.localizacao}</span>}
-                    {it.marca && <span>🏷️ {it.marca}</span>}
-                    {it.categoria && <span>📂 {it.categoria}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold">
-                    {it.quantidade}
-                  </span>
-                  <button
-                    onClick={() => remover(it.id)}
-                    className="rounded-md p-1.5 text-slate-400 hover:bg-rose-500/20 hover:text-rose-300"
-                    title="Remover"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
@@ -1227,27 +1208,29 @@ function RetiradaView({
   movs: Movimento[];
   onReload: () => Promise<void>;
 }) {
+  const [modo, setModo] = useState<"dados" | "foto">("dados");
+  const [busca, setBusca] = useState("");
   const [itemId, setItemId] = useState("");
   const [qtd, setQtd] = useState("");
   const [tecnico, setTecnico] = useState("");
   const [os, setOs] = useState("");
-  const [modo, setModo] = useState<"dados" | "foto">("dados");
-  const [busca, setBusca] = useState("");
   const [analisandoFoto, setAnalisandoFoto] = useState(false);
   const [fotoPreview, setFotoPreview] = useState("");
-  const [ultimaIdent, setUltimaIdent] = useState<string>("");
+  const [ultimaIdent, setUltimaIdent] = useState("");
   const identificar = useServerFn(identificarPecaFoto);
 
-  const item = itens.find((i) => i.id === itemId);
+  const item = useMemo(
+    () => itens.find((it) => it.id === itemId),
+    [itens, itemId],
+  );
 
   const resultados = useMemo(() => {
     const t = busca.trim().toLowerCase();
-    if (!t) return itens;
+    if (!t) return [];
     return itens.filter(
       (it) =>
         it.codigo.toLowerCase().includes(t) ||
         it.descricao.toLowerCase().includes(t) ||
-        it.localizacao.toLowerCase().includes(t) ||
         (it.codigoBarras || "").toLowerCase().includes(t) ||
         (it.marca || "").toLowerCase().includes(t),
     );
@@ -1283,13 +1266,11 @@ function RetiradaView({
         });
         if (match) {
           setItemId(match.id);
+          setQtd("1");
           toast.success(`Peça localizada: ${match.codigo}`);
         } else {
-          setItemId("");
-          const q = codigoRef || barrasRef || r.descricao || "";
-          setBusca(q);
           toast.warning(
-            "Peça não encontrada no estoque. Confira a busca por dados.",
+            "Peça não encontrada no estoque. Confira os resultados.",
           );
         }
       } catch (err) {
@@ -1307,7 +1288,7 @@ function RetiradaView({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!item) {
-      toast.error("Selecione um item.");
+      toast.error("Selecione uma peça.");
       return;
     }
     const q = parseInt(qtd, 10) || 0;
@@ -1356,18 +1337,18 @@ function RetiradaView({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
       <form
         onSubmit={(e) => void submit(e)}
-        className="lg:col-span-2 space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6"
+        className="lg:col-span-2 space-y-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 sm:p-6 shadow-2xs text-slate-900 dark:text-slate-100"
       >
-        <h3 className="text-lg font-bold">Registrar retirada</h3>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Registrar retirada</h3>
 
-        <div className="flex gap-2 rounded-lg border border-white/10 bg-slate-950/40 p-1">
+        <div className="flex gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-200/60 dark:bg-slate-950/40 p-1">
           <button
             type="button"
             onClick={() => setModo("dados")}
-            className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
               modo === "dados"
-                ? "bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white shadow"
-                : "text-slate-300 hover:bg-white/5"
+                ? "bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white shadow-xs"
+                : "text-slate-600 dark:text-slate-300 hover:bg-white/40 dark:hover:bg-white/5"
             }`}
           >
             <Search className="mr-1 inline h-3.5 w-3.5" /> Por dados
@@ -1375,10 +1356,10 @@ function RetiradaView({
           <button
             type="button"
             onClick={() => setModo("foto")}
-            className={`flex-1 rounded-md px-3 py-2 text-xs font-bold transition ${
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
               modo === "foto"
-                ? "bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white shadow"
-                : "text-slate-300 hover:bg-white/5"
+                ? "bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white shadow-xs"
+                : "text-slate-600 dark:text-slate-300 hover:bg-white/40 dark:hover:bg-white/5"
             }`}
           >
             <Camera className="mr-1 inline h-3.5 w-3.5" /> Por foto
@@ -1400,9 +1381,9 @@ function RetiradaView({
               />
             </div>
             {busca && !item && (
-              <div className="mt-2 max-h-56 space-y-1 overflow-auto rounded-lg border border-white/10 bg-slate-950/60 p-1">
+              <div className="mt-2 max-h-56 space-y-1 overflow-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 p-1 shadow-lg">
                 {resultados.length === 0 ? (
-                  <div className="p-3 text-center text-xs text-slate-400">
+                  <div className="p-3 text-center text-xs text-slate-500 dark:text-slate-400">
                     Nenhuma peça encontrada.
                   </div>
                 ) : (
@@ -1415,13 +1396,13 @@ function RetiradaView({
                         setBusca("");
                       }}
                       disabled={it.quantidade <= 0}
-                      className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-white/5 disabled:opacity-40"
+                      className="flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40"
                     >
                       <span className="min-w-0 flex-1 truncate">
-                        <span className="font-mono text-cyan-300">{it.codigo}</span>{" "}
-                        <span className="text-white">— {it.descricao}</span>
+                        <span className="font-mono font-bold text-indigo-600 dark:text-cyan-300">{it.codigo}</span>{" "}
+                        <span className="text-slate-900 dark:text-white">— {it.descricao}</span>
                       </span>
-                      <span className="rounded-full bg-white/10 px-2 py-0.5 font-bold">
+                      <span className="rounded-full bg-slate-100 dark:bg-white/10 px-2 py-0.5 font-bold text-slate-700 dark:text-slate-200">
                         {it.quantidade}
                       </span>
                     </button>
@@ -1432,15 +1413,15 @@ function RetiradaView({
           </Field>
         ) : (
           <Field label="Localizar por foto">
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-fuchsia-400/40 bg-fuchsia-500/5 px-4 py-6 text-center text-xs text-slate-300 hover:bg-fuchsia-500/10">
+            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-fuchsia-500/40 bg-fuchsia-500/5 px-4 py-6 text-center text-xs text-slate-700 dark:text-slate-300 hover:bg-fuchsia-500/10">
               {analisandoFoto ? (
                 <>
-                  <Loader2 className="h-6 w-6 animate-spin text-fuchsia-300" />
+                  <Loader2 className="h-6 w-6 animate-spin text-fuchsia-600 dark:text-fuchsia-300" />
                   Analisando…
                 </>
               ) : (
                 <>
-                  <Camera className="h-6 w-6 text-fuchsia-300" />
+                  <Camera className="h-6 w-6 text-fuchsia-600 dark:text-fuchsia-300" />
                   Tirar foto ou selecionar imagem
                 </>
               )}
@@ -1459,33 +1440,33 @@ function RetiradaView({
               <img
                 src={fotoPreview}
                 alt=""
-                className="mt-2 max-h-32 w-full rounded-md border border-white/10 object-contain bg-black/40"
+                className="mt-2 max-h-32 w-full rounded-md border border-slate-200 dark:border-slate-800 object-contain bg-slate-100 dark:bg-black/40"
               />
             )}
             {ultimaIdent && (
-              <p className="mt-2 text-[11px] text-slate-400">
-                Identificado: <span className="text-slate-200">{ultimaIdent}</span>
+              <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                Identificado: <span className="font-bold text-slate-800 dark:text-slate-200">{ultimaIdent}</span>
               </p>
             )}
           </Field>
         )}
 
         {item && (
-          <div className="rounded-lg border border-emerald-400/30 bg-emerald-500/5 px-3 py-2 text-xs text-slate-200">
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 px-3.5 py-2.5 text-xs text-slate-800 dark:text-slate-200">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-cyan-300">{item.codigo}</span>
+              <span className="font-mono font-bold text-indigo-600 dark:text-cyan-300">{item.codigo}</span>
               <button
                 type="button"
                 onClick={() => setItemId("")}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-slate-800 dark:hover:text-white"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-            <div className="mt-0.5 text-white">{item.descricao}</div>
-            <div className="mt-1 text-[11px] text-slate-300">
+            <div className="mt-0.5 font-bold text-slate-900 dark:text-white">{item.descricao}</div>
+            <div className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">
               Disponível:{" "}
-              <span className="font-bold text-emerald-300">{item.quantidade}</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-300">{item.quantidade}</span>
               {item.localizacao && <> · 📍 {item.localizacao}</>}
             </div>
           </div>
@@ -1498,7 +1479,6 @@ function RetiradaView({
               value={qtd}
               onChange={(e) => setQtd(e.target.value)}
               className={`${inputCls} text-lg font-bold`}
-              autoFocus
             />
           </Field>
         ) : (
@@ -1533,18 +1513,18 @@ function RetiradaView({
         )}
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-fuchsia-500 to-rose-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-rose-600 px-4 py-3.5 text-sm font-bold text-white shadow-md transition hover:brightness-110"
         >
           <PackageMinus className="h-4 w-4" /> Confirmar retirada
         </button>
       </form>
-      <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 sm:p-6 shadow-2xs text-slate-900 dark:text-slate-100">
         <div className="mb-3 flex items-center gap-2">
-          <History className="h-4 w-4 text-fuchsia-300" />
-          <h3 className="text-lg font-bold">Histórico de retiradas</h3>
+          <History className="h-4 w-4 text-fuchsia-600 dark:text-fuchsia-300" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Histórico de retiradas</h3>
         </div>
         {movs.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-white/10 p-8 text-center text-slate-400">
+          <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
             Nenhuma retirada registrada ainda.
           </div>
         ) : (
@@ -1552,16 +1532,16 @@ function RetiradaView({
             {movs.map((m) => (
               <div
                 key={m.id}
-                className="rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-3 shadow-2xs"
               >
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-mono text-fuchsia-300">{m.codigo}</span>
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <span className="font-mono font-bold text-indigo-600 dark:text-fuchsia-300">{m.codigo}</span>
                   <span>{new Date(m.data).toLocaleString("pt-BR")}</span>
                 </div>
-                <div className="mt-1 text-sm text-white">{m.descricao}</div>
-                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-300">
+                <div className="mt-1 font-semibold text-slate-900 dark:text-white">{m.descricao}</div>
+                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
                   <span>
-                    Qtd: <span className="font-bold text-rose-300">{m.quantidade}</span>
+                    Qtd: <span className="font-bold text-rose-600 dark:text-rose-300">{m.quantidade}</span>
                   </span>
                   <span>Técnico: {m.tecnico}</span>
                   {m.os && <span>OS: {m.os}</span>}
@@ -1576,12 +1556,12 @@ function RetiradaView({
 }
 
 const inputCls =
-  "w-full rounded-lg border border-white/15 bg-slate-900/60 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400";
+  "w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950/80 px-3.5 py-2.5 text-base sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
         {label}
       </span>
       {children}

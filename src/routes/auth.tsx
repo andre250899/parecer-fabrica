@@ -1,7 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Zap } from "lucide-react";
+import { createFileRoute } from '@tanstack/react-router'
+import { useTheme } from "@/hooks/useTheme";
+import { Loader2, Zap, Sun, Moon } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -15,6 +14,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { isDark, toggle: toggleTheme } = useTheme();
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -85,27 +85,36 @@ function AuthPage() {
         : "Enviar link de recuperação";
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 px-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 px-4 transition-colors">
+      {/* Theme Toggle Button */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        title="Alternar tema"
+      >
+        {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" strokeWidth={2.5} />}
+      </button>
+
       {/* Animated background orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-fuchsia-600/20 blur-3xl animate-pulse [animation-delay:1s]" />
-        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-600/10 blur-3xl animate-pulse [animation-delay:2s]" />
+        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-indigo-600/10 dark:bg-indigo-600/20 blur-3xl animate-pulse" />
+        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-fuchsia-600/10 dark:bg-fuchsia-600/20 blur-3xl animate-pulse [animation-delay:1s]" />
       </div>
 
       <div className="relative w-full max-w-sm animate-slide-up">
         {/* Card */}
-        <div className="glass-strong rounded-2xl p-8 shadow-2xl">
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/95 dark:bg-slate-900/95 p-8 shadow-xl backdrop-blur-md">
           {/* Logo / Brand */}
           <div className="mb-8 flex flex-col items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-600 shadow-lg shadow-indigo-500/30">
               <Zap className="h-7 w-7 text-white" />
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
                 Parecer Técnico Vox
               </h1>
-              <p className="mt-1 text-sm text-slate-500">{modeLabel}</p>
+              <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">{modeLabel}</p>
             </div>
           </div>
 

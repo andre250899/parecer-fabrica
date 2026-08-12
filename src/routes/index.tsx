@@ -174,6 +174,38 @@ function Index() {
   const inputCls = "w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 px-3.5 py-2.5 text-base sm:text-sm text-slate-900 dark:text-slate-100 shadow-2xs focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition";
   const labelCls = "block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5";
 
+  // ── Browser History & Mobile Back Gesture Integration ──
+  const navigateToModo = useCallback(
+    (newModo: "home" | "parecer" | "whirlpool" | "estoque", newTipo: ParecerTipo | null = null, pushHistory = true) => {
+      setModo(newModo);
+      setTipo(newTipo);
+      if (pushHistory && (newModo !== modo || newTipo !== tipo)) {
+        window.history.pushState({ modo: newModo, tipo: newTipo }, "");
+      }
+    },
+    [modo, tipo],
+  );
+
+  useEffect(() => {
+    if (!window.history.state) {
+      window.history.replaceState({ modo: "home", tipo: null }, "");
+    }
+
+    const onPopState = (e: PopStateEvent) => {
+      const state = e.state as { modo?: "home" | "parecer" | "whirlpool" | "estoque"; tipo?: ParecerTipo | null } | null;
+      if (state && state.modo) {
+        setModo(state.modo);
+        setTipo(state.tipo ?? null);
+      } else {
+        setModo("home");
+        setTipo(null);
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   // ── Dirty state ──
   const isWhirlpoolDirty =
     modo === "whirlpool" && tipo === "whirlpool" && JSON.stringify(whirlpool) !== whirlpoolBaseline;
@@ -592,10 +624,10 @@ function Index() {
           onInstall={handleInstall}
           extraActions={
             <>
-              <button onClick={() => setModo("whirlpool")} className="inline-flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+              <button onClick={() => navigateToModo("whirlpool")} className="inline-flex items-center gap-2 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
                 <Calendar className="h-4 w-4" /> Agenda
               </button>
-              <button onClick={() => setModo("estoque")} className="inline-flex items-center gap-2 rounded-md border border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-2 text-sm font-semibold text-white shadow hover:brightness-110 transition">
+              <button onClick={() => navigateToModo("estoque")} className="inline-flex items-center gap-2 rounded-md border border-transparent bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-2 text-sm font-semibold text-white shadow hover:brightness-110 transition">
                 <Package className="h-4 w-4" /> Estoque
               </button>
             </>
@@ -621,9 +653,9 @@ function Index() {
               <button
                 key={m.id}
                 onClick={() => {
-                  if (m.id === "whirlpool") setModo("whirlpool");
-                  else if (m.id === "estoque") setModo("estoque");
-                  else { setTipo(m.id); setModo("parecer"); }
+                  if (m.id === "whirlpool") navigateToModo("whirlpool");
+                  else if (m.id === "estoque") navigateToModo("estoque");
+                  else { navigateToModo("parecer", m.id); }
                 }}
                 className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br ${m.color} p-5 text-left text-white shadow-md transition-all duration-200 hover-lift active:scale-[0.98] animate-slide-up`}
               >
