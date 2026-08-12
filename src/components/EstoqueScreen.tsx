@@ -114,26 +114,44 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
 
   const reload = async () => {
     try {
-      const [i, m] = await Promise.all([
-        supabase
+      let iData: ItemRow[] = [];
+      const iRes = await supabase
+        .from("estoque_itens")
+        .select("id, codigo, descricao, quantidade, localizacao, codigo_barras, marca, modelos_aplicados, categoria, fonte, created_at")
+        .order("created_at", { ascending: false })
+        .limit(300);
+
+      if (iRes.error) {
+        console.warn("Tentando carregar estoque_itens sem ordem:", iRes.error.message);
+        const iFallback = await supabase
           .from("estoque_itens")
-          .select("*")
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("estoque_movimentos")
-          .select("*")
-          .order("data", { ascending: false })
-          .limit(200),
-      ]);
-      if (i.error) throw i.error;
-      if (m.error) throw m.error;
-      setItens(((i.data ?? []) as ItemRow[]).map(rowToItem));
-      setMovs(((m.data ?? []) as MovRow[]).map(rowToMov));
+          .select("id, codigo, descricao, quantidade, localizacao, codigo_barras, marca, modelos_aplicados, categoria, fonte, created_at")
+          .limit(300);
+        if (!iFallback.error && iFallback.data) {
+          iData = iFallback.data as ItemRow[];
+        } else {
+          toast.error(`Aviso estoque_itens: ${iRes.error.message}`);
+        }
+      } else if (iRes.data) {
+        iData = iRes.data as ItemRow[];
+      }
+
+      let mData: MovRow[] = [];
+      const mRes = await supabase
+        .from("estoque_movimentos")
+        .select("*")
+        .order("data", { ascending: false })
+        .limit(200);
+
+      if (!mRes.error && mRes.data) {
+        mData = mRes.data as MovRow[];
+      }
+
+      setItens(iData.map(rowToItem));
+      setMovs(mData.map(rowToMov));
     } catch (err) {
-      console.error(err);
-      toast.error(
-        err instanceof Error ? err.message : "Falha ao carregar estoque.",
-      );
+      console.error("Erro ao carregar estoque:", err);
+      toast.error(err instanceof Error ? err.message : "Falha ao carregar estoque.");
     } finally {
       setLoading(false);
     }
@@ -145,34 +163,38 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
-      <header className="border-b border-white/10 bg-white/5 backdrop-blur px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => (view === "menu" ? onBack() : setView("menu"))}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 transition"
-          >
-            <ArrowLeft className="h-4 w-4" /> Voltar
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 p-2 shadow-lg shadow-fuchsia-500/30">
-              <Boxes className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold">Estoque</h1>
-              <p className="text-xs text-slate-400">
-                {loading ? "carregando…" : `${itens.length} item(s) cadastrado(s) · ${movs.length} retirada(s)`}
-              </p>
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-900/90 backdrop-blur-md px-3 py-2.5 sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => (view === "menu" ? onBack() : setView("menu"))}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-2.5 sm:px-3 text-xs font-semibold text-white hover:bg-white/10 active:scale-95 transition shrink-0"
+              title="Voltar"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Voltar</span>
+            </button>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 p-1.5 sm:p-2 shadow-lg shadow-fuchsia-500/20 shrink-0">
+                <Boxes className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-sm font-black sm:text-lg truncate">Estoque</h1>
+                <p className="text-[11px] text-slate-400 truncate">
+                  {loading ? "carregando…" : `${itens.length} item(s) · ${movs.length} saída(s)`}
+                </p>
+              </div>
             </div>
           </div>
+          {view !== "menu" && (
+            <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/80 shrink-0">
+              {view === "consulta" ? "Consulta" : view === "cadastro" ? "Cadastro" : "Retirada"}
+            </span>
+          )}
         </div>
-        {view !== "menu" && (
-          <div className="rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-widest text-white/80">
-            {view === "consulta" ? "Consulta" : view === "cadastro" ? "Cadastro" : "Retirada"}
-          </div>
-        )}
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-10">
         {loading ? (
           <div className="flex items-center justify-center py-20 text-slate-400">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Carregando estoque…
@@ -485,6 +507,19 @@ function ItemDetailModal({
   const [descricao, setDescricao] = useState(item.descricao);
   const [localizacao, setLocalizacao] = useState(item.localizacao);
   const [salvando, setSalvando] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState(item.foto || "");
+
+  useEffect(() => {
+    if (item.foto) { setFotoUrl(item.foto); return; }
+    void supabase
+      .from("estoque_itens")
+      .select("foto")
+      .eq("id", item.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.foto) setFotoUrl(data.foto);
+      });
+  }, [item]);
 
   const salvar = async () => {
     if (!descricao.trim()) {
@@ -511,11 +546,11 @@ function ItemDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 p-0 sm:p-4 backdrop-blur-xs animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/15 bg-slate-900 p-6 shadow-2xl"
+        className="w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-white/15 bg-slate-900 p-4 sm:p-6 shadow-2xl animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
@@ -531,16 +566,16 @@ function ItemDetailModal({
           </button>
         </div>
 
-        {item.foto && (
+        {fotoUrl && (
           <div className="mb-5 overflow-hidden rounded-xl border border-white/10">
             <img
-              src={item.foto}
+              src={fotoUrl}
               alt={`Foto de ${item.descricao}`}
               className="max-h-52 w-full object-contain bg-black/40"
             />
             <button
               type="button"
-              onClick={() => downloadDataUrl(item.foto!, `${item.codigo}-${item.descricao}`)}
+              onClick={() => downloadDataUrl(fotoUrl, `${item.codigo}-${item.descricao}`)}
               className="w-full bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20"
             >
               ⬇ Baixar foto

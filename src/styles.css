@@ -137,9 +137,31 @@
     border-color: var(--color-border);
   }
 
+  html {
+    height: 100%;
+    overflow-x: hidden;
+    background-color: #f8fafc;
+    color: #0f172a;
+    overscroll-behavior-y: contain;
+  }
+
+  html.dark,
+  .dark {
+    background-color: #080c14;
+    color: #f8fafc;
+  }
+
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    min-height: 100%;
+    overflow-x: hidden;
+    background-color: #f8fafc;
+    color: #0f172a;
+    overscroll-behavior-y: contain;
+  }
+
+  .dark body {
+    background-color: #080c14;
+    color: #f8fafc;
   }
 }
 
@@ -468,4 +490,172 @@ body.parecer-printing #parecer-print-root .wp-t.wp-noinner {
   border: 1px solid #000;
   border-top: none;
   padding: 5px 6px;
+}
+
+/* ============================================================
+   Dark Mode App-level overrides
+   ============================================================ */
+
+.dark .app-bg {
+  background-color: oklch(0.1 0.03 264);
+}
+
+.dark .app-surface {
+  background-color: oklch(0.16 0.035 264);
+  border-color: oklch(1 0 0 / 8%);
+}
+
+.dark .app-header {
+  background-color: oklch(0.14 0.035 264 / 95%);
+  border-bottom-color: oklch(1 0 0 / 8%);
+}
+
+/* ============================================================
+   Glassmorphism utilities
+   ============================================================ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass {
+  background: rgba(17, 24, 39, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dark .glass-strong {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================
+   Animation keyframes
+   ============================================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-fade-in    { animation: fade-in 0.22s ease both; }
+.animate-slide-up   { animation: slide-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-slide-down { animation: slide-down 0.22s ease both; }
+.animate-scale-in   { animation: scale-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Stagger children */
+.stagger > * { animation-fill-mode: both; }
+.stagger > *:nth-child(1)  { animation-delay: 0ms; }
+.stagger > *:nth-child(2)  { animation-delay: 50ms; }
+.stagger > *:nth-child(3)  { animation-delay: 100ms; }
+.stagger > *:nth-child(4)  { animation-delay: 150ms; }
+.stagger > *:nth-child(5)  { animation-delay: 200ms; }
+
+/* Shimmer gradient (skeleton / loading) */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.92 0 0) 25%,
+    oklch(0.88 0 0) 50%,
+    oklch(0.92 0 0) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.22 0.02 264) 25%,
+    oklch(0.28 0.02 264) 50%,
+    oklch(0.22 0.02 264) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ============================================================
+   Micro-interaction utilities
+   ============================================================ */
+
+.hover-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.hover-glow {
+  transition: box-shadow 0.2s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 0 3px oklch(0.6 0.2 264 / 30%);
+}
+
+/* ============================================================
+   Dark mode for Slate UI elements (app shell, not print)
+   ============================================================ */
+
+@media not print {
+  .dark .bg-slate-100   { background-color: #0d1322; }
+  .dark .bg-slate-50    { background-color: #111827; }
+  .dark .bg-white       { background-color: #162036; }
+  .dark .border-slate-300 { border-color: #334155; }
+  .dark .border-slate-200 { border-color: #1e293b; }
+  .dark .border-slate-100 { border-color: #1e293b; }
+  .dark .text-slate-900 { color: #f8fafc; }
+  .dark .text-slate-800 { color: #f1f5f9; }
+  .dark .text-slate-700 { color: #e2e8f0; }
+  .dark .text-slate-600 { color: #cbd5e1; }
+  .dark .text-slate-500 { color: #94a3b8; }
+  .dark .text-slate-400 { color: #64748b; }
+  .dark .hover\:bg-slate-50:hover  { background-color: #1e293b; }
+  .dark .hover\:bg-slate-100:hover { background-color: #1e293b; }
+  .dark .shadow-sm { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); }
+  .dark .shadow-md { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); }
+  .dark .shadow-lg { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); }
+  .dark .shadow-2xl { box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7); }
 }

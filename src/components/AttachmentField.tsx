@@ -17,9 +17,9 @@ export default function AttachmentField({
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const accentBorder = accent === "blue" ? "border-blue-400" : "border-emerald-400";
-  const accentBg = accent === "blue" ? "bg-blue-50" : "bg-emerald-50";
-  const accentText = accent === "blue" ? "text-blue-700" : "text-emerald-700";
+  const accentBorder = accent === "blue" ? "border-blue-400 dark:border-blue-700" : "border-emerald-400 dark:border-emerald-700";
+  const accentBg = accent === "blue" ? "bg-blue-50 dark:bg-blue-950/20" : "bg-emerald-50 dark:bg-emerald-950/20";
+  const accentText = accent === "blue" ? "text-blue-700 dark:text-blue-400" : "text-emerald-700 dark:text-emerald-400";
   const accentBtn =
     accent === "blue" ? "bg-blue-600 hover:bg-blue-700" : "bg-emerald-600 hover:bg-emerald-700";
 
@@ -87,7 +87,7 @@ export default function AttachmentField({
         }}
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
-        className={`relative flex min-h-32 items-center justify-center rounded-md bg-white p-2 text-center text-xs text-slate-500 transition ${
+        className={`relative flex min-h-32 items-center justify-center rounded-md bg-white dark:bg-slate-800 p-2 text-center text-xs text-slate-500 dark:text-slate-400 transition ${
           drag ? "ring-2 ring-offset-1 " + (accent === "blue" ? "ring-blue-500" : "ring-emerald-500") : ""
         }`}
       >
