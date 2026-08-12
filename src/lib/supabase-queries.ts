@@ -121,7 +121,7 @@ export interface SavedListRow {
 export async function fetchSavedList(tipo?: string | null): Promise<SavedListRow[]> {
   let parecerQuery = supabase
     .from("pareceres")
-    .select("id, numero_os, cliente_nome, updated_at, tipo")
+    .select("id, numero_os, cliente_nome, updated_at, tipo, data")
     .order("updated_at", { ascending: false });
 
   let atendimentoQuery = supabase
@@ -138,6 +138,13 @@ export async function fetchSavedList(tipo?: string | null): Promise<SavedListRow
     parecerQuery,
     atendimentoQuery,
   ]);
+
+  if (parecerResult.error) {
+    console.warn("Erro ao buscar pareceres:", parecerResult.error.message);
+  }
+  if (atendimentoResult.error) {
+    console.warn("Erro ao buscar atendimentos:", atendimentoResult.error.message);
+  }
 
   const parecerRows: SavedListRow[] = (parecerResult.data ?? []).map((row) => ({
     ...row,

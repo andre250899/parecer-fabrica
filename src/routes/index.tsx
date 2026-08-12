@@ -282,10 +282,10 @@ function Index() {
   // ── Saved list ──
   const loadList = useCallback(async () => {
     try {
-      const list = await fetchSavedList(tipo);
+      const list = await fetchSavedList(null);
       setSavedList(list);
     } catch { toast.error("Erro ao carregar atendimentos salvos."); }
-  }, [tipo]);
+  }, []);
 
   const openList = async () => {
     setSearchTerm("");
