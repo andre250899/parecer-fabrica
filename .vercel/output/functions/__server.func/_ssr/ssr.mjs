@@ -77,9 +77,17 @@ function isH3SwallowedErrorBody(body) {
 }
 var server_default = { async fetch(request, env, ctx) {
 	try {
-		return await normalizeCatastrophicSsrResponse(await (await getServerEntry()).fetch(request, env, ctx));
+		const safeEnv = typeof env === "object" && env !== null ? env : {};
+		const safeCtx = {
+			waitUntil: (promise) => {
+				if (promise && typeof promise.then === "function") promise.catch((err) => console.error("Unhandled waitUntil error:", err));
+			},
+			passThroughOnException: () => {},
+			...typeof ctx === "object" && ctx !== null ? ctx : {}
+		};
+		return await normalizeCatastrophicSsrResponse(await (await getServerEntry()).fetch(request, safeEnv, safeCtx));
 	} catch (error) {
-		console.error(error);
+		console.error("SSR Execution Error:", error);
 		return new Response(renderErrorPage(), {
 			status: 500,
 			headers: { "content-type": "text/html; charset=utf-8" }
