@@ -179,7 +179,7 @@ function Index() {
     (newModo: "home" | "parecer" | "whirlpool" | "estoque", newTipo: ParecerTipo | null = null, pushHistory = true) => {
       setModo(newModo);
       setTipo(newTipo);
-      if (pushHistory && (newModo !== modo || newTipo !== tipo)) {
+      if (pushHistory && typeof window !== "undefined" && (newModo !== modo || newTipo !== tipo)) {
         window.history.pushState({ modo: newModo, tipo: newTipo }, "");
       }
     },
@@ -187,6 +187,7 @@ function Index() {
   );
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     if (!window.history.state) {
       window.history.replaceState({ modo: "home", tipo: null }, "");
     }

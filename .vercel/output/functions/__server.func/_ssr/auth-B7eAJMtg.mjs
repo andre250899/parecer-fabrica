@@ -1,19 +1,24 @@
+import { i as __toESM } from "../_runtime.mjs";
+import { t as supabase } from "./client-Dac0f1nd.mjs";
+import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
 import { t as useTheme } from "./useTheme-Q7qsdOBh.mjs";
+import { v as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { _ as Moon, s as Sun, t as Zap, y as LoaderCircle } from "../_libs/lucide-react.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/auth-DgAo9Gk7.js
+//#region node_modules/.nitro/vite/services/ssr/assets/auth-B7eAJMtg.js
+var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function AuthPage() {
 	const navigate = useNavigate();
 	const { isDark, toggle: toggleTheme } = useTheme();
-	const [mode, setMode] = useState("login");
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState(null);
-	const [info, setInfo] = useState(null);
-	useEffect(() => {
+	const [mode, setMode] = (0, import_react.useState)("login");
+	const [email, setEmail] = (0, import_react.useState)("");
+	const [password, setPassword] = (0, import_react.useState)("");
+	const [confirmPassword, setConfirmPassword] = (0, import_react.useState)("");
+	const [loading, setLoading] = (0, import_react.useState)(false);
+	const [error, setError] = (0, import_react.useState)(null);
+	const [info, setInfo] = (0, import_react.useState)(null);
+	(0, import_react.useEffect)(() => {
 		supabase.auth.getSession().then(({ data }) => {
 			if (data.session) navigate({ to: "/" });
 		});

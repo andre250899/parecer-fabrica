@@ -1,11 +1,11 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
-import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { _ as Link, f as createRouter, g as createRootRouteWithContext, h as createFileRoute, l as Scripts, m as lazyRouteComponent, p as Outlet, u as HeadContent, y as useRouter } from "../_libs/@tanstack/react-router+[...].mjs";
+import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { t as QueryClient } from "../_libs/tanstack__query-core.mjs";
 import { r as QueryClientProvider } from "../_libs/tanstack__react-query.mjs";
 import { t as Toaster } from "../_libs/sonner.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-SZhO5Bd9.js
+//#region node_modules/.nitro/vite/services/ssr/assets/router-DKHPumNS.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var styles_default = "/assets/styles-xFrF3FK6.css";
@@ -257,7 +257,7 @@ function RootComponent() {
 		})]
 	});
 }
-var $$splitComponentImporter$2 = () => import("./routes-BzUKJSsS.mjs");
+var $$splitComponentImporter$2 = () => import("./routes-BHPhtiU1.mjs");
 var Route$2 = createFileRoute("/")({
 	head: () => ({ meta: [{ title: "Gerador de Parecer Técnico — Vox Grupo" }, {
 		name: "description",
@@ -265,7 +265,7 @@ var Route$2 = createFileRoute("/")({
 	}] }),
 	component: lazyRouteComponent($$splitComponentImporter$2, "component")
 });
-var $$splitComponentImporter$1 = () => import("./auth-DgAo9Gk7.mjs");
+var $$splitComponentImporter$1 = () => import("./auth-B7eAJMtg.mjs");
 var Route$1 = createFileRoute("/auth")({
 	head: () => ({ meta: [{ title: "Entrar — Parecer Técnico Vox" }, {
 		name: "description",

@@ -1,11 +1,11 @@
 import "../_runtime.mjs";
 import { n as toResponse, t as H3Event } from "../_libs/h3-v2+rou3+srvx.mjs";
 import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
-import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
-import { t as createMiddleware } from "./createMiddleware-B_4t7rW1.mjs";
 import { A as invariant, D as resolveManifestCssLink, E as resolveManifestAssetLink, F as isResolvedRedirect, I as parseRedirect, L as rootRouteId, O as _getRenderedMatches, P as isRedirect, R as isNotFound, T as getStylesheetHref, a as isSsrResponse, c as stripSsrResponseBody, d as RouterProvider, i as disposeSsrResponseDetached, k as executeRewriteInput, n as bindSsrResponseToRequest, o as normalizeSsrResponse, r as defineHandlerCallback, s as replaceSsrResponse, t as renderRouterToStream, w as getScriptPreloadAttrs } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as createMemoryHistory } from "../_libs/tanstack__history.mjs";
 import { a as getOrigin, c as createSerializationAdapter, d as toCrossJSONAsync, f as toCrossJSONStream, i as getNormalizedURL, l as makeSerovalPlugin, n as mergeHeaders, o as defaultSerovalPlugins, r as attachRouterServerSsrUtils, s as createRawStreamRPCPlugin, t as waitForRequest, u as fromJSON } from "../_libs/@tanstack/router-core+[...].mjs";
+import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
+import { t as createMiddleware } from "./createMiddleware-B_4t7rW1.mjs";
 import { AsyncLocalStorage } from "node:async_hooks";
 require_react();
 var import_jsx_runtime = require_jsx_runtime();
@@ -92,7 +92,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-wv9Je3o6.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-D1tCSk3z.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -114,15 +114,15 @@ async function getStartManifest(matchedRoutes) {
 var manifest = {
 	"3ee9ced25757c75e2ce1cfdb88162dac84e9e93162ad5de4792ad084e8bea1b9": {
 		functionName: "enriquecerPecaEletrolux_createServerFn_handler",
-		importer: () => import("./estoque-vision.functions-k3lb62MF.mjs")
+		importer: () => import("./estoque-vision.functions-Ds0UI6h-.mjs")
 	},
 	"626708997dd39ec4506ae630c65907c8906e3da02e1c39bdacc503204e991533": {
 		functionName: "extrairDadosWhirlpool_createServerFn_handler",
-		importer: () => import("./pdf-extract.functions-CRcKikfG.mjs")
+		importer: () => import("./pdf-extract.functions-D0XPGDJo.mjs")
 	},
 	"e64168893f005e5031b250a47ffee0051c3fad4cb259180c3e6b4be700ce7a85": {
 		functionName: "identificarPecaFoto_createServerFn_handler",
-		importer: () => import("./estoque-vision.functions-k3lb62MF.mjs")
+		importer: () => import("./estoque-vision.functions-Ds0UI6h-.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1366,7 +1366,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-SZhO5Bd9.mjs"),
+		import("./router-DKHPumNS.mjs"),
 		import("./start-CxoptzLS.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

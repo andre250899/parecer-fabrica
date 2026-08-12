@@ -1,7 +1,7 @@
-import { n as createServerFn } from "./server-BWhwvx9r.mjs";
-import { t as createServerRpc } from "./createServerRpc-CAIdIDKN.mjs";
+import { n as createServerFn } from "./server-DxW51C_N.mjs";
+import { t as createServerRpc } from "./createServerRpc-CKVV6fgY.mjs";
 import { i as stringType, r as objectType, t as arrayType } from "../_libs/zod.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/estoque-vision.functions-k3lb62MF.js
+//#region node_modules/.nitro/vite/services/ssr/assets/estoque-vision.functions-Ds0UI6h-.js
 var Input = objectType({
 	mimeType: stringType().default("image/jpeg"),
 	base64: stringType()

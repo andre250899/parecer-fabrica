@@ -163,7 +163,7 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
 
   const changeView = (v: View) => {
     if (v !== view) {
-      if (v !== "menu") {
+      if (v !== "menu" && typeof window !== "undefined") {
         window.history.pushState({ estoqueView: v }, "");
       }
       setView(v);
@@ -171,12 +171,16 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
   };
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
     void reload();
   }, []);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
 
     const handlePop = (e: PopStateEvent) => {
       const state = e.state as { estoqueView?: View } | null;
@@ -186,8 +190,14 @@ export default function EstoqueScreen({ onBack }: { onBack: () => void }) {
         setView("menu");
       }
     };
-    window.addEventListener("popstate", handlePop);
-    return () => window.removeEventListener("popstate", handlePop);
+    if (typeof window !== "undefined") {
+      window.addEventListener("popstate", handlePop);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("popstate", handlePop);
+      }
+    };
   }, [view]);
 
   return (

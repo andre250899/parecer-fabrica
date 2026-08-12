@@ -1,5 +1,5 @@
-import { t as createMiddleware } from "./createMiddleware-B_4t7rW1.mjs";
 import { t as supabase } from "./client-Dac0f1nd.mjs";
+import { t as createMiddleware } from "./createMiddleware-B_4t7rW1.mjs";
 import { t as renderErrorPage } from "./ssr.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/start-CxoptzLS.js
 function dedupeSerializationAdapters(deduped, serializationAdapters) {

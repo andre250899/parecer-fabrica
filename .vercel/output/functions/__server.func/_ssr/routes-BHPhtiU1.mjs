@@ -1,13 +1,13 @@
 import { i as __toESM } from "../_runtime.mjs";
+import { t as supabase } from "./client-Dac0f1nd.mjs";
 import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
 import { t as useTheme } from "./useTheme-Q7qsdOBh.mjs";
+import { P as isRedirect, v as useNavigate, y as useRouter } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { A as ChevronDown, C as FileDown, D as CircleCheck, E as Clock, M as Calendar, N as Boxes, O as ChevronRight, P as ArrowLeft, S as FileText, T as Download, _ as Moon, a as Trash2, b as History, c as Sparkles, d as Printer, f as Plus, g as PackageMinus, h as PackagePlus, i as Upload, j as Camera, k as ChevronLeft, l as Search, m as Package, n as X, o as Tag, p as Pencil, r as WandSparkles, s as Sun, u as Save, v as LogOut, w as ExternalLink, x as FolderOpen, y as LoaderCircle } from "../_libs/lucide-react.mjs";
-import { P as isRedirect, v as useNavigate, y as useRouter } from "../_libs/@tanstack/react-router+[...].mjs";
-import { i as getServerFnById, n as createServerFn, r as TSS_SERVER_FUNCTION } from "./server-BWhwvx9r.mjs";
+import { i as getServerFnById, n as createServerFn, r as TSS_SERVER_FUNCTION } from "./server-DxW51C_N.mjs";
 import { i as stringType, n as enumType, r as objectType, t as arrayType } from "../_libs/zod.mjs";
 import { a as fileToCompressedDataUrl, i as downloadDataUrl, n as defaultHisense, r as defaultWhirlpool, t as defaultAssurant } from "./parecer-extras-BH44_VuI.mjs";
-import { t as supabase } from "./client-Dac0f1nd.mjs";
 import { i as useQueryClient, n as useQuery, t as useMutation } from "../_libs/tanstack__react-query.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
 import { i as Slot } from "../_libs/@radix-ui/react-dismissable-layer+[...].mjs";
@@ -15,7 +15,7 @@ import { i as Trigger, n as Portal, r as Root2, t as Content2 } from "../_libs/@
 import { n as clsx, t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
 import { n as getDefaultClassNames, t as DayPicker } from "../_libs/react-day-picker.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-BzUKJSsS.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-BHPhtiU1.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function useServerFn(serverFn) {
@@ -2349,23 +2349,25 @@ function EstoqueScreen({ onBack }) {
 	};
 	const changeView = (v) => {
 		if (v !== view) {
-			if (v !== "menu") window.history.pushState({ estoqueView: v }, "");
+			if (v !== "menu" && typeof window !== "undefined") window.history.pushState({ estoqueView: v }, "");
 			setView(v);
 		}
 	};
 	(0, import_react.useEffect)(() => {
-		window.scrollTo(0, 0);
+		if (typeof window !== "undefined") window.scrollTo(0, 0);
 		reload();
 	}, []);
 	(0, import_react.useEffect)(() => {
-		window.scrollTo(0, 0);
+		if (typeof window !== "undefined") window.scrollTo(0, 0);
 		const handlePop = (e) => {
 			const state = e.state;
 			if (state && state.estoqueView) setView(state.estoqueView);
 			else if (view !== "menu") setView("menu");
 		};
-		window.addEventListener("popstate", handlePop);
-		return () => window.removeEventListener("popstate", handlePop);
+		if (typeof window !== "undefined") window.addEventListener("popstate", handlePop);
+		return () => {
+			if (typeof window !== "undefined") window.removeEventListener("popstate", handlePop);
+		};
 	}, [view]);
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "min-h-screen min-h-[100dvh] bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors",
@@ -6737,12 +6739,13 @@ function Index() {
 	const navigateToModo = (0, import_react.useCallback)((newModo, newTipo = null, pushHistory = true) => {
 		setModo(newModo);
 		setTipo(newTipo);
-		if (pushHistory && (newModo !== modo || newTipo !== tipo)) window.history.pushState({
+		if (pushHistory && typeof window !== "undefined" && (newModo !== modo || newTipo !== tipo)) window.history.pushState({
 			modo: newModo,
 			tipo: newTipo
 		}, "");
 	}, [modo, tipo]);
 	(0, import_react.useEffect)(() => {
+		if (typeof window === "undefined") return;
 		if (!window.history.state) window.history.replaceState({
 			modo: "home",
 			tipo: null
